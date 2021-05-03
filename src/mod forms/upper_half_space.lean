@@ -180,18 +180,70 @@ begin
 rw [GLn.det_of_22] at h, simp at h, simp, exact h,
 end  
 
-def GL2R_p:= {M : GLn (fin 2) ℝ // det M > 0}
+
+
+
+lemma one_meme: det (1:GLn (fin 2) ℝ ) > 0:=
+begin
+simp only [det_one, gt_iff_lt, GLn.one_apply], tidy, 
+end 
+
+lemma mul_meme (A B :GLn (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
+
+begin
+simp, apply mul_pos h1 h2,
+end
+
+lemma inv_meme (A:GLn (fin 2) ℝ ) (h: det A >0): det A⁻¹ >0:=
+
+begin
+have h1: is_unit(det A), by {have:= inv_pos.2 h, rw is_unit_iff_exists_inv, use (det A)⁻¹, rw mul_inv_cancel, simp only [ne.def], 
+intro hh, rw hh at h, simp only [lt_self_iff_false, gt_iff_lt] at h, exact h,}, 
+have:= nonsing_inv_det A.1 h1,
+have h2: (det A)⁻¹ = det (A⁻¹), by {simp at this, rw eq_inv_of_mul_eq_one at this, sorry,},
+ rw ← h2, apply inv_pos.2 h,
+end  
+
+def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
+{carrier:={M  | det M > 0},
+ one_mem':=one_meme,
+ mul_mem':=λ A B h1 h2, mul_meme A B h1 h2,
+ inv_mem':=λ A h1, inv_meme A h1,
+}
+
+
+
+/--/
+instance coe_matrix : has_coe (GL2R_p) (matrix (fin 2) (fin 2) ℝ) :=
+⟨λ A, A.val⟩
+
+instance coe_fun : has_coe_to_fun (GL2R_p) :=
+{ F   := λ _, (fin 2) → (fin 2) → ℝ,
+  coe := λ A, A.val }
+
+
+
+def to_lin' (A : GL2R_p) := matrix.to_lin' A
+
+lemma ext_iff (A B : GL2R_p) : A = B ↔ (∀ i j, A i j = B i j) :=
+iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix.ext⟩
+
+@[ext] lemma ext (A B : GL2R_p) : (∀ i j, A i j = B i j) → A = B :=
+(GL2R_p.ext_iff A B).mpr
+
+instance has_mul : has_mul GL2R_p :=
+⟨λ A B, ⟨A.1 ⬝ B.1, by {erw [det_mul], } ⟩  ⟩-/
 
 
 
 
-instance GL2R_p_to_GL2R : has_coe (GL2R_p)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩
+instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
 
-def moeb:  (GL2R_p) → ℍ → ℍ :=
+def moeb:  (GL2R_pos) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
 
-instance : mul_action (GL2R_p) (ℍ) :=
+instance : mul_action (GL2R_pos) (ℍ) :=
 { smul:= moeb,
   one_smul := one_smul',
   mul_smul :=  mul_smul'}

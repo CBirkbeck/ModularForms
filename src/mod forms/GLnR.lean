@@ -117,9 +117,11 @@ variables (A B : GLn n R)
 
 @[simp] lemma inv_apply : ⇑(A⁻¹) = nonsing_inve A := rfl
 
+
 @[simp] lemma mul_val : ↑(A * B) = A ⬝ B := rfl
 
 @[simp] lemma mul_apply : ⇑(A * B) = (A ⬝ B) := rfl
+
 
 @[simp] lemma one_val : ↑(1 : GLn n R) = (1 : matrix n n R) := rfl
 
@@ -137,15 +139,13 @@ matrix.to_lin'_one
 
 end coe_lemmas
 
-noncomputable instance group : group (GLn n R) :=
-{ mul_assoc := λ A B C, by { ext, simp [matrix.mul_assoc] },
-  one_mul := λ A, by { ext, simp },
-  mul_one := λ A, by { ext, simp },
-  mul_left_inv := λ A, by { ext, simp, rw nonsing_inve, sorry, },
-  ..GLn.has_mul,
-  ..GLn.has_one,
-  ..GLn.has_inv }
 
+lemma is_left_inv (A : GLn n R): A⁻¹ *  A = 1:=
+
+begin
+have h1: is_unit (det A), by {have:=A.2, exact this,},
+have:=nonsing_inv_mul A A.2, ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp only [dif_pos, h1], rw nonsing_inv_apply at this, rw this,
+end  
 
 
 @[simp] lemma valor (A : GLn (fin 2) R):  A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
@@ -153,6 +153,19 @@ noncomputable instance group : group (GLn n R) :=
 begin
 split, refl, split, refl,split, refl, refl,
 end  
+
+
+noncomputable instance group : group (GLn n R) :=
+{ mul_assoc := λ A B C, by { ext, simp [matrix.mul_assoc] },
+  one_mul := λ A, by { ext, simp },
+  mul_one := λ A, by { ext, simp },
+  mul_left_inv := λ A, by {apply  is_left_inv A },
+  ..GLn.has_mul,
+  ..GLn.has_one,
+  ..GLn.has_inv }
+
+
+
 
 
 
@@ -202,6 +215,11 @@ lemma det_of_22 (M: matrix (fin 2) (fin 2) R): M.det= (M 0 0) * (M 1 1) - (M 0 1
 begin 
 sorry,
 end   
+
+
+
+
+
 
 
 end GLn
