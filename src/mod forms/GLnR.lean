@@ -148,6 +148,16 @@ have:=nonsing_inv_mul A A.2, ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp o
 end  
 
 
+
+lemma inv_is_inv (A : GLn n R) : A.nonsing_inve= (↑A)⁻¹:=
+
+begin
+have h1: is_unit (det A), by {have:=A.2, exact this,},
+have:=is_left_inv A, have:=nonsing_inv_mul A.1 h1, simp at this, have:=nonsing_inv_apply A h1, 
+ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp only [dif_pos, h1], tidy, 
+end  
+
+
 @[simp] lemma valor (A : GLn (fin 2) R):  A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
 
 begin

@@ -191,16 +191,50 @@ end
 lemma mul_meme (A B :GLn (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
 
 begin
-simp, apply mul_pos h1 h2,
+simp only [gt_iff_lt, det_mul, mul_eq_mul], apply mul_pos h1 h2,
 end
 
-lemma inv_meme (A:GLn (fin 2) ℝ ) (h: det A >0): det A⁻¹ >0:=
+lemma stupd (A: GLn (fin 2) ℝ ) : det A = A.1.det:=
+begin
+simp only [subtype.val_eq_coe], tidy,
+end  
+
+lemma det_in (A: GLn (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
+
+begin
+simp, 
+have h1: A.1.det ≠ 0, {have:=A.2, simp only [subtype.val_eq_coe] at this, rw is_unit_iff_exists_inv at this, by_contradiction, simp only [not_not, subtype.val_eq_coe] at h,
+ rw h at this, simp only [zero_mul, exists_false, zero_ne_one] at this, exact this },
+simp only [ne.def, subtype.val_eq_coe] at h1, apply mul_inv_cancel h1, 
+
+end  
+
+
+lemma det_ive2 (A B : GLn (fin 2) ℝ ) (h: det A * det B =1) : det A= (det B)⁻¹ :=
+
+begin
+simp only [stupd, subtype.val_eq_coe],simp only [stupd, subtype.val_eq_coe] at h, have h1: A.1.det * B.1.det* (B.1.det)⁻¹ = 1 * (B.1.det)⁻¹, simp, rw h, simp only [one_mul], simp only [one_mul, subtype.val_eq_coe] at h1, rw ←  h1, rw mul_assoc, squeeze_simp , have:=det_in B, 
+simp only [subtype.val_eq_coe] at this, rw this, simp only [mul_one],
+end  
+
+
+lemma det_inv (A: GLn (fin 2) ℝ )  (h: det A >0) : (det A)⁻¹ = det (A⁻¹):=
 
 begin
 have h1: is_unit(det A), by {have:= inv_pos.2 h, rw is_unit_iff_exists_inv, use (det A)⁻¹, rw mul_inv_cancel, simp only [ne.def], 
-intro hh, rw hh at h, simp only [lt_self_iff_false, gt_iff_lt] at h, exact h,}, 
-have:= nonsing_inv_det A.1 h1,
-have h2: (det A)⁻¹ = det (A⁻¹), by {simp at this, rw eq_inv_of_mul_eq_one at this, sorry,},
+intro hh, rw hh at h, simp only [lt_self_iff_false, gt_iff_lt] at h, exact h,},
+have:= nonsing_inv_det A.1 h1,simp only [subtype.val_eq_coe] at this, rw stupd, 
+have h5: A.nonsing_inve= (↑A)⁻¹, {apply GLn.inv_is_inv,},
+have h3: (A.1.det)⁻¹ = (A.1⁻¹).det, {simp only [subtype.val_eq_coe], have:= det_ive2 A⁻¹ A this, simp only [stupd, GLn.inv_apply, subtype.val_eq_coe] at this, 
+rw ← this, dsimp, rw h5}, rw h3, tidy,
+
+
+end  
+
+lemma inv_meme (A:GLn (fin 2) ℝ ) (h: det A >0): det A⁻¹ >0:=
+
+begin 
+have h2: (det A)⁻¹ = det (A⁻¹), by {apply det_inv A h,},
  rw ← h2, apply inv_pos.2 h,
 end  
 
@@ -243,11 +277,37 @@ def moeb:  (GL2R_pos) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
 
+
+
+lemma one_smul''  : ∀ (z : ℍ  ),  moeb (1: GL2R_pos) z= z :=
+
+begin
+ intro z, 
+simp only [moeb], simp only [mat2_complex, nat.one_ne_zero, add_zero, one_mul, of_real_zero, fin.one_eq_zero_iff, GLn.one_val, zero_mul,
+  fin.zero_eq_one_iff, one_apply_eq, ne.def, zero_add, not_false_iff, subtype.coe_eta, of_real_one, div_one,
+  subgroup.coe_one, subtype.val_eq_coe, one_apply_ne],
+end
+
+variable (v: ℍ)
+
+
+
+lemma mul_smul''  (A B : GL2R_pos) (z : ℍ)  :  moeb (A * B) z = moeb A (moeb B z):=
+
+begin 
+have h:  ¬ (↑(B.1 1 0) * z.1 + ↑(B.1 1 1)) = 0, have:= preserve_ℍ.aux B B.2 z.1 z.2, simp only [ne.def, subtype.val_eq_coe] at this, exact this, 
+simp only [moeb, subtype.mk_eq_mk, subgroup.coe_mul, subtype.coe_mk],   apply mul_smul' A B z.1 h, 
+end   
+
+
+
 instance : mul_action (GL2R_pos) (ℍ) :=
 { smul:= moeb,
-  one_smul := one_smul',
-  mul_smul :=  mul_smul'}
+  one_smul := one_smul'',
+  mul_smul :=  mul_smul''}
 
+
+/-
 variables {M : matrix (fin 2) (fin 2) ℝ} {z : ℂ}
 
 -- theorem mat2_complex.preserve_ℍ (hM : det M > 0) (hz : z ∈ ℍ) :
@@ -292,4 +352,6 @@ noncomputable instance : is_group_action SL2Z_H :=
     end,
   one := λ ⟨z, hz⟩, subtype.eq $ by simp [of_real_zero] }
 
-  
+  -/
+
+end   
