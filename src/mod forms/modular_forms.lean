@@ -4,6 +4,9 @@ import algebra.module
 import tactic.pi_instances
 import algebra.module.submodule
 import .holomorphic_functions
+import linear_algebra.determinant
+import .modular_group
+import .GLnR
 import .upper_half_space
 
 universes u v
@@ -12,7 +15,12 @@ open complex
 
 local notation `ℍ` := upper_half_space
 
-def is_Petersson_weight_ (k : ℕ) := { f : ℍ → ℂ | ∀ M : SL2Z, ∀ z : ℍ, f (SL2Z_H M z) = ((M 1 0 )*z + M 1 1)^k * f z }
+
+
+
+
+
+def is_Petersson_weight_ (k : ℕ) := { f : ℍ → ℂ | ∀ M : SL2Z, ∀ z : ℍ, f (moeb M z) = ((M 1 0 )*z + M 1 1)^k * f z}
 
 def is_bound_at_infinity := { f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M }
 

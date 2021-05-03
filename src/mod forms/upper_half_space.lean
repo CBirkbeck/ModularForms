@@ -172,12 +172,12 @@ have h2: (mat2_complex A z).im = (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im 
  have h4: 0 < norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)) , by{apply norm_sq_pos.2 (preserve_ℍ.aux A  det' z h), },
  have h5: 0< (norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)))⁻¹ , by {simp, simp at h4, exact h4, }, rw h2, apply mul_pos h3 h5,
 
-   /-mul_pos (mul_pos det h)  (inv_pos (norm_sq_pos.2 (preserve_ℍ.aux det h)))-/
+ 
 end 
 
 theorem GL2R_H.aux (A:  GLn (fin 2) ℝ) (h : det A > 0) : (A.1 0 0) * A.1 1 1 - A.1 0 1 * A.1 1 0 > 0 :=
 begin
-rw [GLn.det_of_22] at h, simp at h, simp, exact h,
+rw [GLn.det_of_22] at h, simp at h, simp only [gt_iff_lt, sub_pos, subtype.val_eq_coe], exact h,
 end  
 
 
@@ -268,8 +268,21 @@ iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix
 instance has_mul : has_mul GL2R_p :=
 ⟨λ A B, ⟨A.1 ⬝ B.1, by {erw [det_mul], } ⟩  ⟩-/
 
+lemma SL_det_inv (A : SL2Z): is_unit (A.1.det) :=
 
+begin
+have:=A.2, rw this, tidy,
+end  
 
+lemma SL_det_pos (A : SL2Z): A.1.det > 0:=
+
+begin
+have:=A.2, rw this, tidy,
+end  
+
+instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, A⟩ 
+
+instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, SL_det_inv A⟩ ⟩ 
 
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
 
