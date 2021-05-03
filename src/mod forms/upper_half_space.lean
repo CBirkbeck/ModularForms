@@ -1,0 +1,240 @@
+import data.complex.basic
+import tactic.ring
+import tactic.tidy
+import .modular_group
+import .GLnR
+import .SL2Z_generators
+import tactic.linarith
+import linear_algebra.determinant
+import group_theory.group_action
+
+open complex
+ 
+noncomputable theory
+
+def upper_half_space := {z : ℂ | z.im > 0}
+local notation `ℍ` := upper_half_space
+local notation `Mat` := integral_matrices_with_determinant
+
+instance upper_half_space.to_complex : has_coe ℍ ℂ := ⟨λ z, z.val⟩
+
+instance nat.to_fintype : has_coe ℕ Type := ⟨λ n, fin n⟩
+
+section
+
+open matrix
+
+
+
+
+
+
+
+lemma a1 (a b c d e f g h: ℂ) : a*((b+d)/c)=((a*b+a*d)/c):=
+
+begin
+ring,
+end 
+
+
+@[simp]lemma a2 (a b c d : ℂ) : (a/b)/(c/d)=(a*d)/(b*c):=
+
+begin
+calc (a/b)/(c/d)= (a/b)*(c/d)⁻¹  : by rw div_eq_mul_inv
+      ... = (a*b⁻¹)*(c/d)⁻¹   : by rw div_eq_mul_inv 
+      ... = (a* b⁻¹)*(d/c)      : by rw inv_div
+      ... = (a* b⁻¹)* (d * c⁻¹)  : by rw div_eq_mul_inv
+      ... = a* b⁻¹* d * c⁻¹  : by rw ← mul_assoc
+      ... = (a*d)*(b⁻¹*c⁻¹)         : by  ring
+      ... = (a*d)*(b*c)⁻¹         : by  rw mul_inv'
+       ... = (a*d)/(b*c)         : by  rw  ← div_eq_mul_inv,
+end  
+
+
+lemma a3 (a b c d e f: ℂ ) (h1: c ≠ 0): (a*(b/c)+d)/(e*(b/c)+f)=(a*b+d*c)/(e*b+f*c):=
+
+begin
+calc (a*(b/c)+d)/(e*(b/c)+f)=(a*(b/c)+d)*(e*(b/c)+f)⁻¹ : by ring
+     ...=(a*(b*c⁻¹)+d)*(e*(b*c⁻¹)+f)⁻¹  : by ring
+     ...=(a*b*c⁻¹+d)*(e*(b*c⁻¹)+f)⁻¹  : by rw ← mul_assoc
+     ...=(a*b*c⁻¹+d)*(e*b*c⁻¹+f)⁻¹ : by rw ← mul_assoc
+     ...=((a*b)*c⁻¹+d)*(e*b*c⁻¹+f)⁻¹ : by rw mul_assoc
+     ...= ((a*b)*c⁻¹+d)*((e*b)*c⁻¹+f)⁻¹ : by rw mul_assoc
+     ...=((a*b)/c+d)*((e*b)*c⁻¹+f)⁻¹ : by rw  div_eq_mul_inv
+     ...=((a*b)/c+d)*((e*b)/c+f)⁻¹  : by ring 
+     ...=((a*b+d*c)/c)*((e*b)/c+f)⁻¹ : by rw [div_add' (a*b) d c h1]
+     ...=((a*b+d*c)/c)*((e*b+f*c)/c)⁻¹ : by rw [div_add' (e*b) f c h1]
+     ...=((a*b+d*c)/c)/((e*b+f*c)/c) : by ring
+     ...=((a*b+d*c)*c)/(c*(e*b+f*c)) : by rw [a2 (a*b+d*c) c (e*b+f*c) c ]
+     ...=((a*b+d*c)*c)*(c*(e*b+f*c))⁻¹ : by ring
+     ...=((a*b+d*c)*c)*(c⁻¹ *(e*b+f*c)⁻¹): by rw mul_inv' 
+     ...=(a*b+d*c)*c*c⁻¹ *(e*b+f*c)⁻¹ : by  ring 
+      ...=(a*b+d*c)*(c*c⁻¹) *(e*b+f*c)⁻¹ : by  ring 
+     ...=(a*b+d*c)*1*(e*b+f*c)⁻¹  : by rw [mul_inv_cancel h1]
+    ...=(a*b+d*c)*(e*b+f*c)⁻¹  : by ring
+     ...=(a*b+d*c)/(e*b+f*c)  : by  rw  div_eq_mul_inv,
+end  
+
+lemma a4 (a b c d e f h : ℂ )  : a*(b*(c+d)+e*(f+h))⁻¹ =a*(b*c+b*d+e*f+e*h)⁻¹:=
+
+begin
+have h1:  b*(c+d)+e*(f+h)= b*c+b*d+e*f+e*h, by {ring},
+rw h1,
+end   
+
+lemma a5 (a b c d e f h t r : ℂ )  : a/(b*(c*d)+t+e*(f*h)+r) =a/(b*c*d + e*f*h+t+r):=
+
+begin
+have h1: b*(c*d)+t+e*(f*h)+r=b*c*d + e*f*h+t+r, by {ring},
+rw h1,
+end   
+
+
+lemma a6 (a b c z d d2 r s: ℂ) : a/(b*r*z+c*s*z+d+d2)=a/((b*r+c*s)*z+d+d2):=
+
+begin
+have h1: b*r*z+c*s*z+d+d2=(b*r+c*s)*z+d+d2, by {ring},
+rw h1,
+end   
+
+lemma a7 (a b z c f d h :ℂ): a/(b*z+c*f+d*h)=a/(b*z+(c*f+d*h)):=
+
+begin
+have h1: b*z+c*f+d*h=b*z+(c*f+d*h), by {ring},
+rw h1,
+end  
+
+lemma alg (a b c d e f g h : ℂ ) (z : ℂ) (h1: ¬ g*z+h = 0)   : (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d)=((a*e+b*g)*z+(a*f+b*h))/((c*e+d*g)*z+(c*f+d*h)):=
+
+begin
+
+calc (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d) = (a*(e*z+f)+b*(g*z+h))/ (c*(e*z+f)+d*(g*z+h))       : by rw  [a3 a (e*z+f) (g*z+h) b c d h1]
+                                       ... = (a*(e*z+f)+b*(g*z+h))* (c*(e*z+f)+d*(g*z+h))⁻¹ : by  rw  div_eq_mul_inv
+                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)* (c*(e*z+f)+d*(g*z+h))⁻¹ : by ring 
+                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)*  (c*((e*z)+f)+d*((g*z)+h))⁻¹ : by ring 
+                                        ...= (a*(e*z)+a*f+b*(g*z)+b*h)* (c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by rw [a4 (a*(e*z)+a*f+b*(g*z)+b*h) c (e*z) f d (g*z) h]
+                                        ...= (a*e*z+a*f+b*g*z+b*h)* (c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by ring
+                                       ...=((a*e+b*g)*z+a*f+b*h)*(c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by ring 
+                                       ...=((a*e+b*g)*z+a*f+b*h)/ (c*(e*z)+c*f+d*(g*z)+d*h) : by rw  div_eq_mul_inv
+                                       ...=((a*e+b*g)*z+a*f+b*h)/(c*e*z+d*g*z+(c*f)+(d*h)) : by rw [a5 ((a*e+b*g)*z+a*f+b*h) c e z d g z (c*f) (d*h)] 
+                                       ...=((a*e+b*g)*z+a*f+b*h)/ ((c*e+d*g)*z+c*f+d*h) : by rw [a6 ((a*e+b*g)*z+a*f+b*h) c d z (c*f) (d*h) e g ]
+                                      ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+c*f+d*h) : by rw add_assoc
+                                      ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+(c*f+d*h)) : by rw [a7 ((a*e+b*g)*z+(a*f+b*h)) (c*e+d*g) z c f d h],
+end
+
+
+
+def mat2_complex (M: GLn (fin 2) ℝ) (z : ℂ) : ℂ :=
+(M.1 0 0 * z + M.1 0 1) / (M.1 1 0 * z + M.1 1 1)
+
+
+
+lemma one_smul'  : ∀ (z : ℂ ),  mat2_complex (1: GLn (fin 2) ℝ) z= z :=
+
+begin
+simp [mat2_complex],
+end
+
+
+
+lemma mul_smul'  (A B : GLn (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + ↑(B.1 1 1)) = 0 ) :  mat2_complex (A * B) z = mat2_complex A (mat2_complex B z):=
+
+begin  
+simp only [mat2_complex],
+have:= GLn.mat_mul_real A B,  simp only [GLn.valor] at this, simp only [this],
+have:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.1 1 0) (B.1 1 1) z h,  
+simp at this, simp, rw this, 
+end   
+
+
+theorem preserve_ℍ.aux (A: GLn (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (hz : z ∈ ℍ) :
+  ↑ (A.1 1 0) * z + A.1 1 1 ≠ 0 :=
+begin
+  intro H,
+  have H1 : A.1 1 0 = 0 ∨ z.im = 0, by simpa using congr_arg complex.im H,
+  cases H1,
+  { simp [H1, of_real_zero] at H, rw GLn.det_of_22 A.1 at det, 
+    simp [H, H1] at det,exact det,},
+  change z.im > 0 at hz,
+  linarith,
+end
+
+
+lemma preserve_ℍ (A: GLn (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (h : z.im > 0) :
+(mat2_complex A z).im > 0 :=
+
+begin
+  have det': A.1.det > 0, by {apply det,},
+   rw GLn.det_of_22 A.1 at det,
+have h2: (mat2_complex A z).im = (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im * (norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)))⁻¹ ,
+ by {simp [mat2_complex, div_eq_mul_inv, -add_comm], dsimp [norm_sq], simp, ring_nf,}, 
+ have h3: (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im >0 , by {apply mul_pos det h,  },
+ have h4: 0 < norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)) , by{apply norm_sq_pos.2 (preserve_ℍ.aux A  det' z h), },
+ have h5: 0< (norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)))⁻¹ , by {simp, simp at h4, exact h4, }, rw h2, apply mul_pos h3 h5,
+
+   /-mul_pos (mul_pos det h)  (inv_pos (norm_sq_pos.2 (preserve_ℍ.aux det h)))-/
+end 
+
+theorem GL2R_H.aux (A:  GLn (fin 2) ℝ) (h : det A > 0) : (A.1 0 0) * A.1 1 1 - A.1 0 1 * A.1 1 0 > 0 :=
+begin
+rw [GLn.det_of_22] at h, simp at h, simp, exact h,
+end  
+
+def GL2R_p:= {M : GLn (fin 2) ℝ // det M > 0}
+
+instance GL2R_p_to_GL2R : has_coe (GL2R_p)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩
+
+def moeb:  (GL2R_p) → ℍ → ℍ :=
+λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
+
+
+instance : mul_action (GLn (fin 2) ℝ) (ℍ) :=
+{ smul:= mat2_complex,
+  one_smul := one_smul',
+  mul_smul :=  mul_smul'}
+
+variables {M : matrix (fin 2) (fin 2) ℝ} {z : ℂ}
+
+-- theorem mat2_complex.preserve_ℍ (hM : det M > 0) (hz : z ∈ ℍ) :
+
+end
+
+noncomputable def «Möbius_transform» (a b c d : ℝ) (z : ℂ) : ℂ :=
+(↑a * z + b) / (c * z + d)
+
+
+
+noncomputable def M_trans {m : ℤ} (hm : 0 < m) (A : Mat m) (z : ℍ) : ℍ :=
+begin
+  refine ⟨«Möbius_transform» A.a A.b A.c A.d z, preserve_ℍ _ _ z.2⟩,
+  show 0 < (A.a * A.d - A.b * A.c : ℝ),
+  rwa [← int.cast_mul, ← int.cast_mul, ← int.cast_sub, ← int.cast_zero, int.cast_lt, A.det],
+end
+
+theorem SL2Z_H.aux {a b c d : ℤ} (h : a * d - b * c = 1) : (a : ℝ) * d - b * c > 0 :=
+by convert zero_lt_one; simpa using congr_arg (coe : ℤ → ℝ) h
+
+noncomputable def SL2Z_H : SL2Z → ℍ → ℍ :=
+λ M z, ⟨«Möbius_transform» M.a M.b M.c M.d z, preserve_ℍ (SL2Z_H.aux M.det) z z.property⟩
+
+@[simp] lemma SL2Z_H_val (A z) : (SL2Z_H A z).val = ((A.a:ℝ) * z.1 + (A.b:ℝ)) / ((A.c:ℝ) * z.1 + (A.d:ℝ)) := rfl
+
+noncomputable instance : is_group_action SL2Z_H :=
+{ mul := λ ⟨a1, b1, c1, d1, H1⟩ ⟨a2, b2, c2, d2, H2⟩ ⟨z, hz⟩,
+    begin
+      apply subtype.eq,
+      simp only [SL2Z_H_val, SL2Z_mul_a, SL2Z_mul_b, SL2Z_mul_c, SL2Z_mul_d,
+        of_real_add, of_real_mul, int.cast_add, int.cast_mul],
+      have H3 := preserve_ℍ.aux (SL2Z_H.aux H2) hz,
+      have H4 := preserve_ℍ.aux (SL2Z_H.aux H1)
+        (preserve_ℍ (SL2Z_H.aux H2) z hz),
+      simp only [«Möbius_transform»] at H3 H4,
+      rw ← mul_div_mul_right _ H4 H3,
+      conv { to_rhs,
+        rw [add_mul, add_mul, mul_assoc, mul_assoc],
+        rw [div_mul_cancel _ H3] },
+      congr' 1; simp only [add_mul, mul_add, mul_assoc, add_left_comm, add_assoc]
+    end,
+  one := λ ⟨z, hz⟩, subtype.eq $ by simp [of_real_zero] }
+
+  
