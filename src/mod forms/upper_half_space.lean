@@ -182,14 +182,17 @@ end
 
 def GL2R_p:= {M : GLn (fin 2) ℝ // det M > 0}
 
+
+
+
 instance GL2R_p_to_GL2R : has_coe (GL2R_p)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩
 
 def moeb:  (GL2R_p) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
 
-instance : mul_action (GLn (fin 2) ℝ) (ℍ) :=
-{ smul:= mat2_complex,
+instance : mul_action (GL2R_p) (ℍ) :=
+{ smul:= moeb,
   one_smul := one_smul',
   mul_smul :=  mul_smul'}
 
