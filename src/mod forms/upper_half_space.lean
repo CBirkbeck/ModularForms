@@ -185,7 +185,7 @@ end
 
 lemma one_meme: det (1:GLn (fin 2) ℝ ) > 0:=
 begin
-simp only [det_one, gt_iff_lt, GLn.one_apply], tidy, 
+simp only [det_one, gt_iff_lt, GLn.one_apply], norm_cast, exact dec_trivial, 
 end 
 
 lemma mul_meme (A B :GLn (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
@@ -196,7 +196,7 @@ end
 
 lemma stupd (A: GLn (fin 2) ℝ ) : det A = A.1.det:=
 begin
-simp only [subtype.val_eq_coe], tidy,
+simp only [subtype.val_eq_coe], refl,
 end  
 
 lemma det_in (A: GLn (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
@@ -226,7 +226,7 @@ intro hh, rw hh at h, simp only [lt_self_iff_false, gt_iff_lt] at h, exact h,},
 have:= nonsing_inv_det A.1 h1,simp only [subtype.val_eq_coe] at this, rw stupd, 
 have h5: A.nonsing_inve= (↑A)⁻¹, {apply GLn.inv_is_inv,},
 have h3: (A.1.det)⁻¹ = (A.1⁻¹).det, {simp only [subtype.val_eq_coe], have:= det_ive2 A⁻¹ A this, simp only [stupd, GLn.inv_apply, subtype.val_eq_coe] at this, 
-rw ← this, dsimp, rw h5}, rw h3, tidy,
+rw ← this, dsimp, rw h5}, rw h3, refl,
 
 
 end  
@@ -277,19 +277,19 @@ def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 lemma SL_det_inv (A : SL2Z): is_unit (A.1.det : ℝ) :=
 
 begin
-have:=A.2, rw this, tidy,
+have:=A.2, rw this, cases A, dsimp at *, simp at *,
 end  
 
 lemma SL_det_pos (A : SL2Z): (A.1.det: ℝ) > 0:=
 
 begin
-have:=A.2, rw this, tidy,
+have:=A.2, rw this, cases A, dsimp at *, simp at *, norm_cast, exact dec_trivial,
 end  
 
 lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
 
 begin
-have h2: a ≠ 0, {simp, by_contradiction h1, rw h1 at h, simp at h, exact h},
+have h2: a ≠ 0, {simp only [ne.def], by_contradiction h1, rw h1 at h, simp only [lt_self_iff_false] at h, exact h},
 rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2, 
 end
 
@@ -297,7 +297,7 @@ instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) �
 
 lemma det_coes (A: matrix (fin 2) (fin 2) ℤ ): det (A : matrix (fin 2) (fin 2) ℝ )= ((A.det): ℝ):=
 begin
-rw MND, rw GLn.det_of_22, simp, tidy,
+rw MND, rw GLn.det_of_22, simp only [int.cast_mul, int.cast_sub], refl,
 end  
 
 instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, by {have:= SL_det_pos A,   have:= nonzero_inv (A.1.det: ℝ ) this, 
@@ -306,10 +306,13 @@ simp at this, simp [det_coes], exact this}⟩ ⟩
 lemma SL_det_pos' (A : SL2Z): (A : GLn (fin 2) ℝ).1.det > 0:=
 
 begin
-have:=A.2, simp, simp at this, have h2:= det_coes (A.1), simp at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2, tidy,
+have:=A.2, simp only [gt_iff_lt, subtype.val_eq_coe], simp only [subtype.val_eq_coe] at this, have h2:= det_coes (A.1), 
+simp only [subtype.val_eq_coe] at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2, 
+cases A, dsimp at *, simp at *, norm_cast, exact dec_trivial,
 end  
 
-instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) ℝ), by {have:= SL_det_pos' A, simp, simp at this, 
+instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) ℝ), by {have:= SL_det_pos' A,
+ simp only [gt_iff_lt, mem_GL2R_pos, subtype.val_eq_coe], simp only [gt_iff_lt, subtype.val_eq_coe] at this, 
 rw ← coe_coe, exact this  }⟩ ⟩ 
 
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 

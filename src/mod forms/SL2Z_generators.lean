@@ -323,7 +323,7 @@ end
 lemma num_gt_sum (h f b  : ℤ)  (h2: f ≥ 0) (h4: h.nat_abs > f.nat_abs) (h5: (f+b*h) ≥ 0) (h6: h.nat_abs > (f+b*h).nat_abs):  b = 0:=
 
 begin
-tidy,
+simp at *,
 
 rw ←  int.coe_nat_lt at h4,
 rw  int.nat_abs_of_nonneg h2 at h4,
@@ -332,7 +332,7 @@ rw  int.nat_abs_of_nonneg h5 at h6,
 rw ← int.abs_eq_nat_abs at h6,
 rw ← int.abs_eq_nat_abs at h4,
 have hg0: abs h > 0, {apply lt_of_le_of_lt h2 h4,   },
-have hgn0: h ≠ 0, {tidy, },
+have hgn0: h ≠ 0, {intros ᾰ, simp at *, solve_by_elim, },
 have hn:  f % abs h = f, { apply   int.mod_eq_of_lt h2 h4, },
 have hn2:  (f +b*h) % abs h = f+b*h, { apply   int.mod_eq_of_lt h5 h6, },
 simp only [int.mod_abs, int.add_mul_mod_self] at hn2,
@@ -340,13 +340,13 @@ simp only [int.mod_abs] at hn,
 have ht: f = f+b*h , {rw ←  hn2, rw hn,    },
 simp only [self_eq_add_right, mul_eq_zero] at ht,
 rw lt_iff_le_not_le at h4,
-tidy,
+cases h4, cases ht, work_on_goal 0 { assumption }, dsimp at *, simp at *, solve_by_elim,
 end
 
 lemma one_time (a b c : ℤ) (h1: a > 0) (h2: c > 0) (h3: a = b*c): b > 0:=
 
 begin
-tidy,
+simp at *,
 have h4: b*c >0 ,{ rw h3 at h1, exact h1},
 replace h2:= le_of_lt h2,
 apply pos_of_mul_pos_right  h4 h2,
@@ -356,7 +356,8 @@ lemma one_time' (a b : ℤ) (h1: a > 0) (h2: (a = 1 ∧ b=1) ∨ (a=-1 ∧ b=-1)
 
 begin
 by_contra h, 
-tidy, rw h2_left at h1, have h4 : 0 < (-1: ℤ) ↔ false, simp only [neg_nonpos, not_lt, iff_false], tidy,
+cases h2, work_on_goal 0 { cases h2, simp at *, solve_by_elim }, cases h2, simp at *, rw h2_left at h1, have h4 : 0 < (-1: ℤ) ↔ false, simp only [neg_nonpos, not_lt, iff_false], 
+work_on_goal 0 { exact dec_trivial }, cases h4, simp at *, solve_by_elim,
 end  
 
 
@@ -417,14 +418,14 @@ end
 lemma nat_pos (m: ℕ+) (a : fin(m+1)): a ≥ 0:=
 
 begin
-tidy,
+exact dec_trivial,
 end  
 
 
 lemma pos_nat (m: ℕ+) (a : fin(m+1)): 0 ≤ a:=
 
 begin
-tidy,
+exact dec_trivial,
 end  
 
 lemma en_pos (m : ℕ+) (A: matrix (fin 2) (fin 2) ℤ) (h1: A.det= ↑ m) (h2: 0 < A 0 0) (h3: A 1 0 =0) : 0 ≤ A 1 1:=
@@ -436,13 +437,13 @@ simp only [sub_zero, mul_zero, coe_coe] at h1,
 by_contradiction h,
 simp only [not_le] at h, 
 have h5: A 1 1 * A 0 0 < 0, {apply mul_neg_of_neg_of_pos h h2},
- rw mul_comm at h1, rw h1 at h5, tidy, rw ← int.coe_nat_lt at m_property, rw ←  not_le at h5, tidy,
+ rw mul_comm at h1, rw h1 at h5, cases m, dsimp at *, simp at *, rw ← int.coe_nat_lt at m_property, rw ←  not_le at h5, dsimp at *, simp at *, assumption,
 end
 
 instance reps.fintype_pos (m:ℕ+) : fintype (reps m) :=
 fintype.of_equiv {v : fin (m+1) × fin (m+1) × fin (m+1) // v.1.1 * v.2.2.1 = m ∧ v.2.1.1 < v.2.2.1}
 { to_fun := λ A, ⟨ ⟨PT  A.1.1.1  A.1.2.1.1 (0: ℤ)  A.1.2.2.1 , by {rw  [dm  A.1.1.1  A.1.2.1.1 (0 : ℤ)  A.1.2.2.1], rw [ mul_zero, sub_zero, ← int.coe_nat_mul, A.2.1, coe_coe]}⟩, 
-rfl, by {simp only [vale, int.coe_nat_pos, em, subtype.val_eq_coe], have agt: 0 <A.1.1.1, {have age: 0 ≤ A.1.1.1, {apply nat_pos,}, rw le_iff_lt_or_eq at age, tidy,  }, exact agt, } , by {simp only [vale, true_and, int.nat_abs_of_nat, fin.coe_fin_lt, int.coe_nat_nonneg, em, subtype.val_eq_coe], exact A.2.2,   }⟩,
+rfl, by {simp only [vale, int.coe_nat_pos, em, subtype.val_eq_coe], have agt: 0 <A.1.1.1, {have age: 0 ≤ A.1.1.1, {apply nat_pos,}, rw le_iff_lt_or_eq at age, cases age, cases A, cases m, work_on_goal 0 { assumption }, cases A, cases m, cases A_property, cases A_val, cases A_val_snd, cases A_val_fst, cases A_val_snd_snd, cases A_val_snd_fst, dsimp at *, induction age, induction A_property_left, simp at *, assumption,  }, exact agt, } , by {simp only [vale, true_and, int.nat_abs_of_nat, fin.coe_fin_lt, int.coe_nat_nonneg, em, subtype.val_eq_coe], exact A.2.2,   }⟩,
   inv_fun := λ A, ⟨    (     ⟨int.nat_abs (A.1 0 0), nat.lt_succ_of_le $ nat.le_of_dvd m.2 ⟨int.nat_abs (A.1 1 1), 
       have a1: (A).val 1 0 = 0, {apply A.2.1},
       have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp only [subtype.val_eq_coe], apply a1},
@@ -477,7 +478,7 @@ rfl, by {simp only [vale, int.coe_nat_pos, em, subtype.val_eq_coe], have agt: 0 
 
 
 
-def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)
+def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m) 
 | (int.of_nat $ n+1) H := reps.fintype_pos ⟨n+1, nat.zero_lt_succ n⟩
 | 0 H := (H rfl).elim
 | -[1+ n] H := fintype.of_equiv (reps (⟨n+1, nat.zero_lt_succ _⟩:pnat))
@@ -494,7 +495,6 @@ rw MND at this, rw dm, simp only [vale, mul_neg_eq_neg_mul_symm, subtype.val_eq_
  by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this, rw dm, simp only [vale, mul_neg_eq_neg_mul_symm, subtype.val_eq_coe],
   simp only [subtype.val_eq_coe] at ao, rw ao, rw ao at this, simp only [sub_zero, mul_zero], simp only [pnat.mk_coe, int.coe_nat_succ, coe_coe], simp only [sub_zero, mul_zero] at this, rw this, refl} ⟩,
     A.2.1, A.2.2.1, A.2.2.2.1, trans_rel_left _ A.2.2.2.2 $ eq.symm $ int.nat_abs_neg _⟩,
-
   left_inv := λ ⟨ ⟨A, H1⟩, H2⟩, by {simp only [vale, subtype.mk_eq_mk, neg_neg, em], ext i j, fin_cases i; fin_cases j, simp only [em], simp only [em], simp only [em], simp only [em],  }, 
   right_inv := λ ⟨⟨A, H1⟩, H2⟩, by {simp only [vale, subtype.mk_eq_mk, neg_neg, em], ext i j, fin_cases i; fin_cases j, simp only [em], simp only [em], simp only [em], simp only [em],  },
    }
@@ -520,7 +520,7 @@ by letI := (orbit_rel'' m ); from
     subtype.eq $ reps_unique m hm (MB * M⁻¹ * MA⁻¹) _ _ (reduce_mem_reps m hm A) (reduce_mem_reps m hm B) $
     by {simp, rw ← HA, rw mul_smul, simp only [inv_smul_smul], rw mul_smul, simp [_x]at _fun_match, simp only at H, rw ← H,  simp only [exists_imp_distrib] at _let_match, rw H, rw ← HB, simp, rw ← H, simp only [inv_smul_smul],},
   inv_fun := λ A, ⟦A.1⟧, 
-  left_inv := λ x, by {simp only [subtype.val_eq_coe], tidy, apply quotient.sound, apply reduce_spec m ⟨ x_val, x_property⟩},
+  left_inv := λ x, by {simp only [subtype.val_eq_coe], induction x, work_on_goal 0 { cases x, dsimp at *, simp at * }, work_on_goal 1 { refl }, apply quotient.sound, apply reduce_spec m ⟨ x_val, x_property⟩},
   
 
   right_inv := λ A, subtype.eq $
