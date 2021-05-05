@@ -245,6 +245,8 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
  inv_mem':=λ A h1, inv_meme A h1,
 }
 
+@[simp] lemma mem_GL2R_pos (A:GLn (fin 2) ℝ ) :
+  A  ∈ GL2R_pos ↔ A.1.det > 0 := iff.rfl
 
 
 /--/
@@ -268,21 +270,47 @@ iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix
 instance has_mul : has_mul GL2R_p :=
 ⟨λ A B, ⟨A.1 ⬝ B.1, by {erw [det_mul], } ⟩  ⟩-/
 
-lemma SL_det_inv (A : SL2Z): is_unit (A.1.det) :=
+
+def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
+![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
+
+lemma SL_det_inv (A : SL2Z): is_unit (A.1.det : ℝ) :=
 
 begin
 have:=A.2, rw this, tidy,
 end  
 
-lemma SL_det_pos (A : SL2Z): A.1.det > 0:=
+lemma SL_det_pos (A : SL2Z): (A.1.det: ℝ) > 0:=
 
 begin
 have:=A.2, rw this, tidy,
 end  
 
-instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, A⟩ 
+lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
 
-instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, SL_det_inv A⟩ ⟩ 
+begin
+have h2: a ≠ 0, {simp, by_contradiction h1, rw h1 at h, simp at h, exact h},
+rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2, 
+end
+
+instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩ 
+
+lemma det_coes (A: matrix (fin 2) (fin 2) ℤ ): det (A : matrix (fin 2) (fin 2) ℝ )= ((A.det): ℝ):=
+begin
+rw MND, rw GLn.det_of_22, simp, tidy,
+end  
+
+instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, by {have:= SL_det_pos A,   have:= nonzero_inv (A.1.det: ℝ ) this, 
+simp at this, simp [det_coes], exact this}⟩ ⟩ 
+
+lemma SL_det_pos' (A : SL2Z): (A : GLn (fin 2) ℝ).1.det > 0:=
+
+begin
+have:=A.2, simp, simp at this, have h2:= det_coes (A.1), simp at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2, tidy,
+end  
+
+instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) ℝ), by {have:= SL_det_pos' A, simp, simp at this, 
+rw ← coe_coe, exact this  }⟩ ⟩ 
 
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
 
