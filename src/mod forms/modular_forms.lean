@@ -59,6 +59,12 @@ simp only [mem_pet], rw neg_form, intros M z, have h1:=f.property, simp only [me
 rw subtype.val_eq_coe, rw h1, ring,
 end  
 
+lemma add_l_neg (k: ℤ) (f : is_Petersson_weight_ k ) : mod_form_sum k ⟨ neg_form k f, neg_form_is_form k f ⟩  f = zero_form k:=
+
+begin
+simp only [mod_form_sum, zero_form, neg_form, add_left_neg],  
+end  
+
 instance (k : ℤ): add_group (is_Petersson_weight_ k):=
 {add:= λ f g, ⟨ mod_form_sum k f g,  mod_sum_is_mod k f g⟩, 
 add_assoc:= by {intros f g h, simp only [subtype.mk_eq_mk], rw mod_form_sum, simp only [subtype.val_eq_coe], rw mod_form_sum, 
@@ -73,7 +79,7 @@ zero_add:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw
 simp only [add_zero, subtype.val_eq_coe], 
 simp, simp [zero_form, mod_form_sum],  },
 neg:= λ f, ⟨neg_form k f, neg_form_is_form k f ⟩, 
-add_left_neg:=by {intro f,  ext, dsimp,    sorry,}  ,
+add_left_neg:=by {simp, intros f h, have:=add_l_neg k ⟨f,h⟩, dsimp at *, apply subtype.ext, assumption,}  ,
 }
 
 
