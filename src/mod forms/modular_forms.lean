@@ -73,7 +73,7 @@ zero_add:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw
 simp only [add_zero, subtype.val_eq_coe], 
 simp, simp [zero_form, mod_form_sum],  },
 neg:= λ f, ⟨neg_form k f, neg_form_is_form k f ⟩, 
-add_left_neg:=by {intro f, ext, dsimp,     sorry,}  ,
+add_left_neg:=by {intro f,  ext, dsimp,    sorry,}  ,
 }
 
 
