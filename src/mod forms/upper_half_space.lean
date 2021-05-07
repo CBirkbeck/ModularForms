@@ -26,7 +26,7 @@ open matrix
 
 
 
-
+lemma H_mem (z : ℂ): z ∈ ℍ ↔ 0< z.im:=iff.rfl
 
 
 

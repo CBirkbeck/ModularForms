@@ -18,6 +18,7 @@ local notation `ℍ` := upper_half_space
 noncomputable theory
 
 
+
 lemma exxt (f g : ℍ → ℂ) : f = g ↔ ∀ (x : ℍ), f x =g x:=
 begin
 simp at *, fsplit, work_on_goal 0 { intros ᾰ x h, induction ᾰ, refl }, intros ᾰ, ext1, 
@@ -25,7 +26,12 @@ cases x, tactic.ext1 [] {new_goals := tactic.new_goals.all}, work_on_goal 0 { so
 end
 
 
+
+
+
 def is_Petersson_weight_ (k : ℤ) := { f : ℍ → ℂ | ∀ M : SL2Z, ∀ z : ℍ, f (moeb M z) = ((M 1 0 )*z + M 1 1)^k * f z}
+
+
 
 lemma ext2 (k : ℤ) (f g :  is_Petersson_weight_ k): f = g ↔ ∀ (x : ℍ ), f.1 x = g.1 x:=
 
@@ -136,7 +142,7 @@ have:=ext2 k (sca_mul_def k (r+s) f)  (sca_mul_def k r f +sca_mul_def k s f), rw
 intro x, simp only [subtype.val_eq_coe], ring_nf,
 end  
 
-instance (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
+instance is_Pet (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
 
 
 { smul:=sca_mul_def k ,
@@ -157,6 +163,99 @@ instance (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
 def is_bound_at_infinity := { f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M }
 
 def is_zero_at_infinity := { f : ℍ → ℂ | ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε }
+
+@[simp]lemma bound_mem (f: ℍ → ℂ): (f ∈  is_bound_at_infinity ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
+
+@[simp]lemma zero_at_inf_mem (f: ℍ → ℂ): (f ∈  is_zero_at_infinity  ) ↔ ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε:=iff.rfl
+
+
+lemma zero_form_is_bound (k : ℤ): (zero_form k) ∈  is_bound_at_infinity:=
+
+begin
+simp only [H_mem, bound_mem, ge_iff_le, set_coe.forall, subtype.coe_mk], 
+use (0: ℝ ), use (0:ℝ), intros x h h1, rw zero_form, simp only [complex.abs_zero],
+end  
+
+lemma zero_form_is_zero_at_inf (k : ℤ): (zero_form k) ∈  is_zero_at_infinity:=
+
+begin
+simp only [H_mem, zero_at_inf_mem, gt_iff_lt, ge_iff_le, 
+set_coe.forall, subtype.coe_mk], intros ε he, use (0:ℝ), 
+intros x h h1, rw zero_form, simp only [complex.abs_zero], rw le_iff_lt_or_eq, simp only [he, true_or],
+end  
+
+lemma is_zero_at_inf_is_bound (f: ℍ → ℂ): (f ∈ is_zero_at_infinity) → (f ∈ is_bound_at_infinity):=
+begin
+simp only [H_mem, zero_at_inf_mem, gt_iff_lt, bound_mem, ge_iff_le, set_coe.forall, 
+subtype.coe_mk],intro H, use (1: ℝ), apply H, norm_cast, exact dec_trivial,
+end  
+
+
+
+
+
+lemma sum_of_bound_is_bound (f g : is_bound_at_infinity ): (func_sum f g ∈ is_bound_at_infinity):=
+begin
+simp, rw func_sum, have h1:= f.property, have h2:=g.property, simp at *, 
+ rw ← subtype.val_eq_coe, rw ←  subtype.val_eq_coe, simp, 
+ have ht: ∀ (x: ℍ  ), abs( f.1 x + g.1 x ) ≤ abs( f.1 x) + abs (g.1 x ), {intro x, apply complex.abs_add,}, 
+  sorry,
+end  
+
+variables (d: ℍ → ℂ) (z : ℂ)
+
+
+@[simp]lemma smul_sim (f: ℍ → ℂ) (z : ℂ) (x : ℍ): (z • f) x= z* (f x):=
+
+begin
+simp only [algebra.id.smul_eq_mul, pi.smul_apply],
+end  
+
+lemma abs_ew (a b : ℂ) (h : a = b): abs a = abs b:=
+begin
+rw h,
+end  
+
+
+
+instance: module (ℂ) (ℍ → ℂ):=infer_instance 
+
+
+
+def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={ 
+  carrier :={ f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M },
+  zero_mem' :=by {simp, use (1: ℝ ), use (0: ℝ ), intros x h h1, norm_cast, exact dec_trivial},
+  add_mem' := by  {intros f g hf hg, begin
+    cases hf with Mf hMf,
+    cases hg with Mg hMg,
+    cases hMf with Af hAMf,
+    cases hMg with Ag hAMg,
+    existsi (Mf + Mg),
+    existsi (max Af Ag),
+    intros z hz,
+    simp,
+    apply le_trans (complex.abs_add _ _),
+    apply add_le_add,
+    { refine hAMf z _,
+      exact le_trans (le_max_left _ _) hz },
+    { refine hAMg z _,
+      exact le_trans (le_max_right _ _) hz }
+  end},
+  
+
+  smul_mem' := by {intros c f hyp,  begin
+    cases hyp with M hM,
+    cases hM with A hAM,
+    existsi (complex.abs c * M),
+    existsi A,
+    intros z hz,
+    have h2:=smul_sim  f c z, have h3:=abs_ew ((c• f) z ) (c* f z) h2, rw [complex.abs_mul] at h3,
+    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4,   sorry,
+  end  }, }
+ 
+
+
+
 
 instance : is_submodule is_bound_at_infinity :=
 { zero_ := ⟨0, ⟨0, λ z h, by simp⟩⟩,
