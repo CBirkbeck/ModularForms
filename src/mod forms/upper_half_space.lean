@@ -26,7 +26,7 @@ section
 open matrix
 
 
-
+/-What follow are some basic messy lemmas  -/
 lemma H_mem (z : ℂ): z ∈ ℍ ↔ 0< z.im:=iff.rfl
 
 
@@ -123,19 +123,14 @@ calc (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d) = (a*(e*z+f)+b*(g*z+h))/ 
                                       ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+(c*f+d*h)) : by rw [a7 ((a*e+b*g)*z+(a*f+b*h)) (c*e+d*g) z c f d h],
 end
 
-
+/- definition of what will end up being the action of matrices on the upper half space (WHY DOES IT WORK? Why don't I need to
+worry about divising by zero at this stage?)-/
 
 def mat2_complex (M: GLn (fin 2) ℝ) (z : ℂ) : ℂ :=
 (M.1 0 0 * z + M.1 0 1) / (M.1 1 0 * z + M.1 1 1)
 
 
-
-lemma one_smul'  : ∀ (z : ℂ ),  mat2_complex (1: GLn (fin 2) ℝ) z= z :=
-
-begin
-simp [mat2_complex],
-end
-
+/- this lemma will be used later to prove we have an action-/
 
 
 lemma mul_smul'  (A B : GLn (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + ↑(B.1 1 1)) = 0 ) :  mat2_complex (A * B) z = mat2_complex A (mat2_complex B z):=
@@ -147,7 +142,7 @@ have:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.
 simp at this, simp, rw this, 
 end   
 
-
+/- I dont know why this is a theorem and not a lemma-/
 theorem preserve_ℍ.aux (A: GLn (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (hz : z ∈ ℍ) :
   ↑ (A.1 1 0) * z + A.1 1 1 ≠ 0 :=
 begin
@@ -182,7 +177,7 @@ rw [GLn.det_of_22] at h, simp at h, simp only [gt_iff_lt, sub_pos, subtype.val_e
 end  
 
 
-
+/-more basic matrix lemmas due to me being crap at lean-/
 
 lemma one_meme: det (1:GLn (fin 2) ℝ ) > 0:=
 begin
@@ -239,6 +234,8 @@ have h2: (det A)⁻¹ = det (A⁻¹), by {apply det_inv A h,},
  rw ← h2, apply inv_pos.2 h,
 end  
 
+
+/-This is the subgroup of 2x2 matrices with real entries and positive determinant-/
 def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 {carrier:={M  | det M > 0},
  one_mem':=one_meme,
@@ -251,7 +248,7 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 
 
 
-
+/- quick map from matrix over Z to matrix over R and some lemmas-/
 
 def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
@@ -299,6 +296,8 @@ rw ← coe_coe, exact this  }⟩ ⟩
 
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
 
+
+/- This is the moeb action on the upper half plane-/
 def moeb:  (GL2R_pos) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
@@ -326,6 +325,7 @@ simp only [moeb, subtype.mk_eq_mk, subgroup.coe_mul, subtype.coe_mk],   apply mu
 end   
 
 
+/-finally, here is the action of GL_2R^+ on the H-/
 
 instance : mul_action (GL2R_pos) (ℍ) :=
 { smul:= moeb,
@@ -333,51 +333,6 @@ instance : mul_action (GL2R_pos) (ℍ) :=
   mul_smul :=  mul_smul''}
 
 
-/-
-variables {M : matrix (fin 2) (fin 2) ℝ} {z : ℂ}
 
--- theorem mat2_complex.preserve_ℍ (hM : det M > 0) (hz : z ∈ ℍ) :
-
-end
-
-noncomputable def «Möbius_transform» (a b c d : ℝ) (z : ℂ) : ℂ :=
-(↑a * z + b) / (c * z + d)
-
-
-
-noncomputable def M_trans {m : ℤ} (hm : 0 < m) (A : Mat m) (z : ℍ) : ℍ :=
-begin
-  refine ⟨«Möbius_transform» A.a A.b A.c A.d z, preserve_ℍ _ _ z.2⟩,
-  show 0 < (A.a * A.d - A.b * A.c : ℝ),
-  rwa [← int.cast_mul, ← int.cast_mul, ← int.cast_sub, ← int.cast_zero, int.cast_lt, A.det],
-end
-
-theorem SL2Z_H.aux {a b c d : ℤ} (h : a * d - b * c = 1) : (a : ℝ) * d - b * c > 0 :=
-by convert zero_lt_one; simpa using congr_arg (coe : ℤ → ℝ) h
-
-noncomputable def SL2Z_H : SL2Z → ℍ → ℍ :=
-λ M z, ⟨«Möbius_transform» M.a M.b M.c M.d z, preserve_ℍ (SL2Z_H.aux M.det) z z.property⟩
-
-@[simp] lemma SL2Z_H_val (A z) : (SL2Z_H A z).val = ((A.a:ℝ) * z.1 + (A.b:ℝ)) / ((A.c:ℝ) * z.1 + (A.d:ℝ)) := rfl
-
-noncomputable instance : is_group_action SL2Z_H :=
-{ mul := λ ⟨a1, b1, c1, d1, H1⟩ ⟨a2, b2, c2, d2, H2⟩ ⟨z, hz⟩,
-    begin
-      apply subtype.eq,
-      simp only [SL2Z_H_val, SL2Z_mul_a, SL2Z_mul_b, SL2Z_mul_c, SL2Z_mul_d,
-        of_real_add, of_real_mul, int.cast_add, int.cast_mul],
-      have H3 := preserve_ℍ.aux (SL2Z_H.aux H2) hz,
-      have H4 := preserve_ℍ.aux (SL2Z_H.aux H1)
-        (preserve_ℍ (SL2Z_H.aux H2) z hz),
-      simp only [«Möbius_transform»] at H3 H4,
-      rw ← mul_div_mul_right _ H4 H3,
-      conv { to_rhs,
-        rw [add_mul, add_mul, mul_assoc, mul_assoc],
-        rw [div_mul_cancel _ H3] },
-      congr' 1; simp only [add_mul, mul_add, mul_assoc, add_left_comm, add_assoc]
-    end,
-  one := λ ⟨z, hz⟩, subtype.eq $ by simp [of_real_zero] }
-
-  -/
 
 end   
