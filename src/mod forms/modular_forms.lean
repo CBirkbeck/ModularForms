@@ -194,22 +194,11 @@ end
 
 
 
-lemma sum_of_bound_is_bound (f g : is_bound_at_infinity ): (func_sum f g ∈ is_bound_at_infinity):=
-begin
-simp, rw func_sum, have h1:= f.property, have h2:=g.property, simp at *, 
- rw ← subtype.val_eq_coe, rw ←  subtype.val_eq_coe, simp, 
- have ht: ∀ (x: ℍ  ), abs( f.1 x + g.1 x ) ≤ abs( f.1 x) + abs (g.1 x ), {intro x, apply complex.abs_add,}, 
-  sorry,
-end  
 
 variables (d: ℍ → ℂ) (z : ℂ)
 
 
-@[simp]lemma smul_sim (f: ℍ → ℂ) (z : ℂ) (x : ℍ): (z • f) x= z* (f x):=
 
-begin
-simp only [algebra.id.smul_eq_mul, pi.smul_apply],
-end  
 
 lemma abs_ew (a b : ℂ) (h : a = b): abs a = abs b:=
 begin
@@ -218,8 +207,16 @@ end
 
 
 
-instance: module (ℂ) (ℍ → ℂ):=infer_instance 
+instance CD : module (ℂ) (ℍ → ℂ):=infer_instance 
 
+instance : mul_action_with_zero (ℂ) (ℍ → ℂ):=infer_instance 
+
+
+@[simp]lemma smul_sim (f: ℍ → ℂ) (z : ℂ) (x : ℍ): (z • f) x= z* (f x):=
+
+begin
+simp only [algebra.id.smul_eq_mul, pi.smul_apply],
+end  
 
 
 def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={ 
@@ -250,46 +247,15 @@ def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={
     existsi A,
     intros z hz,
     have h2:=smul_sim  f c z, have h3:=abs_ew ((c• f) z ) (c* f z) h2, rw [complex.abs_mul] at h3,
-    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4,   sorry,
+    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4, simp ,  sorry,
   end  }, }
+
  
-
-
-
-
-instance : is_submodule is_bound_at_infinity :=
-{ zero_ := ⟨0, ⟨0, λ z h, by simp⟩⟩,
-  add_  := λ f g hf hg, begin
-    cases hf with Mf hMf,
-    cases hg with Mg hMg,
-    cases hMf with Af hAMf,
-    cases hMg with Ag hAMg,
-    existsi (Mf + Mg),
-    existsi (max Af Ag),
-    intros z hz,
-    simp,
-    apply le_trans (complex.abs_add _ _),
-    apply add_le_add,
-    { refine hAMf z _,
-      exact le_trans (le_max_left _ _) hz },
-    { refine hAMg z _,
-      exact le_trans (le_max_right _ _) hz }
-  end,
-  smul  := λ c f hyp, begin
-    cases hyp with M hM,
-    cases hM with A hAM,
-    existsi (abs c * M),
-    existsi A,
-    intros z hz,
-    simp,
-    apply mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c)
-  end }
-
-  
-
-instance : is_submodule is_zero_at_infinity :=
-{ zero_ := λ ε hε, ⟨1, λ z hz, by simp; exact le_of_lt hε⟩,
-  add_  := λ f g hf hg ε hε, begin
+ 
+def zero_at_infty: submodule (ℂ) (ℍ  → ℂ):={ 
+  carrier :={ f : ℍ → ℂ | ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε },
+  zero_mem' :=by {simp, intros ε he, use (-1: ℝ ), intros x h h1, linarith},
+  add_mem' := by  {intros f g hf hg ε hε, begin
     cases hf (ε/2) (half_pos hε) with Af hAf,
     cases hg (ε/2) (half_pos hε) with Ag hAg,
     existsi (max Af Ag),
@@ -300,11 +266,35 @@ instance : is_submodule is_zero_at_infinity :=
     apply add_le_add,
     { refine hAf z (le_trans (le_max_left _ _) hz) },
     { refine hAg z (le_trans (le_max_right _ _) hz) }
-  end,
-  smul  := λ c f hyp ε hε, begin
+  end,},
+  
+
+  smul_mem' := by {intros c f hyp ε hε, begin
     by_cases hc : (c = 0),
-    { existsi (0 : ℝ ), intros, simp [hc], exact le_of_lt hε },
-    { cases hyp (ε / abs c) (lt_div_of_mul_lt (by simp [hc]) (by simp; exact hε)) with A hA,
+    { existsi (0 : ℝ ), intros, simp only [hc, pi.zero_apply, complex.abs_zero, zero_smul], exact le_of_lt hε },
+    have habsinv: (complex.abs c)⁻¹>0:= by {simp only [gt_iff_lt, complex.abs_pos, ne.def, inv_pos], exact hc,}, 
+    have hcc:  (ε / complex.abs c) > 0 := by {simp, rw div_eq_mul_inv, apply mul_pos hε habsinv,}, 
+    {cases hyp (ε / complex.abs c) (hcc) with A hA,
+     existsi A,
+      intros z hz,
+      sorry,
+      rw show ε = complex.abs c * (ε / complex.abs c),
+      begin
+        rw [mul_comm],
+        refine (div_mul_cancel _ _).symm,
+        simp [hc]
+      end,
+      apply mul_le_mul_of_nonneg_left (hA z hz) (complex.abs_nonneg c), }
+
+  end }, }
+ 
+smul_with_zero.to_has_scalar
+ /-
+ 
+  smul_mem' := by {intros c f hyp ε hε, begin
+    by_cases hc : (c = 0),
+    { existsi (0 : ℝ ), intros, simp only [hc, pi.zero_apply, complex.abs_zero, zero_smul], exact le_of_lt hε },
+    { cases hyp (ε / complex.abs c) (int.lt_div_of_mul_lt (by simp [hc]) (by simp; exact hε)) with A hA,
       existsi A,
       intros z hz,
       simp,
@@ -315,22 +305,37 @@ instance : is_submodule is_zero_at_infinity :=
         simp [hc]
       end,
       apply mul_le_mul_of_nonneg_left (hA z hz) (complex.abs_nonneg c), }
-  end }
+  end  }, }
+ 
+ -/
 
-lemma is_bound_at_infinity_of_is_zero_at_infinity {f : ℍ → ℂ} (h : is_zero_at_infinity f) :
-is_bound_at_infinity f := ⟨1, h 1 zero_lt_one⟩
+
+@[simp]lemma bound_mem' (f: ℍ → ℂ): (f ∈  bounded_at_infty ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
+
+
+@[simp]lemma zero_at_inf_mem' (f: ℍ → ℂ): (f ∈  zero_at_infty  ) ↔ ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε:=iff.rfl
+
+
+
+
+lemma is_zero_at_inf_is_bound' (f: ℍ → ℂ): (f ∈ zero_at_infty) → (f ∈ bounded_at_infty):=
+begin
+simp only [zero_at_inf_mem', bound_mem', gt_iff_lt, ge_iff_le, set_coe.forall, subtype.coe_mk],
+ intro H, use (1: ℝ), apply H, norm_cast, exact dec_trivial,
+end  
+
 
 -- structure is_modular_form (k : ℕ) (f : ℍ → ℂ) : Prop :=
 -- (hol      : is_holomorphic f)
 -- (transf   : ∀ M : SL2Z, ∀ z : ℍ, f (SL2Z_H M z) = (M.c*z + M.d)^k * f z)
 -- (infinity : ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M)
 
-def is_modular_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ is_bound_at_infinity
+def is_modular_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
 
-def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ is_zero_at_infinity
+def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
 
 lemma is_modular_form_of_is_cusp_form {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form k f) : is_modular_form k f :=
-⟨h.1, is_bound_at_infinity_of_is_zero_at_infinity h.2⟩
+⟨h.1, is_zero_at_inf_is_bound' f h.2⟩
 
 instance (k : ℕ) : is_submodule (is_modular_form k) := is_submodule.inter_submodule
 
