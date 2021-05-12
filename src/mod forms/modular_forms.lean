@@ -194,12 +194,6 @@ end
 
 
 
-
-variables (d: ℍ → ℂ) (z : ℂ)
-
-
-
-
 lemma abs_ew (a b : ℂ) (h : a = b): abs a = abs b:=
 begin
 rw h,
