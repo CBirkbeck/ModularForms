@@ -1,5 +1,4 @@
 import .modular_group
-import .action
 import group_theory.group_action.basic
 import linear_algebra.matrix 
 import linear_algebra.determinant
@@ -385,14 +384,6 @@ variable (n:ℕ+)
 
 
 
-
-lemma MND (M: matrix (fin 2) (fin 2) ℤ ): M.det= (M 0 0) * (M 1 1) - (M 0 1) * (M 1 0):=
-
-begin 
-sorry,
-end   
-
-
 def  PT (a b c d : ℤ ): matrix  (fin 2) (fin 2 ) ℤ:= ![![a, b], ![c, d]]
 
 
@@ -478,7 +469,7 @@ rfl, by {simp only [vale, int.coe_nat_pos, em, subtype.val_eq_coe], have agt: 0 
 
 
 
-def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m) 
+def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)  
 | (int.of_nat $ n+1) H := reps.fintype_pos ⟨n+1, nat.zero_lt_succ n⟩
 | 0 H := (H rfl).elim
 | -[1+ n] H := fintype.of_equiv (reps (⟨n+1, nat.zero_lt_succ _⟩:pnat))
@@ -504,8 +495,8 @@ section
 
 def orbit_rel'' (m : ℤ): setoid (Mat m) :=
 { r := λ a b, a ∈ mul_action.orbit SL2Z b,
-  iseqv := ⟨mul_action.mem_orbit_self, λ a b, by simp [mul_action.orbit_eq_iff.symm, eq_comm],
-    λ a b, by simp [mul_action.orbit_eq_iff.symm, eq_comm] {contextual := tt}⟩ }
+  iseqv := ⟨mul_action.mem_orbit_self, λ a b, by simp only [mul_action.orbit_eq_iff.symm, eq_comm, imp_self],
+    λ a b, by simp only [mul_action.orbit_eq_iff.symm, implies_true_iff, eq_self_iff_true] {contextual := tt}⟩ }
 
 def π : reps m → quotient (orbit_rel'' m ) :=
   λ A, (@quotient.mk _ (orbit_rel'' m)) A 
@@ -518,9 +509,11 @@ by letI := (orbit_rel'' m ); from
     let ⟨MA, HA⟩ := reduce_spec m A in
     let ⟨MB, HB⟩ := reduce_spec m B in
     subtype.eq $ reps_unique m hm (MB * M⁻¹ * MA⁻¹) _ _ (reduce_mem_reps m hm A) (reduce_mem_reps m hm B) $
-    by {simp, rw ← HA, rw mul_smul, simp only [inv_smul_smul], rw mul_smul, simp [_x]at _fun_match, simp only at H, rw ← H,  simp only [exists_imp_distrib] at _let_match, rw H, rw ← HB, simp, rw ← H, simp only [inv_smul_smul],},
+    by {simp only, rw ← HA, rw mul_smul, simp only [inv_smul_smul], rw mul_smul, simp only [_x, forall_true_left] at _fun_match, 
+    simp only at H, rw ← H,  simp only [exists_imp_distrib] at _let_match, rw H, rw ← HB, simp, rw ← H, simp only [inv_smul_smul],},
   inv_fun := λ A, ⟦A.1⟧, 
-  left_inv := λ x, by {simp only [subtype.val_eq_coe], induction x, work_on_goal 0 { cases x, dsimp at *, simp at * }, work_on_goal 1 { refl }, apply quotient.sound, apply reduce_spec m ⟨ x_val, x_property⟩},
+  left_inv := λ x, by {simp only [subtype.val_eq_coe], induction x, work_on_goal 0 { cases x, dsimp at *, simp at * }, work_on_goal 1 { refl }, 
+  apply quotient.sound, apply reduce_spec m ⟨ x_val, x_property⟩},
   
 
   right_inv := λ A, subtype.eq $

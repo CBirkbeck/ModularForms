@@ -20,16 +20,6 @@ run_cmd mk_simp_attr `SL2Z
 
 def MAT2:= matrix (fin 2) (fin 2) ℤ
 
-@[elab_as_eliminator]
-def fin2.rec_on {C : fin 2 → Sort*} : ∀ (n : fin 2), C 0 → C 1 → C n
-| ⟨0, _⟩ C0 _ := C0
-| ⟨1, _⟩ _ C1 := C1
-| ⟨n+2, H⟩ _ _ := false.elim $ by cases H with H H; cases H with H H; cases H
-
-@[elab_as_eliminator]
-theorem fin2.induction_on {C : fin 2 → Prop} (n : fin 2) (H0 : C 0) (H1 : C 1) : C n :=
-fin2.rec_on n H0 H1
-
 section 
 
 
@@ -77,24 +67,12 @@ begin
 rw ext_iff,
 simp,
 end
-/-(a b c d : ℤ)
-(dets : a * d - b * c = m)
--/
 
 end  integral_matrices_with_determinant
 
 
 
 
-
-
-/-@[ext]
-theorem integral_matrices_with_determinant.ext (m : ℤ) :
-  ∀ (A B : integral_matrices_with_determinant m)
-  (H1 : A.a = B.a) (H2 : A.b = B.b) (H3 : A.c = B.c) (H4 : A.d = B.d),
-  A = B
-| ⟨_, _, _, _, _⟩ ⟨_, _, _, _, _⟩ rfl rfl rfl rfl := rfl
--/
 
 
 
@@ -425,8 +403,7 @@ lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_de
 begin
 split,
 intro h,
-simp [mul_action] at h,
-sorry, sorry,
+sorry, sorry, 
 
 end  
 
