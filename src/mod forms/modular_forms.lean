@@ -331,6 +331,7 @@ def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Peter
 lemma is_modular_form_of_is_cusp_form {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form k f) : is_modular_form k f :=
 ⟨h.1, is_zero_at_inf_is_bound' f h.2⟩
 
+/-
 instance (k : ℕ) : is_submodule (is_modular_form k) := is_submodule.inter_submodule
 
 instance (k : ℕ) : is_submodule (is_cusp_form k) := is_submodule.inter_submodule
@@ -339,4 +340,4 @@ instance (k : ℕ) : is_submodule (is_cusp_form k) := is_submodule.inter_submodu
 λ f,
 (m^k.pred : ℂ) • (sorry : modular_forms k) -- why is this • failing?
  -/
- 
+ -/

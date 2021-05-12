@@ -67,22 +67,24 @@ iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix
 @[ext] lemma ext (A B : GLn n R) : (∀ i j, A i j = B i j) → A = B :=
 (GLn.ext_iff A B).mpr
 
-lemma is_unit_adjugate (A: GLn n R): is_unit( (adjugate A).det):=
 
-begin
-have:=det_adjugate_of_is_unit A.2, 
-sorry,
-end  
 
 
 
 noncomputable def nonsing_inve (A : GLn n R) := matrix.nonsing_inv A
 
 
-lemma inv_in_gl (A : GLn n R): is_unit ((nonsing_inve A).det):=
+lemma nonsing_inve_det (A: GLn n R): (det (nonsing_inve A))* (det A.1)=1:=
+begin
+have h1:= nonsing_inv_det A.1 A.2, convert h1,
+end
+
+
+
+lemma inv_in_gl (A : GLn n R): is_unit (det (nonsing_inve A)):=
 
 begin
-rw nonsing_inve, simp [matrix.nonsing_inv],  sorry,
+ have h1:=nonsing_inve_det A, rw is_unit_iff_exists_inv, use A.val.det, exact h1,
 end  
 
 
@@ -154,7 +156,8 @@ lemma inv_is_inv (A : GLn n R) : A.nonsing_inve= (↑A)⁻¹:=
 begin
 have h1: is_unit (det A), by {have:=A.2, exact this,},
 have:=is_left_inv A, have:=nonsing_inv_mul A.1 h1, simp at this, have:=nonsing_inv_apply A h1, 
-ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp only [dif_pos, h1], tidy, 
+ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp only [dif_pos, h1], cases h1, cases A, cases A_property,
+ dsimp at *, simp at *, injections_and_clear, dsimp at *, solve_by_elim, 
 end  
 
 

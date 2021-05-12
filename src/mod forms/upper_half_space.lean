@@ -198,7 +198,7 @@ end
 lemma det_in (A: GLn (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
 
 begin
-simp, 
+simp only [subtype.val_eq_coe], 
 have h1: A.1.det ≠ 0, {have:=A.2, simp only [subtype.val_eq_coe] at this, rw is_unit_iff_exists_inv at this, by_contradiction, simp only [not_not, subtype.val_eq_coe] at h,
  rw h at this, simp only [zero_mul, exists_false, zero_ne_one] at this, exact this },
 simp only [ne.def, subtype.val_eq_coe] at h1, apply mul_inv_cancel h1, 
