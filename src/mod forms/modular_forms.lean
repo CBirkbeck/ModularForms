@@ -241,7 +241,7 @@ def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={
     existsi A,
     intros z hz,
     have h2:=smul_sim  f c z, have h3:=abs_ew ((c• f) z ) (c* f z) h2, rw [complex.abs_mul] at h3,
-    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4,  sorry,
+    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4, simp, exact h2,  sorry,
   end  }, }
 
  
@@ -270,7 +270,7 @@ def zero_at_infty: submodule (ℂ) (ℍ  → ℂ):={
     have hcc:  (ε / complex.abs c) > 0 := by {simp, rw div_eq_mul_inv, apply mul_pos hε habsinv,}, 
     {cases hyp (ε / complex.abs c) (hcc) with A hA,
      existsi A,
-      intros z hz,
+      intros z hz, 
       sorry,
       /-rw show ε = complex.abs c * (ε / complex.abs c),
       begin
