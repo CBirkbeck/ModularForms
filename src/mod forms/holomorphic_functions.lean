@@ -55,7 +55,7 @@ section
 variables {α : Type*} {β : Type*} {s : set α}
 
 -- I would like to remove the following line... but I can't
-instance foobar (X : Type u) (R : Type v) [ring R] : module R (X → R) := pi.module
+--instance foobar (X : Type u) (R : Type v) [ring R] : module R (X → R) := pi.module
 
 def extend_by_zero [has_zero β] (f : s → β) : α → β :=
 λ z, if h : z ∈ s then f ⟨z, h⟩ else 0
