@@ -5,7 +5,7 @@ import linear_algebra.matrix
 import linear_algebra.determinant
 import data.matrix.notation
 
-
+/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 
 @[simp] lemma not_one_lt_zero {α : Type*} [linear_ordered_semiring α] : ¬ (1:α) < 0 :=
 not_lt_of_gt zero_lt_one

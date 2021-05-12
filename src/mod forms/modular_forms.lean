@@ -17,7 +17,7 @@ local notation `ℍ` := upper_half_space
 
 noncomputable theory
 
-
+/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 
 lemma exxt (f g : ℍ → ℂ) : f = g ↔ ∀ (x : ℍ), f x =g x:=
 begin
@@ -207,7 +207,7 @@ end
 
 
 
-instance CD : module (ℂ) (ℍ → ℂ):=infer_instance 
+instance : module (ℂ) (ℍ → ℂ):=infer_instance 
 
 instance : mul_action_with_zero (ℂ) (ℍ → ℂ):=infer_instance 
 
@@ -247,7 +247,7 @@ def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={
     existsi A,
     intros z hz,
     have h2:=smul_sim  f c z, have h3:=abs_ew ((c• f) z ) (c* f z) h2, rw [complex.abs_mul] at h3,
-    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4,   sorry,
+    have h4:= mul_le_mul_of_nonneg_left (hAM z hz) (complex.abs_nonneg c), rw ← h3 at h4, convert h4,  sorry,
   end  }, }
 
  
@@ -288,7 +288,7 @@ def zero_at_infty: submodule (ℂ) (ℍ  → ℂ):={
 
   end }, }
  
-smul_with_zero.to_has_scalar
+
  /-
  
   smul_mem' := by {intros c f hyp ε hε, begin
