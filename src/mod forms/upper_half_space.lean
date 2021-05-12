@@ -10,6 +10,7 @@ import group_theory.group_action
 
 open complex
  
+/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/ 
 noncomputable theory
 
 def upper_half_space := {z : ℂ | z.im > 0}
@@ -249,26 +250,7 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
   A  ∈ GL2R_pos ↔ A.1.det > 0 := iff.rfl
 
 
-/--/
-instance coe_matrix : has_coe (GL2R_p) (matrix (fin 2) (fin 2) ℝ) :=
-⟨λ A, A.val⟩
 
-instance coe_fun : has_coe_to_fun (GL2R_p) :=
-{ F   := λ _, (fin 2) → (fin 2) → ℝ,
-  coe := λ A, A.val }
-
-
-
-def to_lin' (A : GL2R_p) := matrix.to_lin' A
-
-lemma ext_iff (A B : GL2R_p) : A = B ↔ (∀ i j, A i j = B i j) :=
-iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix.ext⟩
-
-@[ext] lemma ext (A B : GL2R_p) : (∀ i j, A i j = B i j) → A = B :=
-(GL2R_p.ext_iff A B).mpr
-
-instance has_mul : has_mul GL2R_p :=
-⟨λ A B, ⟨A.1 ⬝ B.1, by {erw [det_mul], } ⟩  ⟩-/
 
 
 def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
