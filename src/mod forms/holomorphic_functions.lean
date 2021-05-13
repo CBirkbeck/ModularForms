@@ -58,6 +58,10 @@ variables {α : Type*} {β : Type*} {s : set α}
 def extend_by_zero [has_zero β] (f : s → β) : α → β :=
 λ z, if h : z ∈ s then f ⟨z, h⟩ else 0
 
+
+def extend_by_const (c: β) [has_zero β] (f : s → β) : α → β :=
+λ z, if h : z ∈ s then f ⟨z, h⟩ else c
+
 lemma extend_by_zero_zero [has_zero β] :
 extend_by_zero (λ s, 0 : s → β) = (λ h, 0) :=
 by ext z; by_cases h : z ∈ s; simp [extend_by_zero, h]
@@ -80,7 +84,12 @@ by ext z; by_cases h : z ∈ s; simp [extend_by_zero, h]
 
 lemma extend_by_zero_sub [add_group β] (f g : s → β) :
 extend_by_zero (f - g) = extend_by_zero f - extend_by_zero g :=
-(extend_by_zero_add f _).trans $ congr_arg _ $ extend_by_zero_neg  g
+--(extend_by_zero_add f _).trans $ congr_arg _ $ extend_by_zero_neg  g
+begin
+have h1:= extend_by_zero_add f (-g),
+have h2:= extend_by_zero_neg g,
+rw h2 at h1, convert h1, ring_nf, ext z, simp only [pi.add_apply, pi.neg_apply, pi.sub_apply], ring_nf,
+end
 
 lemma extend_by_zero_smul [ring β] (c : β) (f : s → β) :
 extend_by_zero (c • f) = c • extend_by_zero f :=
@@ -94,15 +103,45 @@ def open_subs:={domain: set ℂ | is_open domain}
 def is_holomorphic {domain : open_subs} (f : domain → ℂ) : Prop :=
 ∀ z : domain, ∃ f', has_deriv_at (extend_by_zero f) (f') z
 
+def is_holomorphic' {domain : open_subs} (f : domain → ℂ)  :=  
+ deriv_within (extend_by_zero f) domain.val 
+
+ def is_holomorphic'' {domain : open_subs} (f : domain → ℂ) : Prop :=
+∀ z : domain, ∃ f', has_deriv_within_at (extend_by_zero f) (f') domain z
+
+--fderiv_within 𝕜 f s x 1
+#check is_holomorphic
+
 variable {domain : open_subs}
 
-lemma const_hol (domain_open : is_open domain) (c : ℂ) : is_holomorphic (λ z : domain, (c : ℂ)) :=
+
+lemma const_hol  (c : ℂ) : is_holomorphic'' (λ z : domain, (c : ℂ)) :=
+begin
+rw is_holomorphic'', simp_rw [has_deriv_within_at, has_deriv_at_filter],
+ simp [has_fderiv_at_filter_iff_tendsto],
+intro z, use (0: ℂ ), simp, rw extend_by_zero, simp,  sorry,
+
+
+end
+
+/- have:= has_deriv_within_at_const  z.1 domain.1 c, use (0: ℂ), 
+ 
+simp at this,
+rw has_deriv_within_at,
+rw has_deriv_at_filter,
+rw has_fderiv_at_filter, 
+rw has_deriv_within_at at this,
+rw has_deriv_at_filter at this,
+rw has_fderiv_at_filter at this, convert this, simp, 
+end  
+
+/-
 λ z₀, ⟨(0 : ℂ), let ⟨δ, hδ1, hδ2⟩ := is_open_metric.1 domain_open z₀.1 z₀.2 in
 tendsto_nhds_of_metric.2 $ λ ε hε, ⟨δ, hδ1, λ z hz,
 have H1 : ↑z₀ + z ∈ domain, from show z₀.1 + z ∈ domain,
   from hδ2 $ by simpa [dist] using hz,
 have H2 : ↑z₀ ∈ domain, from z₀.2,
-by simpa [extend_by_zero, H1, H2, -add_comm] using hε⟩⟩
+by simpa [extend_by_zero, H1, H2, -add_comm] using hε⟩⟩-/-/
 
 lemma zero_hol : is_holomorphic (λ z : domain, (0 : ℂ)) :=
 λ z₀, ⟨0, show tendsto _ _ _, by simp [extend_by_zero_zero, tendsto_const_nhds]⟩
