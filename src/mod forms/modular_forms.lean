@@ -19,7 +19,7 @@ noncomputable theory
 
 /-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 
-lemma exxt (f g : ℍ → ℂ) : f = g ↔ ∀ (x : ℍ), f x =g x:=
+lemma exxt (f g : ℍ → ℂ) : f = g ↔ ∀ (x : ℍ), f x =g x:= 
 begin
 simp at *, fsplit, work_on_goal 0 { intros ᾰ x h, induction ᾰ, refl }, intros ᾰ, ext1, 
 cases x, tactic.ext1 [] {new_goals := tactic.new_goals.all}, work_on_goal 0 { solve_by_elim }, solve_by_elim,
@@ -142,7 +142,7 @@ have:=ext2 k (sca_mul_def k (r+s) f)  (sca_mul_def k r f +sca_mul_def k s f), rw
 intro x, simp only [subtype.val_eq_coe], ring_nf,
 end  
 
-instance is_Pet (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
+instance  (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
 
 
 { smul:=sca_mul_def k ,
@@ -199,11 +199,6 @@ begin
 rw h,
 end  
 
-
-
-instance : module (ℂ) (ℍ → ℂ):=infer_instance 
-
-instance : mul_action_with_zero (ℂ) (ℍ → ℂ):=infer_instance 
 
 
 @[simp]lemma smul_sim (f: ℍ → ℂ) (z : ℂ) (x : ℍ): (z • f) x= z* (f x):=
@@ -282,26 +277,6 @@ def zero_at_infty: submodule (ℂ) (ℍ  → ℂ):={
 
   end }, }
  
-
- /-
- 
-  smul_mem' := by {intros c f hyp ε hε, begin
-    by_cases hc : (c = 0),
-    { existsi (0 : ℝ ), intros, simp only [hc, pi.zero_apply, complex.abs_zero, zero_smul], exact le_of_lt hε },
-    { cases hyp (ε / complex.abs c) (int.lt_div_of_mul_lt (by simp [hc]) (by simp; exact hε)) with A hA,
-      existsi A,
-      intros z hz,
-      simp,
-      rw show ε = abs c * (ε / abs c),
-      begin
-        rw [mul_comm],
-        refine (div_mul_cancel _ _).symm,
-        simp [hc]
-      end,
-      apply mul_le_mul_of_nonneg_left (hA z hz) (complex.abs_nonneg c), }
-  end  }, }
- 
- -/
 
 
 @[simp]lemma bound_mem' (f: ℍ → ℂ): (f ∈  bounded_at_infty ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
