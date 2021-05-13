@@ -1,4 +1,5 @@
 import analysis.complex.basic
+import analysis.calculus.deriv
 import tactic.pi_instances
 import ring_theory.subring
 import analysis.normed_space.basic
@@ -9,7 +10,7 @@ noncomputable theory
 universes u v
 
 open filter complex
-
+/-
 def has_complex_derivative_at
 (f : ℂ → ℂ)
 (f'z : ℂ)
@@ -29,7 +30,7 @@ sorry,
 sorry,
 end   
 
-/--/  
+
 ⟨λ H ε hε, let ⟨δ, hδ1, hδ2⟩ := tendsto_nhds_of_metric.1 H ε hε in
   ⟨δ, hδ1, λ h h1 h2, by simp only [dist, sub_zero, complex.abs_abs, sub_add_eq_sub_sub] at hδ2;
     from hδ2 h2⟩,
@@ -37,7 +38,7 @@ end
   ⟨δ, hδ1, λ h h1, if H : h = 0 then by unfold dist;
     rwa [H, add_zero, mul_zero, add_zero, sub_self, zero_div, sub_zero, complex.abs_zero, _root_.abs_zero]
   else by unfold dist at h1 ⊢; rw [sub_zero] at h1;
-    rw [sub_zero, complex.abs_abs, sub_add_eq_sub_sub]; from hδ2 h H h1⟩⟩-/
+    rw [sub_zero, complex.abs_abs, sub_add_eq_sub_sub]; from hδ2 h H h1⟩⟩
 
 lemma has_complex_derivative_at_iff' (f f'z z) :
   has_complex_derivative_at f f'z z
@@ -49,13 +50,10 @@ lemma has_complex_derivative_at_iff'' (f f'z z) :
   has_complex_derivative_at f f'z z
   ↔ tendsto (λ h, (f(z+h)-f(z)-f'z*h)/h) (nhds 0) (nhds 0) :=
 by simp only [has_complex_derivative_at, tendsto_nhds_of_metric, dist,
-sub_zero, complex.abs_abs, sub_add_eq_sub_sub]
+sub_zero, complex.abs_abs, sub_add_eq_sub_sub]-/
 
 section
 variables {α : Type*} {β : Type*} {s : set α}
-
--- I would like to remove the following line... but I can't
---instance foobar (X : Type u) (R : Type v) [ring R] : module R (X → R) := pi.module
 
 def extend_by_zero [has_zero β] (f : s → β) : α → β :=
 λ z, if h : z ∈ s then f ⟨z, h⟩ else 0
@@ -82,7 +80,7 @@ by ext z; by_cases h : z ∈ s; simp [extend_by_zero, h]
 
 lemma extend_by_zero_sub [add_group β] (f g : s → β) :
 extend_by_zero (f - g) = extend_by_zero f - extend_by_zero g :=
-(extend_by_zero_add _ _).trans $ congr_arg _ $ extend_by_zero_neg g
+(extend_by_zero_add f _).trans $ congr_arg _ $ extend_by_zero_neg  g
 
 lemma extend_by_zero_smul [ring β] (c : β) (f : s → β) :
 extend_by_zero (c • f) = c • extend_by_zero f :=
@@ -90,11 +88,13 @@ by ext z; by_cases h : z ∈ s; simp [extend_by_zero, h]
 
 end
 
-/-- holomorphic function from a subset of ℂ. Correct definition if domain is open. -/
-def is_holomorphic {domain : set ℂ} (f : domain → ℂ) : Prop :=
-∀ z : domain, ∃ f'z, has_complex_derivative_at (extend_by_zero f) f'z z
+def open_subs:={domain: set ℂ | is_open domain}
 
-variable {domain : set ℂ}
+/-- holomorphic function from a subset of ℂ. Correct definition if domain is open. -/
+def is_holomorphic {domain : open_subs} (f : domain → ℂ) : Prop :=
+∀ z : domain, ∃ f', has_deriv_at (extend_by_zero f) (f') z
+
+variable {domain : open_subs}
 
 lemma const_hol (domain_open : is_open domain) (c : ℂ) : is_holomorphic (λ z : domain, (c : ℂ)) :=
 λ z₀, ⟨(0 : ℂ), let ⟨δ, hδ1, hδ2⟩ := is_open_metric.1 domain_open z₀.1 z₀.2 in
