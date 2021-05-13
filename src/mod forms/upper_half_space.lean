@@ -209,7 +209,7 @@ end
 lemma det_ive2 (A B : GLn (fin 2) ℝ ) (h: det A * det B =1) : det A= (det B)⁻¹ :=
 
 begin
-simp only [stupd, subtype.val_eq_coe],simp only [stupd, subtype.val_eq_coe] at h, have h1: A.1.det * B.1.det* (B.1.det)⁻¹ = 1 * (B.1.det)⁻¹, simp, rw h, simp only [one_mul], simp only [one_mul, subtype.val_eq_coe] at h1, rw ←  h1, rw mul_assoc, squeeze_simp , have:=det_in B, 
+simp only [stupd, subtype.val_eq_coe],simp only [stupd, subtype.val_eq_coe] at h, have h1: A.1.det * B.1.det* (B.1.det)⁻¹ = 1 * (B.1.det)⁻¹, simp, rw h, simp only [one_mul], simp only [one_mul, subtype.val_eq_coe] at h1, rw ←  h1, rw mul_assoc, simp only, have:=det_in B, 
 simp only [subtype.val_eq_coe] at this, rw this, simp only [mul_one],
 end  
 
@@ -248,7 +248,7 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 
 
 
-/- quick map from matrix over Z to matrix over R and some lemmas-/
+/- basic map from matrix over Z to matrix over R and some lemmas-/
 
 def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]

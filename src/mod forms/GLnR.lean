@@ -8,16 +8,14 @@ import linear_algebra.nonsingular_inverse
 /-!
 # The General Linear group $GL(n, R)$
 
-This file defines the elements of the Special Linear group `special_linear_group n R`,
-also written `SL(n, R)` or `SLₙ(R)`, consisting of all `n` by `n` `R`-matrices with
-determinant `1`.  In addition, we define the group structure on `special_linear_group n R`
-and the embedding into the general linear group `GLn R (n → R)`
-(i.e. `GL(n, R)` or `GLₙ(R)`).
+This file defines the elements of the Special Linear group `General_linear_group n R`,
+consisting of all `n` by `n` `R`-matrices with invertible determinant.
+
 
 ## Main definitions
 
- * `matrix.special_linear_group` is the type of matrices with invertible determinant 
- * `matrix.special_linear_group.group` gives the group structure (under multiplication)
+ * `matrix.GLnR` is the type of matrices over R with invertible determinant 
+ * `matrix.GLnR.group` gives the group structure (under multiplication)
 
 
 ## Implementation notes
@@ -94,18 +92,13 @@ instance has_mul : has_mul (GLn n R) :=
 instance has_one : has_one (GLn n R) :=
 ⟨⟨1, by {simp only [det_one, is_unit_one]}⟩⟩
 
-/--/
+/-
 instance:  has_scalar (units R) (GLn n R) :=
 ⟨ λ u M, ⟨ u •  M.1,  ⟩    ⟩ 
 -/
 
 noncomputable instance has_inv : has_inv (GLn n R) :=
 ⟨λ A, ⟨nonsing_inve A, inv_in_gl A⟩ ⟩
-
-/-
-lemma nonsing_inve_apply (A: GLn n R) (h : is_unit (det A)) :
-  A⁻¹ = (↑h.unit⁻¹ : R) • adjugate A :=
-by { change A.nonsing_inv = _, dunfold nonsing_inv, simp only [dif_pos, h], }-/
 
 
 
