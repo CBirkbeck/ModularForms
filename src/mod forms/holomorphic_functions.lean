@@ -119,7 +119,7 @@ lemma const_hol  (c : ℂ) : is_holomorphic'' (λ z : domain, (c : ℂ)) :=
 begin
 rw is_holomorphic'', simp_rw [has_deriv_within_at, has_deriv_at_filter],
  simp [has_fderiv_at_filter_iff_tendsto],
-intro z, use (0: ℂ ), simp, rw extend_by_zero, simp,  sorry,
+intro z, use (0: ℂ ), simp, rw extend_by_zero, simp,   sorry,
 
 
 end
@@ -143,76 +143,58 @@ have H1 : ↑z₀ + z ∈ domain, from show z₀.1 + z ∈ domain,
 have H2 : ↑z₀ ∈ domain, from z₀.2,
 by simpa [extend_by_zero, H1, H2, -add_comm] using hε⟩⟩-/-/
 
-lemma zero_hol : is_holomorphic (λ z : domain, (0 : ℂ)) :=
-λ z₀, ⟨0, show tendsto _ _ _, by simp [extend_by_zero_zero, tendsto_const_nhds]⟩
+lemma zero_hol (domain: open_subs) : is_holomorphic'' (λ z : domain, (0 : ℂ)) :=
+begin
+  sorry,
+end 
+--λ z₀, ⟨0, show tendsto _ _ _, by simp [extend_by_zero_zero, tendsto_const_nhds]⟩
 
-lemma one_hol (domain_open : is_open domain) : is_holomorphic (λ z : domain, (1 : ℂ)) := const_hol domain_open 1
-
-lemma add_hol (f g : domain → ℂ) (f_hol : is_holomorphic f) (g_hol : is_holomorphic g) : is_holomorphic (f + g) :=
+lemma one_hol  : is_holomorphic'' (λ z : domain, (1 : ℂ)) := 
+begin
+ sorry, 
+--const_hol domain.property 1,
+end
+lemma add_hol (f g : domain → ℂ) (f_hol : is_holomorphic'' f) (g_hol : is_holomorphic'' g) : is_holomorphic'' (f + g) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ Hf,
   cases g_hol z₀ with g'z₀ Hg,
   existsi (f'z₀ + g'z₀),
   rw extend_by_zero_add,
-  rw has_complex_derivative_at_iff'' at *,
-  convert tendsto_add Hf Hg,
-  ext h, rw ← add_div,
-  change ((_+_)-(_+_)-_*_)/_=_,
-  simp only [add_mul, sub_eq_add_neg, neg_add, add_assoc, add_left_comm]
+  have:=has_deriv_within_at.add Hf Hg,
+  exact this,
 end
 
-lemma mul_hol (f g : domain → ℂ) (f_hol : is_holomorphic f) (g_hol : is_holomorphic g) : is_holomorphic (f * g) :=
+lemma mul_hol (f g : domain → ℂ) (f_hol : is_holomorphic'' f) (g_hol : is_holomorphic'' g) : is_holomorphic'' (f * g) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ Hf,
   cases g_hol z₀ with g'z₀ Hg,
   existsi f'z₀*(extend_by_zero g z₀) + (extend_by_zero f z₀)*g'z₀,
   rw extend_by_zero_mul,
-  rw has_complex_derivative_at_iff'' at *,
-  generalize_hyp : extend_by_zero f = F at Hf ⊢,
-  generalize_hyp : extend_by_zero g = G at Hg ⊢,
-  have H1 : (λ h, ((F*G) (↑z₀+h) - (F*G) ↑z₀ - (f'z₀ * G z₀ + F z₀ * g'z₀)*h)/h)
-    = (λ h, ((F(↑z₀+h)-F(↑z₀)-f'z₀*h)/h)*((G(↑z₀+h)-G(↑z₀)-g'z₀*h)/h)*h
-      + f'z₀*g'z₀*h
-      + ((F(↑z₀+h)-F(↑z₀)-f'z₀*h)/h)*(g'z₀*h+G(↑z₀))
-      + (F(↑z₀)+f'z₀*h)*((G(↑z₀+h)-G(↑z₀)-g'z₀*h)/h)),
-  { funext h, change (_*_-_*_-_)/_=_,
-    by_cases h0 : h = 0,
-    { subst h0, simp },
-    apply (div_eq_iff_mul_eq h0).2,
-    simp only [add_div, sub_div, add_mul, sub_mul, mul_add, mul_sub],
-    simp only [div_mul_div, div_mul_eq_mul_div, (mul_div_assoc _ _ _).symm],
-    simp only [mul_div_cancel _ h0], ring },
-  have H2 : (0:ℂ) = 0*0*0+f'z₀*g'z₀*0+0*(g'z₀*0+G(↑z₀))+(F(↑z₀)+f'z₀*0)*0,
-  { simp only [zero_mul, mul_zero, zero_add] },
-  conv { congr, rw H1, skip, skip, rw H2 },
-  exact tendsto_add (tendsto_add (tendsto_add
-    (tendsto_mul (tendsto_mul Hf Hg) tendsto_id)
-    (tendsto_mul tendsto_const_nhds tendsto_id))
-    (tendsto_mul Hf (tendsto_add (tendsto_mul tendsto_const_nhds tendsto_id) tendsto_const_nhds)))
-    (tendsto_mul (tendsto_add tendsto_const_nhds (tendsto_mul tendsto_const_nhds tendsto_id)) Hg)
+ have:=has_deriv_within_at.mul Hf Hg,
+ exact this,
 end
 
-lemma neg_hol (f : domain → ℂ) (f_hol : is_holomorphic f) : is_holomorphic (-f) :=
+
+
+
+lemma neg_hol (f : domain → ℂ) (f_hol : is_holomorphic'' f) : is_holomorphic'' (-f) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ H,
   existsi -f'z₀,
   rw extend_by_zero_neg,
-  suffices : tendsto (λ (h : ℂ), abs ((-(extend_by_zero f (↑z₀ + h) + -(extend_by_zero f ↑z₀ + f'z₀ * h))) / h))
-    (nhds 0) (nhds 0),
-  { simpa [has_complex_derivative_at] },
-  conv { congr, funext, rw [neg_div, complex.abs_neg], },
-  exact H
+  have h3:=has_deriv_within_at.neg H,
+  exact h3,
 end
 
-instance (domain_open : is_open domain) : is_subring {f : domain → ℂ | is_holomorphic f} :=
+instance (domain: open_subs) : is_subring {f : domain → ℂ | is_holomorphic'' f} :=
 { zero_mem := zero_hol,
   add_mem  := add_hol,
   neg_mem  := neg_hol,
   mul_mem  := mul_hol,
-  one_mem  := one_hol domain_open,
+  one_mem  := one_hol domain.property
 }
 
 instance xyzzy {F : Type u} [normed_field F] : normed_space F F :=
