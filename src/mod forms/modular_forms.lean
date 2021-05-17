@@ -299,6 +299,18 @@ end
 -- (transf   : ∀ M : SL2Z, ∀ z : ℍ, f (SL2Z_H M z) = (M.c*z + M.d)^k * f z)
 -- (infinity : ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M)
 
+lemma upper_half_plane_is_open: is_open ℍ:=
+begin
+sorry,
+end
+
+lemma upper_half_plane_open_subs: ℍ ∈ open_subs:=
+
+begin
+simp, exact upper_half_plane_is_open,
+end  
+
+
 def is_modular_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
 
 def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
