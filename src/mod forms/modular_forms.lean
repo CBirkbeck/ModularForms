@@ -13,17 +13,27 @@ universes u v
 
 open complex
 
-local notation `ℍ` := upper_half_space
 
 noncomputable theory
 
-/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
+instance: metric_space upper_half_space:=infer_instance
 
-lemma exxt (f g : ℍ → ℂ) : f = g ↔ ∀ (x : ℍ), f x =g x:= 
+lemma upper_half_plane_is_open: is_open upper_half_space:=
 begin
-simp at *, fsplit, work_on_goal 0 { intros ᾰ x h, induction ᾰ, refl }, intros ᾰ, ext1, 
-cases x, tactic.ext1 [] {new_goals := tactic.new_goals.all}, work_on_goal 0 { solve_by_elim }, solve_by_elim,
+rw metric.is_open_iff, 
+sorry,
 end
+
+lemma upper_half_plane_open_subs: upper_half_space ∈ open_subs:=
+
+begin
+simp, exact upper_half_plane_is_open,
+end  
+
+local notation `ℍ`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_subs)
+
+
+/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 
 
 
@@ -127,7 +137,7 @@ def sca_mul_def (k : ℤ): ℂ → (is_Petersson_weight_ k) → (is_Petersson_we
 
 @[simp]lemma ze_si (k : ℤ ): ∀ (x : ℍ), (0 : is_Petersson_weight_ k ).1 x = (0 : ℂ):=
 begin
-simp only [set_coe.forall, subtype.val_eq_coe], intros x h, refl,
+simp only [set_coe.forall, subtype.val_eq_coe], intros x , refl,
 end  
 
 @[simp]lemma mod_sum_val (k: ℤ) (f g : is_Petersson_weight_ k): (f+g).1=f.1+g.1:=
@@ -152,7 +162,7 @@ instance  (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
   intro x, intro h, 
   simp only [sca_mul_def, sca_mul_def', zero_mul], refl,},
   add_smul:= by {simp [sca_mul_def,sca_mul_def'], intros r s h, have:= ad_sum k r s h, assumption,},
-  smul_add:= by {simp [sca_mul_def, sca_mul_def'], simp [ext2], intros r f g x z, ring,},
+  smul_add:= by {simp [sca_mul_def, sca_mul_def'], simp [ext2], intros r f g x , ring,},
   one_smul:=by {simp [sca_mul_def, sca_mul_def'],},
   mul_smul:=by {simp [sca_mul_def, sca_mul_def'], intros x y f, ring_nf,},
   
@@ -173,7 +183,7 @@ lemma zero_form_is_bound (k : ℤ): (zero_form k) ∈  is_bound_at_infinity:=
 
 begin
 simp only [H_mem, bound_mem, ge_iff_le, set_coe.forall, subtype.coe_mk], 
-use (0: ℝ ), use (0:ℝ), intros x h h1, rw zero_form, simp only [complex.abs_zero],
+use (0: ℝ ), use (0:ℝ), intros x h1, rw zero_form, simp only [complex.abs_zero],
 end  
 
 lemma zero_form_is_zero_at_inf (k : ℤ): (zero_form k) ∈  is_zero_at_infinity:=
@@ -181,7 +191,7 @@ lemma zero_form_is_zero_at_inf (k : ℤ): (zero_form k) ∈  is_zero_at_infinity
 begin
 simp only [H_mem, zero_at_inf_mem, gt_iff_lt, ge_iff_le, 
 set_coe.forall, subtype.coe_mk], intros ε he, use (0:ℝ), 
-intros x h h1, rw zero_form, simp only [complex.abs_zero], rw le_iff_lt_or_eq, simp only [he, true_or],
+intros x  h1, rw zero_form, simp only [complex.abs_zero], rw le_iff_lt_or_eq, simp only [he, true_or],
 end  
 
 lemma is_zero_at_inf_is_bound (f: ℍ → ℂ): (f ∈ is_zero_at_infinity) → (f ∈ is_bound_at_infinity):=
@@ -210,7 +220,7 @@ end
 
 def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={ 
   carrier :={ f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M },
-  zero_mem' :=by {simp, use (1: ℝ ), use (0: ℝ ), intros x h h1, norm_cast, exact dec_trivial},
+  zero_mem' :=by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, norm_cast, exact dec_trivial},
   add_mem' := by  {intros f g hf hg, begin
     cases hf with Mf hMf,
     cases hg with Mg hMg,
@@ -243,7 +253,7 @@ def bounded_at_infty: submodule (ℂ) (ℍ  → ℂ):={
  
 def zero_at_infty: submodule (ℂ) (ℍ  → ℂ):={ 
   carrier :={ f : ℍ → ℂ | ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε },
-  zero_mem' :=by {simp, intros ε he, use (-1: ℝ ), intros x h h1, linarith},
+  zero_mem' :=by {simp, intros ε he, use (-1: ℝ ), intros x  h1, linarith},
   add_mem' := by  {intros f g hf hg ε hε, begin
     cases hf (ε/2) (half_pos hε) with Af hAf,
     cases hg (ε/2) (half_pos hε) with Ag hAg,
@@ -299,16 +309,7 @@ end
 -- (transf   : ∀ M : SL2Z, ∀ z : ℍ, f (SL2Z_H M z) = (M.c*z + M.d)^k * f z)
 -- (infinity : ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M)
 
-lemma upper_half_plane_is_open: is_open ℍ:=
-begin
-sorry,
-end
 
-lemma upper_half_plane_open_subs: ℍ ∈ open_subs:=
-
-begin
-simp, exact upper_half_plane_is_open,
-end  
 
 
 def is_modular_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
@@ -317,6 +318,14 @@ def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Peter
 
 lemma is_modular_form_of_is_cusp_form {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form k f) : is_modular_form k f :=
 ⟨h.1, is_zero_at_inf_is_bound' f h.2⟩
+
+
+def Ind:={x : ℕ × ℕ | x ≠ (0,0)}
+
+
+
+def Eis (k: ℤ): ℍ → ℂ:=
+λ x,  ∑ r in Ind 
 
 /-
 instance (k : ℕ) : is_submodule (is_modular_form k) := is_submodule.inter_submodule
