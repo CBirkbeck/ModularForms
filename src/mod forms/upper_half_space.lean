@@ -297,7 +297,7 @@ rw ← coe_coe, exact this  }⟩ ⟩
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
 
 
-/- This is the moeb action on the upper half plane-/
+/-- This is the moeb action on the upper half plane. -/
 def moeb:  (GL2R_pos) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
