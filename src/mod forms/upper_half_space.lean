@@ -253,6 +253,27 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
 
+
+@[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
+
+begin
+rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], 
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one],
+
+end  
+
+
+lemma coe_chain (A: SL2Z) (i j : fin (2)): (A.1 i j : ℂ)= ((A.1 : (matrix (fin 2) (fin 2) ℝ) ) i j : ℂ):=
+begin
+
+simp, rw ← coe_coe, cases j, cases i, cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
+ work_on_goal 0 { dsimp at *, simp at *, unfold_coes },  
+work_on_goal 1 { dsimp at *, simp at * }, have h1:= mat_val ⟨A_val, A_property⟩ , rw h1, simp, refl,
+
+end  
+
 lemma SL_det_inv (A : SL2Z): is_unit (A.1.det : ℝ) :=
 
 begin

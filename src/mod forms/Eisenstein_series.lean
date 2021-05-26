@@ -246,23 +246,7 @@ end
 
 
 
-@[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
 
-begin
-tidy, rw mat_Z_to_R, tidy, 
-sorry,
-end  
-
-lemma coe_chain (A: SL2Z) (i j : fin (2)): (A.1 i j : ℂ)= ((A.1 : (matrix (fin 2) (fin 2) ℝ) ) i j : ℂ):=
-begin
-
-simp, rw ← coe_coe, cases j, cases i, cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
- work_on_goal 0 { dsimp at *, simp at *, unfold_coes }, 
-work_on_goal 1 { dsimp at *, simp at * }, have h1:= mat_val ⟨A_val, A_property⟩ , rw h1, simp, refl,
-
-
-
-end  
 
 
 lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A z) i=  ((A.1 1 0*z+A.1 1 1)^k)*(Eise k z (Ind_equiv A i ) ):=
@@ -273,12 +257,30 @@ have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= SL_det_pos' A, exa
 end  
 
 
-
+/--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, but in order to make it an actual
+modular form some constrainst will be needed -/
 def Eisenstein_series_weight_ (k: ℤ) : ℍ → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
 
+def rie (k : ℕ): ℕ → ℝ :=
+λ x, 1/x^k
 
+def Riemann_zeta (k : ℕ): ℝ :=
+ ∑' (x : ℕ), (rie k x)
 
+def rie_part_sum  (k: ℕ) (n : ℕ): ℝ:=
+∑ i in finset.range n, (rie k) i 
+
+lemma Rie_is_summmable (k: ℕ) (h: k ≥ 2): summable (rie k):=
+begin
+rw rie, apply summable_of_sum_range_le, simp, intro n, tidy,
+--rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff',simp, intros ε hε,
+--have h0: 1 ≤ k, sorry, 
+--have h1:=tendsto_pow_neg_at_top h0,
+-- summable_of_nonneg_of_le
+
+sorry,
+end  
 
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
 
