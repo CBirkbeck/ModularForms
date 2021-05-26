@@ -246,6 +246,25 @@ end
 
 
 
+@[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
+
+begin
+rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], 
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one],
+
+end  
+
+
+lemma coe_chain (A: SL2Z) (i j : fin (2)): (A.1 i j : ℂ)= ((A.1 : (matrix (fin 2) (fin 2) ℝ) ) i j : ℂ):=
+begin
+
+simp, rw ← coe_coe, cases j, cases i, cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
+ work_on_goal 0 { dsimp at *, simp at *, unfold_coes },  
+work_on_goal 1 { dsimp at *, simp at * }, have h1:= mat_val ⟨A_val, A_property⟩ , rw h1, simp, refl,
+
+end  
 
 
 
@@ -268,18 +287,37 @@ def rie (k : ℕ): ℕ → ℝ :=
 def Riemann_zeta (k : ℕ): ℝ :=
  ∑' (x : ℕ), (rie k x)
 
-def rie_part_sum  (k: ℕ) (n : ℕ): ℝ:=
-∑ i in finset.range n, (rie k) i 
+def consec : ℕ → ℝ:=
+λ x, 1/(x*(x+1))
+
+def consec_sum: ℝ:=
+∑' (x: ℕ), consec x
+
+lemma au (x : ℝ) (h: x ≠ 0) (h2: x+1 ≠ 0): 1/(x*(x+1))=1/x-1/(x+1):=
+begin
+sorry,  
+end
+
+
+
+lemma consec_is_sum: summable consec:=
+
+begin
+rw consec, rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff', intros ε hε, 
+
+
+
+end  
+
 
 lemma Rie_is_summmable (k: ℕ) (h: k ≥ 2): summable (rie k):=
 begin
-rw rie, apply summable_of_sum_range_le, simp, intro n, tidy,
+rw rie, apply summable_of_sum_range_le , simp, intro n, tidy,  
 --rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff',simp, intros ε hε,
 --have h0: 1 ≤ k, sorry, 
 --have h1:=tendsto_pow_neg_at_top h0,
 -- summable_of_nonneg_of_le
 
-sorry,
 end  
 
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
@@ -287,7 +325,7 @@ lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) 
 begin
 --rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
 --rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
-
+--summable_of_nonneg_of_le 
 
 sorry,
 end  
