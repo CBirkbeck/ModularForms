@@ -1,4 +1,3 @@
-
 import tactic.ring
 import tactic.pi_instances
 import .holomorphic_functions
@@ -293,6 +292,10 @@ def consec : ℕ → ℝ:=
 def consec_sum: ℝ:=
 ∑' (x: ℕ), consec x
 
+
+lemma sum_range_sub'' {G : Type*} [add_comm_group G] (f : ℕ → G) (n : ℕ) :
+  ∑ i in range n, (f (i) - f (i+1)) = f 0 - f n :=
+by { apply sum_range_induction; abel, simp }
 
 
 lemma au (x : ℝ) : 1/(x*(x+1))=1/x-1/(x+1):=
