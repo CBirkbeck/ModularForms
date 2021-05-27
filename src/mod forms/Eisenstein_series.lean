@@ -1,8 +1,6 @@
+
 import tactic.ring
-import group_theory.group_action
-import algebra.module
 import tactic.pi_instances
-import algebra.module.submodule
 import .holomorphic_functions
 import linear_algebra.determinant
 import .modular_group
@@ -16,6 +14,8 @@ import data.matrix.notation
 universes u v
 
 open complex
+
+open_locale big_operators
 
 local notation `ℍ` := upper_half_space
 noncomputable theory
@@ -293,18 +293,51 @@ def consec : ℕ → ℝ:=
 def consec_sum: ℝ:=
 ∑' (x: ℕ), consec x
 
-lemma au (x : ℝ) (h: x ≠ 0) (h2: x+1 ≠ 0): 1/(x*(x+1))=1/x-1/(x+1):=
+
+
+lemma au (x : ℝ) : 1/(x*(x+1))=1/x-1/(x+1):=
 begin
 sorry,  
 end
 
+lemma aux0 (n : ℕ): consec n = 1/n-1/(n+1):=
+begin
+rw consec, simp, sorry,    
+end   
 
 
+lemma aux (n :ℕ):∑ i in (finset.range n), consec i=1/2-1/(n+1):=
+begin
+simp_rw aux0, have:=finset.sum_range_sub'' consec,  
+sorry,
+end
+
+lemma gh (n : ℕ) :  (finset.range n).sum consec  ≤ (2: ℝ):=
+begin
+ rw aux n, simp, sorry,
+end 
+
+lemma gh2 (n : ℕ): 0 ≤ consec n:=
+begin
+rw consec, dsimp only at *, simp only [one_div, inv_nonneg] at *, norm_cast, exact dec_trivial, 
+end  
+
+#check gh2
 lemma consec_is_sum: summable consec:=
 
 begin
-rw consec, rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff', intros ε hε, 
+have:=summable_of_sum_range_le  (gh2) (gh), exact this,
 
+/-
+rw metric.cauchy_seq_iff', intros ε hε,
+ let N1:= int.nat_abs( floor (1/ε)),
+
+let Ne:=finset.range (N1 : ℕ), use Ne, intros n hn, simp_rw dist, 
+have h3: n = finset.range (n.card), by {sorry,}, 
+have hn2: finset.card (Ne) ≤ finset.card(n), by {sorry,},
+have H:= finset.sum_Ico_eq_sub consec hn2, simp at H, rw consec at H, simp_rw Ne, rw h3, 
+rw ← H, 
+-/
 
 
 end  
@@ -312,12 +345,12 @@ end
 
 lemma Rie_is_summmable (k: ℕ) (h: k ≥ 2): summable (rie k):=
 begin
-rw rie, apply summable_of_sum_range_le , simp, intro n, tidy,  
+rw rie, apply summable_of_sum_range_le , simp, intro n, tidy,  sorry,
 --rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff',simp, intros ε hε,
 --have h0: 1 ≤ k, sorry, 
 --have h1:=tendsto_pow_neg_at_top h0,
 -- summable_of_nonneg_of_le
-
+-- sum_range_sub_of_monotone
 end  
 
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
