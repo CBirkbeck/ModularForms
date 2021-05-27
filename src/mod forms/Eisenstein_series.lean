@@ -294,8 +294,8 @@ def consec_sum: ℝ:=
 
 
 lemma sum_range_sub'' {G : Type*} [add_comm_group G] (f : ℕ → G) (n : ℕ) :
-  ∑ i in range n, (f (i) - f (i+1)) = f 0 - f n :=
-by { apply sum_range_induction; abel, simp }
+  ∑ i in finset.range n, (f (i) - f (i+1)) = f 0 - f n :=
+by { apply finset.sum_range_induction; abel, simp }
 
 
 lemma au (x : ℝ) : 1/(x*(x+1))=1/x-1/(x+1):=
@@ -308,16 +308,17 @@ begin
 rw consec, simp, sorry,    
 end   
 
+def auxfun: ℕ → ℝ:=
+λ x , 1/x
 
-lemma aux (n :ℕ):∑ i in (finset.range n), consec i=1/2-1/(n+1):=
+lemma aux (n :ℕ):∑ i in (finset.range n), consec i=-1/(n):=
 begin
-simp_rw aux0, have:=finset.sum_range_sub'' consec,  
-sorry,
+simp_rw aux0, have:=sum_range_sub'' auxfun, rw auxfun at this, simp at this,  simp, rw this, ring,
 end
 
 lemma gh (n : ℕ) :  (finset.range n).sum consec  ≤ (2: ℝ):=
 begin
- rw aux n, simp, sorry,
+ rw aux n, sorry,
 end 
 
 lemma gh2 (n : ℕ): 0 ≤ consec n:=
@@ -325,7 +326,6 @@ begin
 rw consec, dsimp only at *, simp only [one_div, inv_nonneg] at *, norm_cast, exact dec_trivial, 
 end  
 
-#check gh2
 lemma consec_is_sum: summable consec:=
 
 begin
@@ -345,14 +345,23 @@ rw ← H,
 
 end  
 
+lemma woot (k : ℕ) (h: k ≥ 2) (n : ℕ): rie k n ≤ consec n:=
+begin
+rw rie, rw consec, simp, sorry,
+end  
+
+lemma woot2 (k n: ℕ): 0 ≤ rie k n:=
+begin
+sorry,
+end  
 
 lemma Rie_is_summmable (k: ℕ) (h: k ≥ 2): summable (rie k):=
 begin
-rw rie, apply summable_of_sum_range_le , simp, intro n, tidy,  sorry,
+have:=summable_of_nonneg_of_le (woot2 k) (woot k h) (consec_is_sum), exact this,
 --rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff',simp, intros ε hε,
 --have h0: 1 ≤ k, sorry, 
 --have h1:=tendsto_pow_neg_at_top h0,
--- summable_of_nonneg_of_le
+-- 
 -- sum_range_sub_of_monotone
 end  
 
