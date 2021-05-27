@@ -63,7 +63,7 @@ lemma ext_iff (A B : GLn n R) : A = B ↔ (∀ i j, A i j = B i j) :=
 iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix.ext⟩
 
 @[ext] lemma ext (A B : GLn n R) : (∀ i j, A i j = B i j) → A = B :=
-(GLn.ext_iff A B).mpr
+(GLn.ext_iff A B).mpr 
 
 
 
