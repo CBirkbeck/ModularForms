@@ -21,7 +21,8 @@ how to deal with zero later on in the proofs, i.e. I dont want to remove zero fr
 def rie (k : ℕ): ℕ → ℝ :=
 λ x, 1/(x+1)^k
 
-/--The `Riemann zeta function` defined on the natural numbers. It is defined as the infinite sum of the reciprocals of the naturals to the power `k`. -/
+/--The `Riemann zeta function` defined on the natural numbers. 
+It is defined as the infinite sum of the reciprocals of the naturals to the power `k`. We check it is summable at the end for `k ≥ 3`.-/
 
 /-I could define this for non-integer values, but I dont know how to make it summable, so ill leave it here for now  -/
 def Riemann_zeta (k : ℕ): ℝ :=
