@@ -20,6 +20,8 @@ noncomputable theory
 def rie (k : ℕ): ℕ → ℝ :=
 λ x, 1/(x+1)^k
 
+/-I could define this for non-integer values, but I dont know how to make it summable, so ill leave it here for now  -/
+
 def Riemann_zeta (k : ℕ): ℝ :=
  ∑' (x : ℕ), (rie k x)
 
@@ -177,3 +179,5 @@ have:=summable_of_nonneg_of_le (woot2 k) (woot k h) (consec'_is_sum), exact this
 -- 
 -- sum_range_sub_of_monotone
 end  
+
+#lint
