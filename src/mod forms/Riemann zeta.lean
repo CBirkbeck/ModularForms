@@ -36,7 +36,7 @@ def consec_sum: ℝ:=
 
 lemma sum_range_sub'' {G : Type*} [add_comm_group G] (f : ℕ → G) (n : ℕ) :
   ∑ i in finset.range n, (f (i) - f (i+1)) = f 0 - f n :=
-by { apply finset.sum_range_induction; abel, simp }
+by { apply finset.sum_range_induction; abel, simp only [forall_const, eq_self_iff_true]}
 
 
 lemma au (x : ℝ) (h : x+1 ≠ 0) (h1: x+2 ≠ 0) : 1/((x+1)*(x+2))=1/(x+1)-1/(x+2):=
