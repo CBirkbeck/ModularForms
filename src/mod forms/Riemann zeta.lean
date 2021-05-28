@@ -42,7 +42,9 @@ by { apply finset.sum_range_induction; abel, simp }
 lemma au (x : ℝ) (h : x+1 ≠ 0) (h1: x+2 ≠ 0) : 1/((x+1)*(x+2))=1/(x+1)-1/(x+2):=
 begin
 
-have:= one_div_mul_sub_mul_one_div_eq_one_div_add_one_div h h1, simp at *, simp at *, rw ← this, simp_rw [mul_inv'], ring,
+have:= one_div_mul_sub_mul_one_div_eq_one_div_add_one_div h h1, 
+simp only [one_div, add_sub_add_left_eq_sub, ne.def] at *, 
+simp only at *, rw ← this, simp_rw [mul_inv'], ring,
 
 end
 
@@ -56,8 +58,8 @@ end
 lemma aux0 (n : ℕ) : consec n = 1/(n+1)-1/(n+2):=
 begin
 rw consec, simp only, 
-have h2: (n+1 : ℝ) ≠ 0, have:=nat_plus_one_not_zero (n), simp, norm_cast, exact this,
-have h3: ((n+2) : ℝ) ≠ 0, have:=nat_plus_one_not_zero (n+1), simp, norm_cast, exact this,
+have h2: (n+1 : ℝ) ≠ 0, have:=nat_plus_one_not_zero (n), simp only [ne.def], norm_cast, exact this,
+have h3: ((n+2) : ℝ) ≠ 0, have:=nat_plus_one_not_zero (n+1), simp only [ne.def], norm_cast, exact this,
 have:=au n h2 h3, exact this,
 end   
 
@@ -102,7 +104,8 @@ def BUMP : ℕ → ℝ:=
 lemma BUMP_ZERO_OUTSIDE_SUPP: ∀ x ∉ finset.range 1, BUMP x =0 :=
 
 begin
-rw BUMP, simp, intros x H ᾰ, solve_by_elim,
+rw BUMP, simp only [ite_eq_right_iff, one_ne_zero, finset.mem_singleton, finset.range_one], 
+intros x H ᾰ, solve_by_elim,
 end
 
 lemma BUMP_SUMMABLE: summable BUMP:=
@@ -142,21 +145,24 @@ end
 
 lemma woot (k : ℕ) (h: k ≥ 3) (n : ℕ): rie k n ≤ consec' (n):=
 begin
-rw rie, rw consec', simp, rw consec, rw BUMP, simp, 
+rw rie, rw consec', simp only [one_div], rw consec, rw BUMP, simp only [one_div], 
 by_cases H: n=0,
-rw H, simp, linarith,
+rw H, simp only [one_pow, inv_nonneg, one_mul, if_true, nat.cast_zero, zero_le_bit0, eq_self_iff_true,
+ inv_one, zero_add,
+le_add_iff_nonneg_left], linarith,
 
-simp [H],
+simp only [H, add_zero, if_false],
 apply inv_le_inv_of_le,
 have h3: (n+1)*(n+2) ≠ 0, simp only [nat.mul_eq_zero, nat.succ_ne_zero, ne.def, not_false_iff, or_self], 
-work_on_goal 0 { dsimp at *, simp at *, norm_cast, exact dec_trivial }, simp at *, norm_cast, 
+work_on_goal 0 { dsimp  at *, simp only [nat.mul_eq_zero, ge_iff_le, nat.succ_ne_zero, not_false_iff, or_self] at *, 
+norm_cast, exact dec_trivial }, simp only [ge_iff_le] at *, norm_cast, 
 apply halp, exact h, exact H,
 
 end  
 
 lemma woot2 (k n: ℕ): 0 ≤ rie k n:=
 begin
-rw rie, simp, norm_cast, exact dec_trivial,
+rw rie, simp only [one_div, inv_nonneg], norm_cast, exact dec_trivial,
 end  
 
 lemma Riemann_zeta_is_summmable (k: ℕ) (h: k ≥ 3): summable (rie k):=
