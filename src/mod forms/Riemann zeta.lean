@@ -16,12 +16,14 @@ noncomputable theory
 
 /-! ### Riemann zeta function at integer values -/
 
-
+/-- The function to be summed to get the `Riemann zeta function`. The shift in indexing is just because I don't know 
+how to deal with zero later on in the proofs, i.e. I dont want to remove zero from ranges.-/
 def rie (k : ℕ): ℕ → ℝ :=
 λ x, 1/(x+1)^k
 
-/-I could define this for non-integer values, but I dont know how to make it summable, so ill leave it here for now  -/
+/--The `Riemann zeta function` defined on the natural numbers. It is defined as the infinite sum of the reciprocals of the naturals to the power `k`. -/
 
+/-I could define this for non-integer values, but I dont know how to make it summable, so ill leave it here for now  -/
 def Riemann_zeta (k : ℕ): ℝ :=
  ∑' (x : ℕ), (rie k x)
 
