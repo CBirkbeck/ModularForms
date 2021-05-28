@@ -1,6 +1,6 @@
 import tactic.ring
 import tactic.pi_instances
-import .holomorphic_functions
+import analysis.complex.basic
 import ring_theory.coprime
 import ring_theory.int.basic
 import data.complex.basic
