@@ -53,7 +53,7 @@ end
 
 lemma nat_plus_one_not_zero (n: ℕ): (n+1) ≠ 0:=
 begin
-simp,
+simp only [nat.succ_ne_zero, ne.def, not_false_iff],
 end
 
 
