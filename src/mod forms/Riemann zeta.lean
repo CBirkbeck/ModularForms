@@ -159,7 +159,7 @@ begin
 rw rie, simp, norm_cast, exact dec_trivial,
 end  
 
-lemma Rie_is_summmable (k: ℕ) (h: k ≥ 3): summable (rie k):=
+lemma Riemann_zeta_is_summmable (k: ℕ) (h: k ≥ 3): summable (rie k):=
 begin
 have:=summable_of_nonneg_of_le (woot2 k) (woot k h) (consec'_is_sum), exact this,
 
