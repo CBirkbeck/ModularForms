@@ -92,17 +92,6 @@ lemma consec_is_sum: summable consec:=
 begin
 have:=summable_of_sum_range_le  (gh2) (gh), exact this,
 
-/-
-rw metric.cauchy_seq_iff', intros ε hε,
- let N1:= int.nat_abs( floor (1/ε)),
-
-let Ne:=finset.range (N1 : ℕ), use Ne, intros n hn, simp_rw dist, 
-have h3: n = finset.range (n.card), by {sorry,}, 
-have hn2: finset.card (Ne) ≤ finset.card(n), by {sorry,},
-have H:= finset.sum_Ico_eq_sub consec hn2, simp at H, rw consec at H, simp_rw Ne, rw h3, 
-rw ← H, 
--/
-
 
 end  
 
@@ -173,11 +162,7 @@ end
 lemma Rie_is_summmable (k: ℕ) (h: k ≥ 3): summable (rie k):=
 begin
 have:=summable_of_nonneg_of_le (woot2 k) (woot k h) (consec'_is_sum), exact this,
---rw summable_iff_cauchy_seq_finset, rw metric.cauchy_seq_iff',simp, intros ε hε,
---have h0: 1 ≤ k, sorry, 
---have h1:=tendsto_pow_neg_at_top h0,
--- 
--- sum_range_sub_of_monotone
+
 end  
 
 #lint
