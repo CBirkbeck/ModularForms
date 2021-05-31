@@ -4,6 +4,8 @@ import analysis.complex.basic
 import ring_theory.coprime
 import ring_theory.int.basic
 import data.complex.basic
+import analysis.p_series
+import data.real.nnreal
 
 universes u v
 
@@ -20,6 +22,10 @@ noncomputable theory
 how to deal with zero later on in the proofs, i.e. I dont want to remove zero from ranges.-/
 def rie (k : ℕ): ℕ → ℝ :=
 λ x, 1/(x+1)^k
+
+def rie' (k : ℕ): ℕ → ℝ :=
+λ x, 1/(x)^k
+
 
 /--The `Riemann zeta function` defined on the natural numbers. 
 It is defined as the infinite sum of the reciprocals of the naturals to the power `k`. We check it is summable at the end for `k ≥ 3`.-/
@@ -174,4 +180,10 @@ have:=summable_of_nonneg_of_le (woot2 k) (woot k h) (consec'_is_sum), exact this
 
 end  
 
+lemma Riemann_zeta_is_summmable' (k: ℕ) (h: k ≥ 3): summable (rie' k):=
+begin
+rw rie',
+have h1: 1 < (k:ℝ), by {sorry,},
+have:=nnreal.summable_one_div_rpow.2 h1, simp at this, simp, norm_cast at h1, exact h1,
+end
 #lint
