@@ -281,13 +281,89 @@ def Eisenstein_series_weight_ (k: ℤ) : ℍ → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
 
 
+def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
+
+@[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
+
+lemma max_aux' (a b : ℕ): max a b = a ∨ max a b =b:=
+begin
+apply max_choice,
+end  
+
+lemma max_aux (a b : ℕ):a= max a b  ∨  b=max a b :=
+begin
+have:= (max_aux' a b),  cases this, work_on_goal 0 { simp at * }, work_on_goal 1 { simp at * }, 
+have h1: max a b = a, apply max_eq_left this, rw h1, simp only [true_or, eq_self_iff_true],rw max_comm, 
+have h2: max b a=b, apply max_eq_left this, rw h2, simp only [eq_self_iff_true, or_true],
+end  
+
+lemma square_is_fin (n: ℕ): fintype (square n):=
+begin
+sorry,
+end
+
+
+lemma square_card (n: ℕ): finset.card (square_is_fin n).1=8*n:=
+begin
+sorry,
+end
+
+def sup_func_aux (k: ℤ) (n: ℕ) : square n → ℝ:=
+λ x, 1/n^k 
+
+def sup_func (k : ℤ) (n : ℕ): ℝ:=
+∑' (x : square n), sup_func_aux k n x
+
+def index_fun' (x : ℤ × ℤ): ℕ:=
+max (x.1).nat_abs (x.2).nat_abs
+
+lemma equiv_fun' (x: ℤ × ℤ) : x ∈ square  ( index_fun' x):=
+begin
+rw index_fun', simp only [square_mem'],
+end  
+
+lemma equiv_fun (x: ℤ × ℤ): x ∈ set.Union square:=
+begin
+simp only [set.mem_Union, square_mem', exists_eq'], 
+end  
+
+
+def index_union: ℤ × ℤ ≃ set.Union square:=
+{
+to_fun:=λ x, ⟨x,equiv_fun x⟩,
+inv_fun:=λ x, x.1,
+left_inv:=sorry,
+right_inv:=sorry,
+
+
+}
+
+def coef (s : fintype (ℤ × ℤ)): set (ℤ × ℤ):=
+(s.1: set (ℤ × ℤ))
+
+def coef_uni (f : ℕ → fintype (ℤ× ℤ)) (x : ℤ × ℤ): set.Union (coef ∘ f):=
+
+lemma sum_of_union (f : ℕ → fintype (ℤ× ℤ)) (g: set.Union (coef ∘ f) → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y))):=
+
+
+lemma sum_rearrange (f: ℕ → fintype (ℤ × ℤ)) (e:  set.Union (coef ∘ f) ≃ ℤ × ℤ  ) (g: ℤ × ℤ → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y)) :=
+begin
+ have h: summable g ↔ summable (g ∘ e), rw equiv.summable_iff e,
+rw h, sorry,
+end
+
+
+
+-- prod_bUnion 
+
+
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
 
 begin
 --rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
 --rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
 --summable_of_nonneg_of_le 
-
+ 
 sorry,
 end  
 
