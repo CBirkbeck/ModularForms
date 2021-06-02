@@ -281,6 +281,27 @@ def Eisenstein_series_weight_ (k: ℤ) : ℍ → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
 
 
+
+
+
+
+
+lemma Eise_is_Pet (k: ℤ)  :  (Eisenstein_series_weight_ k) ∈ is_Petersson_weight_ k :=
+
+begin
+rw is_Petersson_weight_, rw Eisenstein_series_weight_, simp only [set.mem_set_of_eq], 
+intros A z, have h1:= Eise_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
+have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z), 
+rw tsum_mul_left, rw h3,refl,
+end
+
+
+end Eisenstein_series
+
+
+
+
+
 def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
 
 @[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
@@ -352,17 +373,13 @@ end
 
 
 lemma tsum_union_disjoint' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
-(hs: summable g ): ∑' (x : set.Union i), g x= ∑' (a : α), (∑' x : (i a),   (g ∘ coe) x):=
+(hs: summable g ): ∑' (x : set.Union i), g x= ∑' (a : α), ∑' x : (i a),   (g ∘ coe) x:=
 
 begin
 sorry,
 end
 
 
-lemma tsum_summable [add_comm_monoid β] [topological_space β] (f g : α → β) (h: (∑' (a: α), f) = (∑' (a: α), g) ): summable f ↔ summable g:=
-begin
-rw summable, rw summable, simp, sorry,
-end  
 
 
 lemma sum_rearrange (f: ℕ → fintype (ℤ × ℤ)) (e:  set.Union (coef ∘ f) ≃ ℤ × ℤ  ) (g: ℤ × ℤ → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y)) :=
@@ -394,6 +411,7 @@ end
 
 
 
+
 lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
 begin
 rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
@@ -403,16 +421,12 @@ end
 
 
 
-lemma Eise_is_Pet (k: ℤ)  :  (Eisenstein_series_weight_ k) ∈ is_Petersson_weight_ k :=
-
-begin
-rw is_Petersson_weight_, rw Eisenstein_series_weight_, simp only [set.mem_set_of_eq], 
-intros A z, have h1:= Eise_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
-have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z), 
-rw tsum_mul_left, rw h3,refl,
-end
 
 
-end Eisenstein_series
+
+
+
+
+
 
 #lint
