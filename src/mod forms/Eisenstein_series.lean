@@ -10,7 +10,7 @@ import ring_theory.int.basic
 import .upper_half_space
 import data.matrix.notation
 
-universes u v
+universes u v w
 
 open complex
 
@@ -341,15 +341,40 @@ right_inv:=sorry,
 def coef (s : fintype (ℤ × ℤ)): set (ℤ × ℤ):=
 (s.1: set (ℤ × ℤ))
 
-def coef_uni (f : ℕ → fintype (ℤ× ℤ)) (x : ℤ × ℤ): set.Union (coef ∘ f):=
 
-lemma sum_of_union (f : ℕ → fintype (ℤ× ℤ)) (g: set.Union (coef ∘ f) → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y))):=
+variables {α : Type u} {β : Type v} {γ : Type w} {i : α → set β}
+
+instance ww (a: α): has_lift_t (i a) (set.Union i):=
+begin
+fsplit, intros ᾰ, cases ᾰ, fsplit, work_on_goal 1 { simp at *, fsplit, work_on_goal 1 { assumption } },
+end
+
+
+
+lemma tsum_union_disjoint' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
+(hs: summable g ): ∑' (x : set.Union i), g x= ∑' (a : α), (∑' x : (i a),   (g ∘ coe) x):=
+
+begin
+sorry,
+end
+
+
+lemma tsum_summable [add_comm_monoid β] [topological_space β] (f g : α → β) (h: (∑' (a: α), f) = (∑' (a: α), g) ): summable f ↔ summable g:=
+begin
+rw summable, rw summable, simp, sorry,
+end  
 
 
 lemma sum_rearrange (f: ℕ → fintype (ℤ × ℤ)) (e:  set.Union (coef ∘ f) ≃ ℤ × ℤ  ) (g: ℤ × ℤ → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y)) :=
 begin
  have h: summable g ↔ summable (g ∘ e), rw equiv.summable_iff e,
-rw h, sorry,
+rw h, 
+have H0: ∀ (i j : ℕ), disjoint ((coef ∘ f) i) ((coef ∘ f) j), by {sorry,},
+have H:=tsum_union_disjoint' (coef ∘ f) H0 (g ∘ e),
+split,
+intro H1,
+ simp [H1] at H,  
+  sorry,
 end
 
 
@@ -378,15 +403,13 @@ end
 
 
 
-lemma Eise_is_Pet (k: ℤ) (h : k ≥ 4)  (he: even k) :  (Eisenstein_series_weight_ k) ∈ is_Petersson_weight_ k :=
+lemma Eise_is_Pet (k: ℤ)  :  (Eisenstein_series_weight_ k) ∈ is_Petersson_weight_ k :=
 
 begin
 rw is_Petersson_weight_, rw Eisenstein_series_weight_, simp only [set.mem_set_of_eq], 
 intros A z, have h1:= Eise_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
 have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z), 
-have h5:= summable.tsum_mul_left ((((A.1 1 0): ℂ) * z + ((A.1 1 1): ℂ)) ^ k) (Eise_is_summable' A k z h he),
- simp only [prod.forall, function.comp_app, set_coe.forall, subtype.val_eq_coe] at *,  
- rw ← h3, simp only [vale, subtype.val_eq_coe], convert h5, rw h5,
+rw tsum_mul_left, rw h3,refl,
 end
 
 
