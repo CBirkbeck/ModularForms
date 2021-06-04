@@ -379,6 +379,16 @@ begin
 sorry,
 end
 
+lemma tsum_union_disjoint'' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
+:summable g ↔  summable (λ (a : α), ∑' x : (i a),   (g ∘ coe) x):=
+
+begin
+split,
+intro h,
+have H:=tsum_union_disjoint' i hd g h, have H2:=summable.has_sum h, rw H at H2, simp at *, rw summable, use (∑' (x : set.Union i), g x), 
+simp, rw H,  apply has_sum.tsum_eq,
+sorry,
+end
 
 
 
