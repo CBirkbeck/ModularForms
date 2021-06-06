@@ -9,12 +9,14 @@ import ring_theory.coprime
 import ring_theory.int.basic
 import .upper_half_space
 import data.matrix.notation
+import data.setoid.partition
+import topology.instances.ennreal
 
 universes u v w
 
 open complex
 
-open_locale big_operators
+open_locale big_operators ennreal
 
 local notation `ℍ` := upper_half_space
 noncomputable theory
@@ -296,6 +298,31 @@ rw tsum_mul_left, rw h3,refl,
 end
 
 
+
+
+
+lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
+
+begin
+--rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
+--rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
+--summable_of_nonneg_of_le 
+ 
+sorry,
+end  
+
+
+
+
+lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
+begin
+rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
+
+end
+
+
+
+
 end Eisenstein_series
 
 
@@ -359,13 +386,11 @@ right_inv:=sorry,
 
 }
 
-def coef (s : fintype (ℤ × ℤ)): set (ℤ × ℤ):=
-(s.1: set (ℤ × ℤ))
 
 
 variables {α : Type u} {β : Type v} {γ : Type w} {i : α → set β}
 
-instance ww (a: α): has_lift_t (i a) (set.Union i):=
+instance  (a: α): has_lift_t (i a) (set.Union i):=
 begin
 fsplit, intros ᾰ, cases ᾰ, fsplit, work_on_goal 1 { simp at *, fsplit, work_on_goal 1 { assumption } },
 end
@@ -376,57 +401,61 @@ lemma tsum_union_disjoint' [add_comm_monoid γ] [topological_space γ] (i : α �
 (hs: summable g ): ∑' (x : set.Union i), g x= ∑' (a : α), ∑' x : (i a),   (g ∘ coe) x:=
 
 begin
+simp_rw tsum_sigma',
 sorry,
 end
+
+
 
 lemma tsum_union_disjoint'' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
 :summable g ↔  summable (λ (a : α), ∑' x : (i a),   (g ∘ coe) x):=
 
 begin
+
 split,
 intro h,
+
 have H:=tsum_union_disjoint' i hd g h, have H2:=summable.has_sum h, rw H at H2, simp at *, rw summable, use (∑' (x : set.Union i), g x), 
-simp, rw H,  apply has_sum.tsum_eq,
-sorry,
+simp, rw H, rw has_sum, simp [filter.tendsto], 
+sorry, sorry, 
 end
 
 
-
+/-
 lemma sum_rearrange (f: ℕ → fintype (ℤ × ℤ)) (e:  set.Union (coef ∘ f) ≃ ℤ × ℤ  ) (g: ℤ × ℤ → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y)) :=
 begin
+
+  
  have h: summable g ↔ summable (g ∘ e), rw equiv.summable_iff e,
 rw h, 
 have H0: ∀ (i j : ℕ), disjoint ((coef ∘ f) i) ((coef ∘ f) j), by {sorry,},
-have H:=tsum_union_disjoint' (coef ∘ f) H0 (g ∘ e),
-split,
-intro H1,
- simp [H1] at H,  
-  sorry,
+have H:=tsum_union_disjoint'' (coef ∘ f) H0 (g ∘ e), rw H, rw equiv.summable_iff_of_support, simp, intros x h2, 
+
+  sorry,sorry,
 end
 
+-/
+
+def coef (s : finset (ℤ × ℤ)): set (ℤ × ℤ):=
+(s: set (ℤ × ℤ ))
+
+
+lemma sum_lemma (f: ℤ × ℤ → ℝ) (I: ℕ → finset (ℤ × ℤ)) (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ I (i) )  :
+summable f ↔ summable (λ ( n : ℕ), ∑ x in I (n), f x)  :=
+begin
+ 
+split,
+ rw summable,intro h, have:=classical.some_spec h, 
+use (classical.some h),
+have:= ennreal.tsum_sigma' g,  
+
+
+sorry,
+end
 
 
 -- prod_bUnion 
 
-
-lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
-
-begin
---rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
---rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
---summable_of_nonneg_of_le 
- 
-sorry,
-end  
-
-
-
-
-lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
-begin
-rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
-
-end
 
 
 
