@@ -1,7 +1,5 @@
 import tactic.ring
 import tactic.pi_instances
-import .holomorphic_functions
-import linear_algebra.determinant
 import .modular_group
 import .GLnR
 import .modular_forms
