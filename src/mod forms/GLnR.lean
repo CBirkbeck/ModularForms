@@ -5,6 +5,7 @@ The Genera Linear group $GL(n, R)$
 import linear_algebra.matrix
 import linear_algebra.nonsingular_inverse
 
+
 /-!
 # The General Linear group $GL(n, R)$
 
@@ -229,6 +230,8 @@ end
 
 
 end GLn
+
+
 
 
 end matrix

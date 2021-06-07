@@ -9,6 +9,7 @@ import .upper_half_space
 import data.matrix.notation
 import data.setoid.partition
 import topology.instances.ennreal
+import topology.instances.nnreal
 
 universes u v w
 
@@ -434,18 +435,73 @@ end
 
 -/
 
+instance: has_coe_t  (finset (ℤ × ℤ))  (set (ℤ × ℤ)):=infer_instance
+
 def coef (s : finset (ℤ × ℤ)): set (ℤ × ℤ):=
 (s: set (ℤ × ℤ ))
 
-
-lemma sum_lemma (f: ℤ × ℤ → ℝ) (I: ℕ → finset (ℤ × ℤ)) (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ I (i) )  :
-summable f ↔ summable (λ ( n : ℕ), ∑ x in I (n), f x)  :=
+def fn (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) (x : ℤ × ℤ): x ∈  (⋃ (s: ℕ), coef (In s)):=
 begin
- 
-split,
- rw summable,intro h, have:=classical.some_spec h, 
-use (classical.some h),
-have:= ennreal.tsum_sigma' g,  
+  
+have h1:=HI x, 
+rw set.mem_Union, cases h1, cases x, cases h1_h, dsimp at *, simp at *, fsplit, work_on_goal 1 { assumption },
+end
+
+def fnn  (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) (x:  ℤ × ℤ)  : (⋃ (s: ℕ), coef (In s)):=
+⟨x, fn In HI x⟩
+
+
+def union_equiv (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) : (⋃ (s: ℕ), coef (In s)) ≃ ℤ × ℤ:=
+{
+to_fun:=λ x, x.1 ,
+inv_fun:=λ x,   fnn In HI x,
+left_inv:= by {simp, intros x, cases x, refl},
+right_inv:=by {simp, intros x, refl}
+}
+
+def sigma_equiv  (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ): (Σ (s: ℕ), coef (In s)) ≃ ℤ × ℤ:=
+begin
+have h0: ∀ (i j : ℕ), i ≠ j →  disjoint (In i) (In j):= by {sorry,}, 
+have h00: ∀ (i j : ℕ), i ≠ j →  disjoint (coef (In i)) (coef (In j)):= by {intros i j h, rw coef, rw coef, sorry,}, 
+have h1: (⋃ (s: ℕ), coef (In s)) ≃ (Σ (s: ℕ), coef (In s)):= by {apply set.Union_eq_sigma_of_disjoint h00, },
+have h11:  (⋃ (s: ℕ), coef (In s)) ≃ ℤ × ℤ, by {apply union_equiv, exact HI,},
+have h2:  (Σ (s: ℕ), coef (In s)) ≃ ℤ × ℤ:= by {have e1:=equiv.symm h1, apply equiv.trans e1 h11,},
+exact h2,
+end  
+
+def sigma_equiv'  (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ): ( Σ (s: ℕ), coef (In s)) ≃  ℤ × ℤ:={
+to_fun:=λ x, (union_equiv In HI).to_fun ⟨x.2, set.mem_Union.2 ⟨x.1, x.2.2⟩⟩,
+inv_fun:= λ x, ((union_equiv In HI).inv_fun x)
+
+}
+
+
+
+lemma sum_lemma (f: ℤ × ℤ → ℝ) (h: ∀ y : ℤ × ℤ, 0 ≤ f y) (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) )  :
+summable f ↔ summable (λ ( n : ℕ), ∑ x in In (n), f x)  :=
+begin
+have h2:  (Σ (s: ℕ), coef (In s)) ≃ ℤ × ℤ:= by {apply sigma_equiv In HI},
+have h22: ∀ y : (Σ (s: ℕ), coef (In s)), 0 ≤ (f ∘ h2) y:= by {sorry,}, 
+have h3:=summable_sigma_of_nonneg  h22 ,
+have h4: summable f ↔ summable (f ∘ h2), by {have:= equiv.summable_iff h2 , rw this, }, 
+rw h4, rw h3, simp, dsimp, 
+have h5: ∀ (x : ℕ), finset ((coef (In x))), by {intro x, rw coef, exact finset.univ,},
+
+have hy22:  ∀ (x : ℕ) (y : coef (In x)), h2 ⟨x, y⟩= y, by {intros x y, 
+ sorry,},
+have hy2:  ∀ (x : ℕ) (y : coef (In x)), f (h2 ⟨x, y⟩)=f y, by {
+intros x y, rw hy22,
+},
+
+have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨x, y⟩) = ∑ y in  (In x), f y, by {intro x, 
+have hy1:= h5 x,
+let gg:= λ  (y : (coef (In x))),  f (h2 ⟨x, y⟩),
+have:= finset.tsum_subtype' hy1 gg, simp_rw gg at this, 
+have h7: ∑ (x_1 : (coef (In x))) in hy1, f (h2 ⟨x, x_1⟩)= ∑ y in In x, f y:= by {simp, simp_rw hy2,   sorry,},
+rw h7 at this, rw ← this, simp_rw hy2, 
+sorry,},
+simp_rw h6, simp,
+
 
 
 sorry,
