@@ -301,35 +301,13 @@ end
 
 
 
-lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k) : summable (Eise k z) :=
-
-begin
---rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
---rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
---summable_of_nonneg_of_le 
- 
-sorry,
-end  
-
-
-
-
-lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
-begin
-rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
-
-end
-
-
-
-
-end Eisenstein_series
-
 
 
 
 
 def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
+
+
 
 @[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
 
@@ -345,13 +323,30 @@ have h1: max a b = a, apply max_eq_left this, rw h1, simp only [true_or, eq_self
 have h2: max b a=b, apply max_eq_left this, rw h2, simp only [eq_self_iff_true, or_true],
 end  
 
-lemma square_is_fin (n: ℕ): fintype (square n):=
+lemma sqr (n: ℕ): fintype { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}:=
 begin
 sorry,
 end
 
+lemma square_is_fin (n: ℕ): fintype ({ x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}):=
+begin
+sorry
+end
 
-lemma square_card (n: ℕ): finset.card (square_is_fin n).1=8*n:=
+def sqr (n: ℕ): finset (ℤ × ℤ):= 
+begin
+have S:= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}, 
+have hS: fintype S, by {sorry,},
+have:(set.to_finset S),
+end
+
+
+lemma square_nodup (n : ℕ): multiset.nodup (square_is_fin n).1:=
+begin
+sorry,
+end
+
+lemma square_card (n: ℕ): finset.card (square_is_fin n)=8*n:=
 begin
 sorry,
 end
@@ -527,10 +522,39 @@ end
 -- prod_bUnion 
 
 
+def Square (n: ℕ): finset (ℤ × ℤ):={
+val:= (square_is_fin n).1,
+nodup:= square_nodup n,
+
+}
+
+
+lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k > 1) : summable (Eise k z) :=
+
+begin
+
+--rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
+--rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
+--summable_of_nonneg_of_le 
+ 
+sorry,
+end  
 
 
 
 
+
+/-
+lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
+begin
+rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
+
+end
+
+-/
+
+
+end Eisenstein_series
 
 
 
