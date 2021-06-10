@@ -491,6 +491,12 @@ have H2: ∀  (x : α), ∑' (y : (λ (s : α), ↥(i s)) x), (f ∘ ⇑h0) ⟨x
 simp_rw H2,
  end
 
+lemma disjoint_aux (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) : ∀ (i j : ℕ), i ≠ j → disjoint (In i) (In j):=
+begin
+intros i j h, intros a α, cases a, dsimp at *, simp at *, cases α, 
+have HI0:=HI a_fst a_snd,
+have:= exists_unique.unique HI0 α_left α_right, rw this at h, simp at *, exact h,
+end
 
 
 
@@ -498,16 +504,22 @@ lemma sum_lemma (f: ℤ × ℤ → ℝ) (h: ∀ y : ℤ × ℤ, 0 ≤ f y) (In: 
 summable f ↔ summable (λ ( n : ℕ), ∑ x in In (n), f x)  :=
 begin
 let h2:= union_equiv In HI,
-have h22: ∀ y : (⋃ (s: ℕ), coef (In s)), 0 ≤ (f ∘ h2) y:= by {simp_rw h2, simp_rw union_equiv, simp, simp_rw coef, simp_rw h,simp,}, 
-have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)), by {sorry,},
-have h3:=summable_disjoint_union_of_nonneg  hdis h22 ,
-have h4: summable f ↔ summable (f ∘ h2), by {have:= equiv.summable_iff h2 , rw this, }, 
-rw h4, rw h3, simp, dsimp, 
+have h22: ∀ y : (⋃ (s: ℕ), coef (In s)), 0 ≤ (f ∘ h2) y:= by {simp_rw h2, simp_rw union_equiv, simp, 
+simp_rw coef, simp_rw h, simp only [forall_const, implies_true_iff],}, 
+have hdis':=disjoint_aux In HI,
 have h5: ∀ (x : ℕ), finset ((coef (In x))), by {intro x, rw coef, exact finset.univ,},
 have hg:∀ (x : ℕ), (coef (In x))={y : ℤ × ℤ | y ∈ In x}, by {intros x, refl,},
+have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)), by {intros a b hab, simp_rw coef, 
+rw ← finset.disjoint_iff_disjoint_coe, apply hdis', exact hab,},
+have h3:=summable_disjoint_union_of_nonneg  hdis h22 ,
+have h4: summable f ↔ summable (f ∘ h2), by {have:= equiv.summable_iff h2 , rw this, }, 
+rw h4, rw h3, simp only [function.comp_app], dsimp, 
+
 have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in  (In x), f y, by {
- simp, intro x, apply finset.tsum_subtype', },
-simp_rw h6, simp, simp_rw h2, rw union_equiv, simp, intros H x, rw hg, apply finset.summable, apply unionmem,
+  simp only, intro x, apply finset.tsum_subtype', },
+simp_rw h6,  simp only [and_iff_right_iff_imp], simp_rw h2, rw union_equiv,  simp only [equiv.coe_fn_mk, subtype.coe_mk], 
+intros H x, rw hg, apply finset.summable,
+ apply unionmem,
 
 end
 
