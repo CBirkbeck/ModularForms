@@ -1,4 +1,5 @@
 import tactic.ring
+import tactic.choose 
 import tactic.pi_instances
 import .modular_group
 import .GLnR
@@ -468,69 +469,42 @@ begin
 simp, use x, cases y, assumption,
 end
 
-def sigma_union_equiv (i: α → set β) (h: ∀ a b, disjoint (i a) (i b)):  (Σ (s: α ), i s) ≃ (⋃ (s:α), i s):={
-to_fun:=set.sigma_to_Union _,
-inv_fun:=λ x, x  ,
-left_inv:=sorry,
-right_inv:=sorry,
 
 
-}
 
-
-lemma summable_disjoint_union_of_nonneg {i : α →  set β} {f : (⋃ x, i x) → ℝ} (hf : ∀ x, 0 ≤ f x) :
+lemma summable_disjoint_union_of_nonneg {i : α →  set β} {f : (⋃ x, i x) → ℝ} (h: ∀ a b, a ≠ b →  disjoint (i a) (i b)) (hf : ∀ x, 0 ≤ f x) :
   summable f ↔ (∀ x, summable (λ (y : i x), f ⟨y, unionmem i x y⟩ )) ∧ summable (λ x, ∑' (y : i x), f ⟨y , unionmem i x y⟩) :=
  begin
-have h0:  (Σ (s: α ), i s) ≃ (⋃ (s: α), i s) , by {sorry,},
+let h0:=(set.Union_eq_sigma_of_disjoint h).symm,
 have h01: summable f ↔ summable ( f ∘ h0 ), by {have:= equiv.summable_iff h0 , rw this, },
-have h22: ∀ y : (Σ (s: α ), i s), 0 ≤ (f ∘ h0) y:= by {sorry,}, 
+have h22: ∀ y : (Σ (s: α ), i s), 0 ≤ (f ∘ h0) y:= by {simp_rw h0, 
+ rw set.Union_eq_sigma_of_disjoint, simp only [equiv.symm_symm, function.comp_app, sigma.forall, equiv.of_bijective_apply], simp_rw set.sigma_to_Union, simp_rw hf, simp only [forall_2_true_iff],}, 
 have h1:=summable_sigma_of_nonneg h22 ,
 rw h01, rw h1, 
 have H1: ∀ (x : α), summable (λ (y : (λ (s : α), ↥(i s)) x), f (h0 ⟨x, y⟩)) ↔ summable (λ (y : ↥(i x)), f ⟨y,  unionmem i x y⟩),
  by {
-  intro x, dsimp, 
-   rw function.injective.summable_iff,  
-   have hh1: coe_sort (i x)={r : β | r ∈ i x }, by {simp},
-   work_on_goal 0 {rw equiv.summable_iff_of_support, simp, intros d hd hdd,  sorry, }, work_on_goal 1 { sorry,},
-    simp, intros a₁ a₂ ᾰ, cases a₂, cases a₁, cases h1, cases h01, dsimp at *, simp at *, assumption,
-   sorry,},
+  intro x, dsimp, simp_rw h0, rw set.Union_eq_sigma_of_disjoint, simp only [equiv.symm_symm, equiv.of_bijective_apply], simp_rw set.sigma_to_Union, },
 simp_rw H1, simp only [ and.congr_right_iff], intro hfin, 
-have H2:= ∀  (x : α), ∑' (y : (λ (s : α), ↥(i s)) x), (f ∘ ⇑h0) ⟨x, y⟩=∑' (y : ↥(i x)), f ⟨↑y, _⟩, by {sorry,},
-apply unionmem,
+have H2: ∀  (x : α), ∑' (y : (λ (s : α), ↥(i s)) x), (f ∘ ⇑h0) ⟨x, y⟩=∑' (y : ↥(i x)), f ⟨↑y, unionmem i x y⟩, by {
+  intro x, simp only [function.comp_app], simp_rw h0,  rw set.Union_eq_sigma_of_disjoint, simp only [equiv.symm_symm, equiv.of_bijective_apply], simp_rw set.sigma_to_Union,}, 
 
+simp_rw H2,
  end
 
---by { lift f to (Σ x, β x) → ℝ≥0 using hf, exact_mod_cast nnreal.summable_sigma }
+
 
 
 lemma sum_lemma (f: ℤ × ℤ → ℝ) (h: ∀ y : ℤ × ℤ, 0 ≤ f y) (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) )  :
 summable f ↔ summable (λ ( n : ℕ), ∑ x in In (n), f x)  :=
 begin
-let h2:= union_equiv In HI,--apply sigma_equiv In HI},
+let h2:= union_equiv In HI,
 have h22: ∀ y : (⋃ (s: ℕ), coef (In s)), 0 ≤ (f ∘ h2) y:= by {simp_rw h2, simp_rw union_equiv, simp, simp_rw coef, simp_rw h,simp,}, 
-have h3:=summable_disjoint_union_of_nonneg  h22 ,
+have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)), by {sorry,},
+have h3:=summable_disjoint_union_of_nonneg  hdis h22 ,
 have h4: summable f ↔ summable (f ∘ h2), by {have:= equiv.summable_iff h2 , rw this, }, 
 rw h4, rw h3, simp, dsimp, 
 have h5: ∀ (x : ℕ), finset ((coef (In x))), by {intro x, rw coef, exact finset.univ,},
 have hg:∀ (x : ℕ), (coef (In x))={y : ℤ × ℤ | y ∈ In x}, by {intros x, refl,},
-
-/-have hy22:  ∀ (x : ℕ) (y : coef (In x)), h2 ⟨x, y⟩= y, by {intros x y, 
- sorry,},
-have hy2:  ∀ (x : ℕ) (y : coef (In x)), f (h2 ⟨x, y⟩)=f y, by {
-intros x y, rw hy22,
-},
-
-have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨x, y⟩) = ∑ y in  (In x), f y, by {intro x, 
-have hy1:= h5 x,
-let gg:= λ  (y : (coef (In x))),  f (h2 ⟨x, y⟩),
-have:= finset.tsum_subtype' hy1 gg, simp_rw gg at this, 
-have h7: ∑ (x_1 : (coef (In x))) in hy1, f (h2 ⟨x, x_1⟩)= ∑ y in In x, f y:= by {simp, simp_rw hy2,    sorry,},
-rw h7 at this, rw ← this, simp_rw hy2, 
-sorry,},
-
-
-simp_rw h6, simp,
--/
 have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in  (In x), f y, by {
  simp, intro x, apply finset.tsum_subtype', },
 simp_rw h6, simp, simp_rw h2, rw union_equiv, simp, intros H x, rw hg, apply finset.summable, apply unionmem,
