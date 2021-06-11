@@ -11,12 +11,15 @@ import data.matrix.notation
 import data.setoid.partition
 import topology.instances.ennreal
 import topology.instances.nnreal
+import .Riemann_zeta_fin
+
+
 
 universes u v w
 
 open complex
 
-open_locale big_operators nnreal
+open_locale big_operators nnreal classical
 
 local notation `ℍ` := upper_half_space
 noncomputable theory
@@ -234,6 +237,10 @@ begin
 simp [h], 
 end 
 
+lemma Eise_is_pos (k: ℤ) (z : ℍ) (y : ℤ × ℤ): 0 ≤ abs (Eise k z y):=
+begin
+unfold Eise, simp,  sorry,
+end
 
 
 lemma calc_lem (k: ℤ) (a b c d i1 i2: ℂ) (z : ℍ) (h: c*z+d ≠ 0) : ((i1* ((a*z+b)/(c*z+d))+i2)^k)⁻¹=(c*z+d)^k* (  ((i1 * a + i2 * c) * z + (i1 * b + i2 * d))^k   )⁻¹:=
@@ -303,10 +310,44 @@ end
 
 
 
+def squarez (m : ℕ) : finset (ℤ × ℤ) :=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
+
 
 
 def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
 
+lemma square_fin (n: ℕ): set.finite (square n):=
+begin
+sorry,
+end  
+
+def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
+
+
+@[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
+begin
+split,
+intro x,
+rw Square at x, simp at x, simp_rw x,
+intro hx, rw Square, simp, simp [hx], 
+sorry,
+end
+
+
+lemma Square_size (n : ℕ): finset.card (Square n)=8*n:=
+begin
+sorry,
+end  
+
+lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
+begin
+sorry,
+end
+
+lemma Squares_cover_all :  ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ Square (i) :=
+begin
+sorry,
+end  
 
 
 @[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
@@ -323,33 +364,7 @@ have h1: max a b = a, apply max_eq_left this, rw h1, simp only [true_or, eq_self
 have h2: max b a=b, apply max_eq_left this, rw h2, simp only [eq_self_iff_true, or_true],
 end  
 
-lemma sqr (n: ℕ): fintype { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}:=
-begin
-sorry,
-end
 
-lemma square_is_fin (n: ℕ): fintype ({ x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}):=
-begin
-sorry
-end
-
-def sqr (n: ℕ): finset (ℤ × ℤ):= 
-begin
-have S:= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}, 
-have hS: fintype S, by {sorry,},
-have:(set.to_finset S),
-end
-
-
-lemma square_nodup (n : ℕ): multiset.nodup (square_is_fin n).1:=
-begin
-sorry,
-end
-
-lemma square_card (n: ℕ): finset.card (square_is_fin n)=8*n:=
-begin
-sorry,
-end
 
 def sup_func_aux (k: ℤ) (n: ℕ) : square n → ℝ:=
 λ x, 1/n^k 
@@ -388,31 +403,6 @@ variables {α : Type u} {β : Type v} {γ : Type w} {i : α → set β}
 instance  (a: α): has_lift_t (i a) (set.Union i):=
 begin
 fsplit, intros ᾰ, cases ᾰ, fsplit, work_on_goal 1 { simp at *, fsplit, work_on_goal 1 { assumption } },
-end
-
-
-
-lemma tsum_union_disjoint' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
-(hs: summable g ): ∑' (x : set.Union i), g x= ∑' (a : α), ∑' x : (i a),   (g ∘ coe) x:=
-
-begin
-simp_rw tsum_sigma',
-sorry,
-end
-
-
-
-lemma tsum_union_disjoint'' [add_comm_monoid γ] [topological_space γ] (i : α → set β) (hd: ∀ (a b : α), disjoint (i a) (i b)) (g : set.Union i → γ )
-:summable g ↔  summable (λ (a : α), ∑' x : (i a),   (g ∘ coe) x):=
-
-begin
-
-split,
-intro h,
-
-have H:=tsum_union_disjoint' i hd g h, have H2:=summable.has_sum h, rw H at H2, simp at *, rw summable, use (∑' (x : set.Union i), g x), 
-simp, rw H, rw has_sum, simp [filter.tendsto], 
-sorry, sorry, 
 end
 
 
@@ -514,30 +504,83 @@ have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in
   simp only, intro x, apply finset.tsum_subtype', },
 simp_rw h6,  simp only [and_iff_right_iff_imp], simp_rw h2, rw union_equiv,  simp only [equiv.coe_fn_mk, subtype.coe_mk], 
 intros H x, rw hg, apply finset.summable,
- apply unionmem,
+ apply unionmem, 
 
 end
 
 
 -- prod_bUnion 
 
-
+/-
 def Square (n: ℕ): finset (ℤ × ℤ):={
 val:= (square_is_fin n).1,
 nodup:= square_nodup n,
 
 }
+-/
 
+lemma realpow (n : ℕ ) (k : ℤ): (n: ℝ)^((k : ℝ)-1)= n^(k-1):=
+begin
+have:=real.rpow_int_cast (n: ℝ) (k-1), rw ← this, simp,
+end
 
-lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : k > 1) : summable (Eise k z) :=
+lemma summable_abs_iff' {f : α → ℂ} :
+  summable (λ x, complex.abs (f x)) ↔ summable f :=
+begin
+sorry,
+end
+ 
+
+lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : 2 < k) : summable (Eise k z) :=
 
 begin
+let In:=Square,
+have HI:=Squares_cover_all,
+have Hpos:= Eise_is_pos k z,
+let f:=(Eise k z),
+have sum_Eq:  summable (λ x, abs (f x)) ↔ summable f, by {sorry,},
+have:=sum_Eq.1,
+simp_rw ← f,
+rw ← sum_Eq,
+let g:= λ (y : ℤ × ℤ), abs (f y),
+have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {sorry,},
+simp_rw ← g,
+have index_lem:= sum_lemma g  gpos In HI,
+
+rw  index_lem,
+
+let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
+
+have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((2* abs z)))*(n^(k-1))⁻¹, by {
+intro n,
+simp_rw g, simp_rw f,
+sorry,  
+},
+
+have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(2* abs z)) * ((rie (k-1)) n), by {
+simp_rw e, simp at BIGCLAIM, rw rie, simp, intro n,
+ have tr :((↑n ^ (k - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp, apply (realpow n k).symm, },
+ rw ← tr, apply BIGCLAIM,
+},
+
+have epos: ∀ (x : ℕ), 0 ≤ e x, by {sorry,},
+
+have hk: 1 < (k-1 : ℝ), by {sorry, },
+have nze: ((8/((2* abs z))): ℝ)  ≠ 0, by {sorry,},
+have riesum:=Riemann_zeta_is_summmable (k-1) hk,
+
+have riesum': summable (λ (n : ℕ), (8 / (2 * complex.abs ↑z)) * rie (↑k - 1) n), by {
+  rw (summable_mul_left_iff nze).symm, apply riesum,},
+have:=summable_of_nonneg_of_le epos smallerclaim, 
+
+apply this,
+apply riesum',
+
 
 --rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
 --rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
 --summable_of_nonneg_of_le 
  
-sorry,
 end  
 
 
@@ -552,6 +595,8 @@ rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
 end
 
 -/
+
+
 
 
 end Eisenstein_series

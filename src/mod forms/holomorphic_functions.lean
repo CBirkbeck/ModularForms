@@ -5,6 +5,7 @@ import ring_theory.subring
 import analysis.normed_space.basic
 
 
+
 local attribute [instance] classical.prop_decidable
 noncomputable theory
 
@@ -108,7 +109,7 @@ begin
   existsi (f'z₀ + g'z₀),
   rw extend_by_zero_add,
   have:=has_deriv_within_at.add Hf Hg,
-  exact this,
+  exact this, 
 end
 
 lemma mul_hol (f g : domain → ℂ) (f_hol : is_holomorphic f) (g_hol : is_holomorphic g) : is_holomorphic (f * g) :=
@@ -163,3 +164,4 @@ def hol_submodule (domain: open_subs) : submodule (ℂ)  (domain → ℂ) :=
   zero_mem' := zero_hol domain,
   add_mem' := add_hol,
   smul_mem' := smul_hol}
+
