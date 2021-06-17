@@ -699,9 +699,11 @@ by_cases C1: complex.abs (x.1: ℂ)=n,
 
 
 rw inv_le_inv,
-have h0: (x.1:ℂ) ≠ 0, by {sorry,},
-have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.fst))^k* ((z: ℂ)+(x.2: ℂ)/(↑(x.fst)))^k, by {
-sorry,
+have h0: (x.1:ℂ) ≠ 0, by {norm_cast, intro hx, rw hx at C1, simp at C1, norm_cast at C1, rw ← C1 at hn, simp at hn, exact hn,},
+have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.fst))^k* ((z: ℂ)+(x.2: ℂ)/(↑(x.fst)))^k, by { rw ← mul_pow, rw div_eq_mul_inv, 
+have: (x.fst: ℂ) * ((z: ℂ)  + (x.snd: ℂ) * ((x.fst: ℂ))⁻¹)=(x.fst: ℂ) * (z: ℂ) + (x.snd: ℂ), by {
+ have p1: (x.fst: ℂ) * ((z: ℂ)  + (x.snd: ℂ) * ((x.fst: ℂ))⁻¹)= ((x.fst: ℂ) * (z: ℂ)  + (x.fst : ℂ) * ((x.fst: ℂ))⁻¹ * (x.snd: ℂ)),
+ ring,  rw mul_inv_cancel at p1, simp at p1,rw p1, exact h0,},rw this,
 
 
 },
