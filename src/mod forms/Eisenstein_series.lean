@@ -699,16 +699,16 @@ by_cases C1: complex.abs (x.1: ℂ)=n,
 
 
 rw inv_le_inv,
-have h0: (z: ℂ) ≠ 0, by {sorry,},
+have h0: (x.1:ℂ) ≠ 0, by {sorry,},
 have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.fst))^k* ((z: ℂ)+(x.2: ℂ)/(↑(x.fst)))^k, by {
 sorry,
 
 
 },
 rw h1, rw complex.abs_mul, rw complex.abs_mul,  
-have h3: complex.abs (↑(x.fst) ^ k)=  (complex.abs (↑(x.fst)))^k , by {sorry,},
+have h3: complex.abs (↑(x.fst) ^ k)=  (complex.abs (↑(x.fst)))^k , by {apply complex_abs_pow', },
 rw h3, rw C1,
-have h4: complex.abs (↑n ^ k)=↑n ^ k, by {sorry,},
+have h4: complex.abs (↑n ^ k)=↑n ^ k, by {norm_cast, },
 
 --apply mul_le_mul_of_nonneg_left, 
 rw h4, rw mul_comm, apply mul_le_mul_of_nonneg_left,
