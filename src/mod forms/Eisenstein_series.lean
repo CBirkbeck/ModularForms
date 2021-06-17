@@ -321,7 +321,7 @@ begin
 sorry,
 end  
 
-def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
+def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
 
 
 @[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
@@ -332,6 +332,7 @@ rw Square at x, simp at x, simp_rw x,
 intro hx, rw Square, simp, simp [hx], 
 sorry,
 end
+
 
 
 lemma Square_size (n : ℕ): finset.card (Square n)=8*n:=
@@ -529,7 +530,199 @@ lemma summable_abs_iff' {f : α → ℂ} :
 begin
 sorry,
 end
- 
+
+lemma upper_gt_zero (z: ℍ) : 0<(z: ℂ ).im:=
+begin
+ have H:= z.property, rw H_mem at H, simp at H,  apply H,
+end
+
+def lb (z: ℍ): ℝ:=((z.1.2)^4 + (z.1.1*z.1.2)^2)/(z.1.1^2+z.1.2^2)^2
+
+lemma lb_pos (z : ℍ): 0 < lb z :=
+begin
+rw lb, simp, 
+have H1: 0 < ((z.1.2)^4 + (z.1.1*z.1.2)^2), by {rw add_comm, apply add_pos_of_nonneg_of_pos,   nlinarith, 
+have h1: z.1.2^4=z.1.2^2*z.1.2^2, ring, rw h1, apply mul_pos, simp, have:=upper_gt_zero z, rw pow_two, apply mul_pos, exact this, exact this,
+simp, have:=upper_gt_zero z, rw pow_two, apply mul_pos, exact this, exact this, }, 
+have H2: 0 < (z.1.1^2+z.1.2^2)^2, by {nlinarith,},
+have H3: ((z.1.2)^4 + (z.1.1*z.1.2)^2)/(z.1.1^2+z.1.2^2)^2=((z.1.2)^4 + (z.1.1*z.1.2)^2)*((z.1.1^2+z.1.2^2)^2)⁻¹ , by {ring,},
+simp at H3, rw H3,
+have H4: 0 < ((z.1.1^2+z.1.2^2)^2)⁻¹, by {rw inv_pos, exact H2,},
+apply mul_pos H1 H4,
+end  
+
+def rfunct (z: ℍ): ℝ:=
+min (real.sqrt((z.1.2)^2)) (real.sqrt(lb z))
+
+lemma rfunct_pos (z : ℍ): 0 < (rfunct z):=
+begin
+ have H:= z.property, rw H_mem at H, simp at H,  
+rw rfunct, simp, split, rw pow_two, apply mul_pos, exact H, exact H, apply lb_pos,
+end
+
+
+lemma alem (a b c : ℝ): (a-b) ≤ a+c ↔ -b ≤ c:=
+begin
+have: a-b= a+(-b), by {ring,},
+split, 
+rw this, simp_rw add_le_add_iff_left, simp,
+rw this, simp_rw add_le_add_iff_left, simp,
+end
+
+lemma ineq1 (x y d: ℝ  ): 0 ≤ d^2*(x^2+y^2)^2+2*d*x*(x^2+y^2)+x^2:=
+begin
+have h1: d^2*(x^2+y^2)^2+2*d*x*(x^2+y^2)+x^2 =(d*(x^2+y^2)+x)^2, by {ring,},
+rw h1,
+nlinarith,
+end
+
+lemma lowbound (z : ℍ) (δ : ℝ): ((z.1.2)^4 + (z.1.1*z.1.2)^2)/(z.1.1^2+z.1.2^2)^2 ≤ (δ*z.1.1+1)^2+(δ*z.1.2)^2:=
+begin
+simp, 
+have H1: (δ*z.1.1+1)^2+(δ*z.1.2)^2=δ^2*(z.1.1^2+z.1.2^2)+2*δ*z.1.1+1, by {ring,}, simp at H1, rw H1, rw div_le_iff, simp,
+have H2: (δ ^ 2 * ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) + 2 * δ *  (z: ℂ).re + 1) * ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2=δ ^ 2 * ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2)^3 + 2 * δ *  (z: ℂ).re* ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2+   ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2,
+by {ring,}, rw H2, rw ← sub_nonneg, 
+have H3:( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2-((z: ℂ).im ^ 4 + ((z: ℂ).re * (z: ℂ).im) ^ 2)=((z: ℂ).re)^2*( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2), by {ring,},
+
+
+have H4: δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 3 + 2 * δ * (z: ℂ).re * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 2 + ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 2 - ((z: ℂ).im ^ 4 + ((z: ℂ).re * (z: ℂ).im) ^ 2)=(((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2))*(δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)^2 + 2 * δ * (z: ℂ).re * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) +(z: ℂ).re ^ 2), by {ring,},
+rw H4,
+have H5: 0 ≤ (δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)^2 + 2 * δ * (z: ℂ).re * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) +(z: ℂ).re ^ 2), by {apply ineq1,},
+have H6: 0 ≤ (((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)), by {nlinarith,},
+apply mul_nonneg H6 H5, 
+have H7:= z.property, rw H_mem at H7, simp at H7, 
+have H8:0 < (z: ℂ).im ^ 2, by {simp [H7], },
+have H9: 0 <((z: ℂ).im ^ 2+(z: ℂ).re ^ 2), by {nlinarith,},
+nlinarith,
+end
+
+
+
+
+
+lemma auxlem (z : ℍ) (δ : ℝ) : (rfunct z) ≤ complex.abs ( (z: ℂ)+δ ) ∧ (rfunct z) ≤ complex.abs ( δ*(z: ℂ) +1):=
+begin
+split,
+{
+rw rfunct, rw complex.abs, rw norm_sq, simp only [add_zero, of_real_im, monoid_with_zero_hom.coe_mk, of_real_re, add_re, add_im, min_le_iff, subtype.val_eq_coe],
+have H1: real.sqrt (((z: ℂ).im)^2) ≤ real.sqrt (((z: ℂ).re + δ) * ((z: ℂ).re + δ) + (z: ℂ).im * (z: ℂ).im), by {
+  rw real.sqrt_le, nlinarith,nlinarith,
+},
+simp_rw H1, simp,
+
+},
+
+{
+  rw rfunct, rw complex.abs, rw norm_sq, simp,
+ have H1:  real.sqrt (lb z) ≤ real.sqrt ((δ*(z: ℂ).re  + 1) * (δ*(z: ℂ).re  + 1) + δ*(z: ℂ).im *  (δ*(z: ℂ).im )), by {
+   rw lb, rw real.sqrt_le, have:= lowbound z δ, rw ← pow_two, rw ← pow_two,  simp at *, apply this,nlinarith,},
+  simp_rw H1, simp,
+  },
+
+
+
+/-  
+split,
+{
+ rw rfunct, unfold rfunct', unfold complex.abs, unfold norm_sq, simp, 
+by_cases c1:  0 ≤ ((z: ℂ).re - 1), 
+have H: real.sqrt (((z: ℂ).re - 1) * ((z: ℂ).re - 1) + (z: ℂ).im * (z: ℂ).im) ≤ real.sqrt (((z: ℂ).re + δ) * ((z: ℂ).re + δ) + (z: ℂ).im * (z: ℂ).im), 
+by {rw real.sqrt_le, simp only [add_le_add_iff_right], 
+have i1: ((z:ℂ).re - 1) ≤  ((z: ℂ).re + δ), by {rw alem, norm_cast at h2, rw abs_le at h2 , apply h2.1,} ,
+apply mul_self_le_mul_self, apply c1, apply i1, nlinarith,},
+have h3: (rfunct z) ≤ real.sqrt (((z: ℂ).re - 1) * ((z: ℂ).re - 1) + (z: ℂ).im * (z: ℂ).im) ,
+by {sorry,},
+rw rfunct at h3, unfold rfunct' at h3, unfold complex.abs at h3, unfold norm_sq at h3, simp at h3,
+apply le_trans h3 H,
+simp at c1,
+  sorry,   },  
+
+
+
+
+{sorry,},-/
+end
+
+lemma complex_abs_pow' (k : ℕ) (a : ℂ): complex.abs (a^k)= (complex.abs (a))^k:=
+begin
+induction k with n hd, simp, rw [pow_succ, pow_succ], have h1:= complex.abs_mul (a) (a^n), rw hd at h1, apply h1,
+end  
+
+lemma complex_abs_pow (k : ℤ) (a : ℂ): complex.abs (a^k)= (complex.abs (a))^k:=
+begin
+induction k with n hd, apply complex_abs_pow', simp only [fpow_neg_succ_of_nat, inv_inj', complex.abs_inv], apply complex_abs_pow', 
+end  
+
+lemma le_of_pow' (a b : ℝ) (k: ℕ)(h : 0 ≤ a) (h2: 0 ≤ b) (h3: a ≤ b): a^k ≤ b^k:=
+begin
+exact pow_le_pow_of_le_left h h3 k,
+end  
+
+
+
+
+lemma baux (a : ℝ) (k : ℕ) (b : ℂ) (h: 0 ≤ a) (h2: a ≤ complex.abs b): a^k ≤ complex.abs (b^k):=
+begin
+rw complex_abs_pow', apply le_of_pow', exact h, apply complex.abs_nonneg, exact h2,
+
+end  
+
+
+lemma baux2 (z : ℍ) (k: ℕ): complex.abs ((rfunct z)^k)=(rfunct z)^k:=
+begin
+norm_cast,
+let a:=rfunct z, simp, 
+have ha: 0 ≤ a, by {simp_rw a, have:= rfunct_pos z , apply le_of_lt this, },
+have:= complex.abs_of_nonneg ha, norm_cast at this, simp_rw a at this, rw this,
+end
+
+lemma auxlem2 (z : ℍ) (n : ℕ)  (x: ℤ × ℤ) (h2: x ∈ Square n) (k : ℕ)  :   complex.abs (((rfunct z): ℂ)^k) ≤   complex.abs (( (z: ℂ)+(x.2: ℂ)/(x.1 : ℂ) )^k):=
+
+begin
+norm_cast, 
+have H1: complex.abs ((rfunct z)^k)=(rfunct z)^k, by {apply baux2,}, norm_cast at H1, rw H1,  apply baux, have:= rfunct_pos z, apply le_of_lt this,
+have:= auxlem z ((x.2/x.1): ℝ), norm_cast at this, apply this.1,
+end  
+
+
+lemma auxlem3 (z : ℍ) (n : ℕ)  (x: ℤ × ℤ) (h2: x ∈ Square n) (k : ℕ)  :   complex.abs (((rfunct z): ℂ)^k) ≤   complex.abs (( ((x.1: ℂ)/(x.2 : ℂ))*(z: ℂ) +1)^k):=
+
+begin
+norm_cast,
+have H1:= (baux2 z k), norm_cast at H1, rw H1,  apply baux, have:= rfunct_pos z, apply le_of_lt this,
+have:= auxlem z ((x.1/x.2): ℝ), norm_cast at *, apply this.2,
+end
+
+lemma Eise_on_square ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=  
+begin
+by_cases C1: complex.abs (x.1: ℂ)=n,
+
+
+rw inv_le_inv,
+have h0: (z: ℂ) ≠ 0, by {sorry,},
+have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.fst))^k* ((z: ℂ)+(x.2: ℂ)/(↑(x.fst)))^k, by {
+sorry,
+
+
+},
+rw h1, rw complex.abs_mul, rw complex.abs_mul,  
+have h3: complex.abs (↑(x.fst) ^ k)=  (complex.abs (↑(x.fst)))^k , by {sorry,},
+rw h3, rw C1,
+have h4: complex.abs (↑n ^ k)=↑n ^ k, by {sorry,},
+
+--apply mul_le_mul_of_nonneg_left, 
+rw h4, rw mul_comm, apply mul_le_mul_of_nonneg_left,
+have:=auxlem2 z n  x h k , apply this, norm_cast, simp, simp,
+have hh : ((x.fst): ℂ) * (z: ℂ) + (x.snd: ℂ) ≠ 0, by {
+intro H,
+have H1 : x.1 = 0 ∨ (z: ℂ).im = 0, by simpa using congr_arg complex.im H, 
+cases H1, {rw H1 at C1, simp at C1, norm_cast at C1, rw ← C1 at hn, simp at *, exact hn,},
+have HH:= z.property, rw H_mem at HH, simp at HH, rw H1 at HH, simp at HH, exact HH,}, 
+apply pow_ne_zero, exact hh, simp, apply mul_pos, rw complex.abs_pos, apply pow_ne_zero, have:= rfunct_pos z, 
+norm_cast, intro np, rw np at this, simp at this, exact this, simp only [complex.abs_pos], apply pow_ne_zero, norm_cast, 
+intro Hn, rw Hn at hn, simp at hn, exact hn, 
+sorry,
+end
 
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : 2 < k) : summable (Eise k z) :=
 
