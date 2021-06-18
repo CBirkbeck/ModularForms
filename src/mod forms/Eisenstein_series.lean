@@ -770,19 +770,22 @@ end
 
 instance: field ℝ:=infer_instance
 
-lemma natpows (x : ℝ) (n : ℤ) (h: 1 ≤ n) (h2: x ≠ 0): x^(n-1)=x^n*x⁻¹:=
+lemma natpows (x : ℝ) (n : ℤ)  (h2: x ≠ 0): x^(n-1)=x^n*x⁻¹:=
 begin
-sorry,
---have:= pow_mul_pow_sub x h, rw ← this,simp, rw mul_comm, rw ← mul_assoc, rw mul_comm,
---have hs: x⁻¹ * x = x* x⁻¹, by {apply mul_comm,}, rw hs, rw mul_inv_cancel, simp, apply h2,
+apply fpow_sub_one, apply h2,
+
 
 end
 
-lemma natpowsinv (x : ℝ) (n : ℤ) (h: 1 ≤ n) (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x:=
+lemma natpowsinv (x : ℝ) (n : ℤ)  (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x:=
 begin
-have:=natpows x n h h2, rw this, have h3:=mul_fpow (x^n) (x⁻¹) (-1), rw fpow_neg at h3, simp at h3, exact h3,
+have:=natpows x n  h2, rw this, have h3:=mul_fpow (x^n) (x⁻¹) (-1), rw fpow_neg at h3, simp at h3, exact h3,
 end  
 
+lemma wut (k: ℤ) (h: 3 ≤ k): 1 < k-1:=
+begin
+nlinarith,
+end  
 
 lemma Eise_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
 
@@ -816,7 +819,7 @@ by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv
 have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: ℤ)-1))⁻¹, by { 
  have dis: ((rfunct z * ↑n) ^ k)⁻¹=((rfunct z)^k)⁻¹* (↑n^k)⁻¹, by {rw mul_pow, 
  rw [← fpow_neg_one,← fpow_neg_one,← fpow_neg_one], rw ← mul_fpow,},
- simp [dis], rw natpowsinv, ring, norm_cast, apply ge_trans h, simp, simp, intro hN, rw hN at n0, simp at n0, exact n0,},
+ simp [dis], rw natpowsinv, ring, norm_cast,  intro hN, rw hN at n0, simp at n0, exact n0,},
 rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
 norm_cast at ne, rw ne at this,  apply this,
 },
@@ -828,14 +831,16 @@ simp_rw e, simp at BIGCLAIM, rw rie, simp, intro n,
  rw ← tr, apply BIGCLAIM n,
 },
 
-have epos: ∀ (x : ℕ), 0 ≤ e x, by {sorry,},
+have epos: ∀ (x : ℕ), 0 ≤ e x, by {simp_rw e, simp_rw g, intro x, 
+apply finset.sum_nonneg,  intros i hi, apply complex.abs_nonneg, },
 
-have hk: 1 < (k-1 : ℝ), by { sorry, },
-have nze: ((8/((rfunct z)^k)): ℝ)  ≠ 0, by {sorry,},
-have riesum:=Riemann_zeta_is_summmable (k-1) hk,
+have hk: 1 < ((k-1): ℤ), by { linarith, },
+have nze: ((8/((rfunct z)^k)): ℝ)  ≠ 0, by {apply div_ne_zero, simp, apply pow_ne_zero,
+ simp, by_contra HR, have:=rfunct_pos z, rw HR at this, simp at this, exact this, },
+have riesum:=int_Riemann_zeta_is_summmable (k-1) hk,
 
 have riesum': summable (λ (n : ℕ), (8 / (rfunct z)^k) * rie (↑k - 1) n), by {
-  rw (summable_mul_left_iff nze).symm, apply riesum,},
+  rw (summable_mul_left_iff nze).symm, simp at riesum, apply riesum,},
 have:=summable_of_nonneg_of_le epos smallerclaim, 
 
 apply this,
