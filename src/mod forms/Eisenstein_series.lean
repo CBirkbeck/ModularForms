@@ -237,9 +237,9 @@ begin
 simp [h], 
 end 
 
-lemma Eise_is_pos (k: ℤ) (z : ℍ) (y : ℤ × ℤ): 0 ≤ abs (Eise k z y):=
+lemma Eise_is_nonneg (k: ℤ) (z : ℍ) (y : ℤ × ℤ): 0 ≤ abs (Eise k z y):=
 begin
-unfold Eise, simp,  sorry,
+unfold Eise, simp, apply complex.abs_nonneg, 
 end
 
 
@@ -365,6 +365,11 @@ have h1: max a b = a, apply max_eq_left this, rw h1, simp only [true_or, eq_self
 have h2: max b a=b, apply max_eq_left this, rw h2, simp only [eq_self_iff_true, or_true],
 end  
 
+lemma max_aux'' (a b n : ℕ) (h: max a b =n): a=n ∨ b =n :=
+begin
+rw ← h,
+apply max_aux,
+end  
 
 
 def sup_func_aux (k: ℤ) (n: ℕ) : square n → ℝ:=
@@ -525,10 +530,16 @@ begin
 have:=real.rpow_int_cast (n: ℝ) (k-1), rw ← this, simp,
 end
 
-lemma summable_abs_iff' {f : α → ℂ} :
-  summable (λ x, complex.abs (f x)) ↔ summable f :=
+
+
+
+lemma summable_if_complex_abs_summable {f : α → ℂ} :
+  summable (λ x, complex.abs (f x)) →  summable f :=
 begin
-sorry,
+intro h,
+apply summable_of_norm_bounded  (λ x, complex.abs (f x))  h,
+intro i,
+unfold norm, exact complete_of_proper,
 end
 
 lemma upper_gt_zero (z: ℍ) : 0<(z: ℂ ).im:=
@@ -696,14 +707,12 @@ end
 lemma Eise_on_square ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=  
 begin
 by_cases C1: complex.abs (x.1: ℂ)=n,
-
-
 rw inv_le_inv,
-have h0: (x.1:ℂ) ≠ 0, by {norm_cast, intro hx, rw hx at C1, simp at C1, norm_cast at C1, rw ← C1 at hn, simp at hn, exact hn,},
+have h0: (x.1:ℂ) ≠ 0, by {norm_cast, intro hx, rw hx at C1, simp only [int.cast_zero, complex.abs_zero] at C1, norm_cast at C1, rw ← C1 at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn,},
 have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.fst))^k* ((z: ℂ)+(x.2: ℂ)/(↑(x.fst)))^k, by { rw ← mul_pow, rw div_eq_mul_inv, 
 have: (x.fst: ℂ) * ((z: ℂ)  + (x.snd: ℂ) * ((x.fst: ℂ))⁻¹)=(x.fst: ℂ) * (z: ℂ) + (x.snd: ℂ), by {
  have p1: (x.fst: ℂ) * ((z: ℂ)  + (x.snd: ℂ) * ((x.fst: ℂ))⁻¹)= ((x.fst: ℂ) * (z: ℂ)  + (x.fst : ℂ) * ((x.fst: ℂ))⁻¹ * (x.snd: ℂ)),
- ring,  rw mul_inv_cancel at p1, simp at p1,rw p1, exact h0,},rw this,
+ ring,  rw mul_inv_cancel at p1, simp only [one_mul] at p1,rw p1, exact h0,},rw this,
 
 
 },
@@ -712,18 +721,44 @@ have h3: complex.abs (↑(x.fst) ^ k)=  (complex.abs (↑(x.fst)))^k , by {apply
 rw h3, rw C1,
 have h4: complex.abs (↑n ^ k)=↑n ^ k, by {norm_cast, },
 
---apply mul_le_mul_of_nonneg_left, 
+
 rw h4, rw mul_comm, apply mul_le_mul_of_nonneg_left,
-have:=auxlem2 z n  x h k , apply this, norm_cast, simp, simp,
+have:=auxlem2 z n  x h k , apply this, norm_cast, simp only [zero_le'], simp only [complex.abs_pos, ne.def],
 have hh : ((x.fst): ℂ) * (z: ℂ) + (x.snd: ℂ) ≠ 0, by {
 intro H,
 have H1 : x.1 = 0 ∨ (z: ℂ).im = 0, by simpa using congr_arg complex.im H, 
-cases H1, {rw H1 at C1, simp at C1, norm_cast at C1, rw ← C1 at hn, simp at *, exact hn,},
-have HH:= z.property, rw H_mem at HH, simp at HH, rw H1 at HH, simp at HH, exact HH,}, 
-apply pow_ne_zero, exact hh, simp, apply mul_pos, rw complex.abs_pos, apply pow_ne_zero, have:= rfunct_pos z, 
-norm_cast, intro np, rw np at this, simp at this, exact this, simp only [complex.abs_pos], apply pow_ne_zero, norm_cast, 
-intro Hn, rw Hn at hn, simp at hn, exact hn, 
-sorry,
+cases H1, {rw H1 at C1, simp only [int.cast_zero, complex.abs_zero] at C1, norm_cast at C1, rw ← C1 at hn, simp only [nat.one_ne_zero, square_mem, le_zero_iff] at *, exact hn,},
+have HH:= z.property, rw H_mem at HH, simp only [subtype.val_eq_coe] at HH, rw H1 at HH, simp at HH, exact HH,}, 
+apply pow_ne_zero, exact hh, simp only [complex.abs_mul], apply mul_pos, rw complex.abs_pos, apply pow_ne_zero, have:= rfunct_pos z, 
+norm_cast, intro np, rw np at this, simp only [lt_self_iff_false] at this, exact this, simp only [complex.abs_pos], apply pow_ne_zero, norm_cast, 
+intro Hn, rw Hn at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn, 
+
+have C2: complex.abs (x.2: ℂ)=n, by {simp only [square_mem] at h, have:=max_aux'' x.1.nat_abs x.2.nat_abs n h, norm_cast,
+cases this, by_contra, norm_cast at C1, rw ← this at C1, rw int.abs_eq_nat_abs at C1, simp only [eq_self_iff_true, not_true] at C1, exact C1, 
+rw ← this, rw int.abs_eq_nat_abs,},
+
+
+ rw inv_le_inv,
+have h0: (x.2: ℂ ) ≠ 0, by {norm_cast, intro hx, rw hx at C2,simp only [int.cast_zero, complex.abs_zero] at C2, norm_cast at C2, rw ← C2 at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn,},
+have h1:(↑(x.fst) * ↑z + ↑(x.snd)) ^ k =  (↑(x.snd))^k* (((x.1:ℂ)/(x.2: ℂ))*(z: ℂ)+1)^k, by {
+  rw ← mul_pow,simp only, rw div_eq_mul_inv, 
+  have: (x.snd: ℂ) * ((x.fst: ℂ) * ((x.snd: ℂ))⁻¹ * (z:ℂ) + 1)=((x.snd: ℂ ) * ((x.snd : ℂ))⁻¹ * (x.fst : ℂ )* (z: ℂ) + (x.snd: ℂ)), by {ring,},
+  rw this, rw mul_inv_cancel, simp only [one_mul], exact h0,},
+rw h1, rw complex.abs_mul, rw complex.abs_mul, 
+have h3: complex.abs (↑(x.2) ^ k)=  (complex.abs (↑(x.2)))^k , by {apply complex_abs_pow', },
+rw h3, rw C2,
+have h4: complex.abs (↑n ^ k)=↑n ^ k, by {norm_cast, }, rw h4, rw mul_comm, apply mul_le_mul_of_nonneg_left, 
+have:=auxlem3 z n  x h k , apply this, norm_cast, simp only [zero_le'],
+have hh : ((x.fst): ℂ) * (z: ℂ) + (x.snd: ℂ) ≠ 0, by {
+ intro H,
+ have H1 : x.1 = 0 ∨ (z: ℂ).im = 0, by simpa using congr_arg complex.im H, 
+ cases H1,
+ {rw H1 at H, simp only [int.cast_eq_zero, int.cast_zero, zero_mul, zero_add] at H, rw H at C2, simp only [int.cast_zero, complex.abs_zero] at C2, norm_cast at C2, rw ← C2 at hn, simp only [nat.one_ne_zero, square_mem, le_zero_iff] at *, exact hn},
+ have HH:= z.property, rw H_mem at HH, simp only [subtype.val_eq_coe] at HH, rw H1 at HH, simp only [lt_self_iff_false] at HH, exact HH,},
+rw complex.abs_pos, apply pow_ne_zero, exact hh,simp only [complex.abs_mul], apply mul_pos,  rw complex.abs_pos, apply pow_ne_zero, have:= rfunct_pos z, 
+norm_cast, intro np, rw np at this,  simp only [lt_self_iff_false] at this, exact this, simp only [complex.abs_pos], apply pow_ne_zero, norm_cast, 
+intro Hn, rw Hn at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn, 
+
 end
 
 lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : 2 < k) : summable (Eise k z) :=
@@ -731,12 +766,12 @@ lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : 2 < k) : summable (Eis
 begin
 let In:=Square,
 have HI:=Squares_cover_all,
-have Hpos:= Eise_is_pos k z,
+have Hpos:= Eise_is_nonneg k z,
 let f:=(Eise k z),
-have sum_Eq:  summable (λ x, abs (f x)) ↔ summable f, by {sorry,},
-have:=sum_Eq.1,
+have sum_Eq:  summable (λ x, abs (f x)) → summable f, by {apply summable_if_complex_abs_summable,},
+
 simp_rw ← f,
-rw ← sum_Eq,
+apply sum_Eq,
 let g:= λ (y : ℤ × ℤ), abs (f y),
 have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {sorry,},
 simp_rw ← g,
