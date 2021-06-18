@@ -761,7 +761,30 @@ intro Hn, rw Hn at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn,
 
 end
 
-lemma Eise_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) (h : 2 < k) : summable (Eise k z) :=
+
+lemma Eise_on_square' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ n): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
+begin
+intros x hx,
+apply Eise_on_square k z n x hx hn,
+end
+
+instance: field ℝ:=infer_instance
+
+lemma natpows (x : ℝ) (n : ℤ) (h: 1 ≤ n) (h2: x ≠ 0): x^(n-1)=x^n*x⁻¹:=
+begin
+sorry,
+--have:= pow_mul_pow_sub x h, rw ← this,simp, rw mul_comm, rw ← mul_assoc, rw mul_comm,
+--have hs: x⁻¹ * x = x* x⁻¹, by {apply mul_comm,}, rw hs, rw mul_inv_cancel, simp, apply h2,
+
+end
+
+lemma natpowsinv (x : ℝ) (n : ℤ) (h: 1 ≤ n) (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x:=
+begin
+have:=natpows x n h h2, rw this, have h3:=mul_fpow (x^n) (x⁻¹) (-1), rw fpow_neg at h3, simp at h3, exact h3,
+end  
+
+
+lemma Eise_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
 
 begin
 let In:=Square,
@@ -781,25 +804,37 @@ rw  index_lem,
 
 let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
 
-have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((2* abs z)))*(n^(k-1))⁻¹, by {
+have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, by {
 intro n,
-simp_rw g, simp_rw f,
-sorry,  
+simp_rw g, simp_rw f, rw Eise, simp,
+have n0: 1 ≤ n, by {sorry,},
+have BO:=  Eise_on_square' ( k : ℕ) (z : ℍ) (n : ℕ) n0,
+have:= finset.sum_le_sum BO, simp at this, rw (Square_size n) at this,
+norm_cast at this, simp_rw In, 
+have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)= (8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, 
+by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv_mul, 
+have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: ℤ)-1))⁻¹, by { 
+ have dis: ((rfunct z * ↑n) ^ k)⁻¹=((rfunct z)^k)⁻¹* (↑n^k)⁻¹, by {rw mul_pow, 
+ rw [← fpow_neg_one,← fpow_neg_one,← fpow_neg_one], rw ← mul_fpow,},
+ simp [dis], rw natpowsinv, ring, norm_cast, apply ge_trans h, simp, simp, intro hN, rw hN at n0, simp at n0, exact n0,},
+rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
+norm_cast at ne, rw ne at this,  apply this,
 },
 
-have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(2* abs z)) * ((rie (k-1)) n), by {
+have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
 simp_rw e, simp at BIGCLAIM, rw rie, simp, intro n,
- have tr :((↑n ^ (k - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp, apply (realpow n k).symm, },
- rw ← tr, apply BIGCLAIM,
+ have tr :((↑n ^ ((k: ℤ) - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp, have:= realpow n k, 
+ norm_cast at this, rw ← this, simp,},
+ rw ← tr, apply BIGCLAIM n,
 },
 
 have epos: ∀ (x : ℕ), 0 ≤ e x, by {sorry,},
 
-have hk: 1 < (k-1 : ℝ), by {sorry, },
-have nze: ((8/((2* abs z))): ℝ)  ≠ 0, by {sorry,},
+have hk: 1 < (k-1 : ℝ), by { sorry, },
+have nze: ((8/((rfunct z)^k)): ℝ)  ≠ 0, by {sorry,},
 have riesum:=Riemann_zeta_is_summmable (k-1) hk,
 
-have riesum': summable (λ (n : ℕ), (8 / (2 * complex.abs ↑z)) * rie (↑k - 1) n), by {
+have riesum': summable (λ (n : ℕ), (8 / (rfunct z)^k) * rie (↑k - 1) n), by {
   rw (summable_mul_left_iff nze).symm, apply riesum,},
 have:=summable_of_nonneg_of_le epos smallerclaim, 
 
