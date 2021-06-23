@@ -307,52 +307,6 @@ end
 
 
 
-
-
-
-def squarez (m : ℕ) : finset (ℤ × ℤ) :=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
-
-
-
-def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
-
-lemma square_fin (n: ℕ): set.finite (square n):=
-begin
-sorry,
-end  
-
-def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
-
-
-@[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
-begin
-split,
-intro x,
-rw Square at x, simp at x, simp_rw x,
-intro hx, rw Square, simp, simp [hx], 
-sorry,
-end
-
-
-
-lemma Square_size (n : ℕ): finset.card (Square n)=8*n:=
-begin
-sorry,
-end  
-
-lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
-begin
-sorry,
-end
-
-lemma Squares_cover_all :  ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ Square (i) :=
-begin
-sorry,
-end  
-
-
-@[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
-
 lemma max_aux' (a b : ℕ): max a b = a ∨ max a b =b:=
 begin
 apply max_choice,
@@ -370,6 +324,67 @@ begin
 rw ← h,
 apply max_aux,
 end  
+
+
+def squarez (m : ℕ) : finset (ℤ × ℤ) :=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
+
+
+
+def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
+
+lemma square_fin (n: ℕ): set.finite (square n):=
+begin
+sorry,
+end  
+
+def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
+
+
+
+@[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
+begin
+split,
+intro x,
+rw Square at x, simp at x, simp_rw x,
+intro hx, rw Square, simp, simp [hx], 
+ 
+sorry,
+end
+
+
+
+lemma Square_size (n : ℕ) (h: 1 ≤ n): finset.card (Square n)=8*n:=
+begin
+sorry,
+end  
+
+lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
+begin
+sorry,
+end
+
+lemma Squares_cover_all :  ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ Square (i) :=
+begin
+sorry,
+end  
+
+
+
+lemma Square_zero : Square (0: ℕ)={(0,0)}:=
+begin
+refl,  
+end  
+
+lemma Square_zero_card: finset.card (Square 0)=1:=
+begin
+rw Square_zero, refl,
+end  
+
+
+
+@[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
+
+
 
 
 def sup_func_aux (k: ℤ) (n: ℕ) : square n → ℝ:=
@@ -762,11 +777,32 @@ intro Hn, rw Hn at hn, simp only [nat.one_ne_zero, le_zero_iff] at hn, exact hn,
 end
 
 
+
 lemma Eise_on_square' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ n): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
 begin
 intros x hx,
 apply Eise_on_square k z n x hx hn,
 end
+
+
+
+lemma Eise_on_zero_Square (k : ℕ) (z : ℍ) (h: 1 ≤ k) :∀ (x: ℤ × ℤ),  x ∈ (Square 0) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* 0^k))⁻¹ :=
+begin
+intros x hx, rw Square_zero at hx, simp only [finset.mem_singleton] at hx, simp_rw hx, simp only [add_zero, int.cast_zero, zero_mul, complex.abs_mul], 
+have h1: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw h1, rw complex.abs_zero, simp only [mul_zero],
+end
+
+lemma Eise_on_square'' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ k): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
+begin
+by_cases h0: n=0,
+{rw h0, apply Eise_on_zero_Square k z hn, },
+have Hn: 1 ≤ n, by {have:=nat.pos_of_ne_zero, simp at this, work_on_goal 0 { cases z, solve_by_elim },},
+intros x hx,
+apply Eise_on_square k z n x hx Hn,
+end
+
+
+
 
 instance: field ℝ:=infer_instance
 
@@ -799,7 +835,7 @@ have sum_Eq:  summable (λ x, abs (f x)) → summable f, by {apply summable_if_c
 simp_rw ← f,
 apply sum_Eq,
 let g:= λ (y : ℤ × ℤ), abs (f y),
-have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {sorry,},
+have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {simp_rw g,intro y, apply complex.abs_nonneg,},
 simp_rw ← g,
 have index_lem:= sum_lemma g  gpos In HI,
 
@@ -807,27 +843,39 @@ rw  index_lem,
 
 let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
 
+
+
+
 have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, by {
 intro n,
-simp_rw g, simp_rw f, rw Eise, simp,
-have n0: 1 ≤ n, by {sorry,},
-have BO:=  Eise_on_square' ( k : ℕ) (z : ℍ) (n : ℕ) n0,
-have:= finset.sum_le_sum BO, simp at this, rw (Square_size n) at this,
+simp_rw g, simp_rw f, rw Eise, simp only [one_div, complex.abs_inv, fpow_coe_nat],
+have k0: 1 ≤ k, by {linarith,},
+have BO:=  Eise_on_square'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
+by_cases n0: n=0, {simp_rw In, rw n0, rw Square_zero, 
+simp only [add_zero, int.cast_zero, nat.cast_zero, zero_mul, finset.sum_singleton], 
+have H0: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw H0, simp only [complex.abs_zero, inv_zero],
+have H00: (0: ℝ)^((k: ℤ)-1)=0, by { rw zero_fpow, linarith,}, rw H00, simp only [inv_zero, mul_zero],},
+have:= finset.sum_le_sum BO, simp only [finset.sum_const, complex.abs_mul, nsmul_eq_mul] at this,
+
+
+ rw (Square_size n) at this,
 norm_cast at this, simp_rw In, 
 have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)= (8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, 
 by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv_mul, 
 have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: ℤ)-1))⁻¹, by { 
  have dis: ((rfunct z * ↑n) ^ k)⁻¹=((rfunct z)^k)⁻¹* (↑n^k)⁻¹, by {rw mul_pow, 
  rw [← fpow_neg_one,← fpow_neg_one,← fpow_neg_one], rw ← mul_fpow,},
- simp [dis], rw natpowsinv, ring, norm_cast,  intro hN, rw hN at n0, simp at n0, exact n0,},
+ simp [dis], rw natpowsinv, ring, norm_cast,  intro hN, rw hN at n0, 
+ simp only [eq_self_iff_true, not_true] at n0, exact n0,},
 rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
-norm_cast at ne, rw ne at this,  apply this,
+norm_cast at ne, rw ne at this, norm_cast,  apply this, have hy:=nat.pos_of_ne_zero, simp only [ne.def] at hy, have:=hy n0,linarith,
 },
 
 have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
-simp_rw e, simp at BIGCLAIM, rw rie, simp, intro n,
- have tr :((↑n ^ ((k: ℤ) - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp, have:= realpow n k, 
- norm_cast at this, rw ← this, simp,},
+simp_rw e, simp only at BIGCLAIM, rw rie, simp only [one_div], intro n,
+ have tr :((↑n ^ ((k: ℤ) - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp only [inv_inj'], 
+ have:= realpow n k, 
+ norm_cast at this, rw ← this, simp only [int.cast_coe_nat, int.cast_one, int.cast_sub],},
  rw ← tr, apply BIGCLAIM n,
 },
 
@@ -847,24 +895,12 @@ apply this,
 apply riesum',
 
 
---rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
---rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
---summable_of_nonneg_of_le 
- 
+
 end  
 
 
 
 
-
-/-
-lemma Eise_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) (h : k ≥ 4) (h2: even k)  : summable (Eise k z ∘⇑(Ind_equiv A)) :=
-begin
-rw equiv.summable_iff (Ind_equiv A), exact Eise_is_summable A k z h h2,
-
-end
-
--/
 
 
 
