@@ -38,7 +38,7 @@ rw rie,
 have h2:=nnreal.summable_one_div_rpow.2 h, simp only [one_div, real.summable_nat_rpow_inv], exact h,
 end
 
-lemma int_Riemann_zeta_is_summmable (k: ℕ) (h: 1 < k): summable (rie k):=
+lemma int_Riemann_zeta_is_summmable (k: ℤ) (h: 1 < k): summable (rie k):=
 begin
 apply Riemann_zeta_is_summmable, norm_cast, exact h,
 end

@@ -39,17 +39,12 @@ end
 
 
 @[simp]lemma a2 (a b c d : ℂ) : (a/b)/(c/d)=(a*d)/(b*c):=
-
 begin
-calc (a/b)/(c/d)= (a/b)*(c/d)⁻¹  : by rw div_eq_mul_inv
-      ... = (a*b⁻¹)*(c/d)⁻¹   : by rw div_eq_mul_inv 
-      ... = (a* b⁻¹)*(d/c)      : by rw inv_div
-      ... = (a* b⁻¹)* (d * c⁻¹)  : by rw div_eq_mul_inv
-      ... = a* b⁻¹* d * c⁻¹  : by rw ← mul_assoc
-      ... = (a*d)*(b⁻¹*c⁻¹)         : by  ring
-      ... = (a*d)*(b*c)⁻¹         : by  rw mul_inv'
-       ... = (a*d)/(b*c)         : by  rw  ← div_eq_mul_inv,
-end  
+exact div_div_div_div_eq a,
+end
+
+
+
 
 
 lemma a3 (a b c d e f: ℂ ) (h1: c ≠ 0): (a*(b/c)+d)/(e*(b/c)+f)=(a*b+d*c)/(e*b+f*c):=
@@ -123,8 +118,7 @@ calc (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d) = (a*(e*z+f)+b*(g*z+h))/ 
                                       ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+(c*f+d*h)) : by rw [a7 ((a*e+b*g)*z+(a*f+b*h)) (c*e+d*g) z c f d h],
 end
 
-/- definition of what will end up being the action of matrices on the upper half space (WHY DOES IT WORK? Why don't I need to
-worry about divising by zero at this stage?)-/
+/- definition of what will end up being the action of matrices on the upper half space -/
 
 def mat2_complex (M: GLn (fin 2) ℝ) (z : ℂ) : ℂ :=
 (M.1 0 0 * z + M.1 0 1) / (M.1 1 0 * z + M.1 1 1)
@@ -235,7 +229,7 @@ have h2: (det A)⁻¹ = det (A⁻¹), by {apply det_inv A h,},
 end  
 
 
-/-This is the subgroup of 2x2 matrices with real entries and positive determinant-/
+/-- This is the subgroup of 2x2 matrices with real entries and positive determinant-/
 def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 {carrier:={M  | det M > 0},
  one_mem':=one_meme,
@@ -302,7 +296,8 @@ instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.
 
 
 
-/-- This is the moeb action on the upper half plane. -/
+/-- This is the Moebius action on the upper half plane, defined as follows: Given a `2 × 2`matrix `M=![![a, b], ![c, d]]` 
+with positive determinant, it sends `z ∈ ℍ` to `(a*z+b)/(c*z+d)` -/
 def moeb:  (GL2R_pos) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 

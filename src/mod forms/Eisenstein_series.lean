@@ -23,149 +23,6 @@ open_locale big_operators nnreal classical
 
 local notation `ℍ` := upper_half_space
 noncomputable theory
-/-
-
-def Ind:={x : ℤ × ℤ | x ≠ (0,0)}
-
-@[simp]lemma Ind_mem (x: ℤ × ℤ): x ∈ Ind ↔ x ≠ (0,0):=iff.rfl 
-
---gcd_eq_zero_iff
-
-
-
-
-
-
---intro h2, have h2: gcd z1 z2 =0, by {have hh:= int.gcd_eq_gcd_ab z1 z2, convert hh,  sorry,},  rw gcd_eq_zero_iff at h2, exact h2,
-
-
-lemma ridic (a b c d : ℤ): a*d-b*c=1 → a*d-c*b=1:=
-begin
-intro h, linarith,
-end
-
-lemma SL2z_entries_coprime (A: SL2Z): is_coprime (A.1 0 0) (A.1 1 0):=
-begin
-rw is_coprime, have h1:= det_onne A,  simp only [vale] at h1, use (A.1 1 1), use (-A.1 0 1), simp, simp at h1, ring_nf,
-cases A, dsimp at *, simp at *, ring_nf, assumption,  
-end
-
-lemma r0 (a b z1 z2 x : ℤ) (h: z1*a+z2*b=0): z1*a*x+z2*b*x=0:=
-
-begin
-have h1: z1*a*x+z2*b*x=(z1*a+z2*b)*x, by {ring,}, rw h1, rw h, simp only [zero_mul],
-end  
-
-lemma r1 (a b c d z1 z2 : ℤ) (h1: a*d-c*b=1) (h2:z1*a*d+z2*c*d=0) (h3: z1*b*c+z2*d*c=0 ): z1=0:=
-begin
-rw ← h2 at h3, have h0: z2*d*c=z2*c*d, by {ring,}, rw h0 at h3, simp at h3, have h4: z1 * a*d-z1*b*c =0 , by {rw h3, simp,},
-have h5:  z1 * (a * d -  b * c) = z1*a*d-z1*b*c, by { ring, }, rw h4 at h5, have h6: a*d-b*c=a*d-c*b, by {ring,}, rw h6 at h5, 
-rw h1 at h5, simp at h5, exact h5,
-end
-
-lemma r2 (a b c d z1 z2 : ℤ) (h1: a*d-c*b=1) (h2:z1*a*b+z2*c*b=0) (h3: z1*b*a+z2*d*a=0 ): z2=0:=
-
-begin
-rw add_comm at h2, rw add_comm at h3, have h0: z1*b*a=z1*a*b, by {ring}, rw h0 at h3, rw ← h2 at h3, simp at h3, 
-have h4: z2 * d*a-z2*c*b =0 , by {rw h3, simp,}, have h5:  z2 * (d * a -  c * b) = z2*d*a-z2*c*b, by {ring,}, rw h4 at h5,
-have h6: a*d-c*b=d*a-c*b, by {ring}, rw  ← h6 at h5, rw h1 at h5, simp at h5, exact h5, 
-end  
-
-def Ind_perm' (A : SL2Z ): Ind →  Ind:=
-λ z, ⟨(z.1.1* (A.1 0 0) +z.1.2* (A.1 1 0), z.1.1*(A.1 0 1)+z.1.2* (A.1 1 1)), by {simp only [Ind_mem, not_and, prod.mk.inj_iff, ne.def, subtype.val_eq_coe],
-have h1:=z.property, simp at *, have h2:= det_onne A, simp [vale] at *, intros H1 H2, rw ← subtype.val_eq_coe at h2, 
-have ha: z.val.fst * A.val 0 0 * A.val 1 1+ z.val.snd * A.val 1 0 * A.val 1 1 = 0:= by {apply r0, simp only [subtype.val_eq_coe], exact H1,},
-have hb: z.val.fst * A.val 0 1 * A.val 1 0+ z.val.snd * A.val 1 1 * A.val 1 0 = 0:= by {apply r0, simp, exact H2,},
-have hab: z.val.fst =0:= by {apply r1 (A.val 0 0) (A.val 0 1) (A.val 1 0) (A.val 1 1) z.val.fst z.val.snd  h2  ha hb,},
-have ha': z.val.fst * A.val 0 0 * A.val 0 1+ z.val.snd * A.val 1 0 * A.val 0 1 = 0:= by {apply r0, simp, exact H1,},
-have hb': z.val.fst * A.val 0 1 * A.val 0 0+ z.val.snd * A.val 1 1 * A.val 0 0 = 0:= by {apply r0, simp, exact H2,},
-have hab: z.val.snd =0:= by {apply r2 (A.val 0 0) (A.val 0 1) (A.val 1 0) (A.val 1 1) z.val.fst z.val.snd  h2  ha' hb',},
-cases z, cases A, cases z_val, dsimp at *, simp at *, solve_by_elim,
-},⟩
-
-
-
-
-lemma Ind_equiv' (A : SL2Z): Ind ≃ Ind:={
-to_fun:=Ind_perm' A,
-inv_fun:=Ind_perm' A⁻¹,
-left_inv:=λ z, by {rw Ind_perm', rw Ind_perm', 
-have ha:= SL2Z_inv_a A, simp only [vale] at ha, 
-have hb:= SL2Z_inv_b A, simp only [vale] at hb, 
-have hc:= SL2Z_inv_c A, simp only [vale] at hc, 
-have hd:= SL2Z_inv_d A, simp only [vale] at hd, 
-have hdet:=det_onne A, simp only [vale] at hdet,
-simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, rw mul_comm at hdet, simp only [hdet], 
-have ht: A.val 1 1 * A.val 1 0 - A.val 1 0 * A.val 1 1=0, by {ring, }, simp only [ht], 
-have ht2: -(A.val 0 1 * A.val 0 0) + A.val 0 0 * A.val 0 1=0, by {ring,}, simp only [ht2],
-have ht3: -(A.val 0 1 * A.val 1 0) + A.val 0 0 * A.val 1 1 =1, by {rw add_comm,  rw mul_comm at hdet, simp, 
-simp at *, ring_nf, rw ridic, exact hdet, }, simp only [ht3], ring_nf,
- cases z, cases A, cases z_val, dsimp at *, simp at *,},
-right_inv:= λ z, by { rw Ind_perm', rw Ind_perm', 
-have ha:= SL2Z_inv_a A, simp only [vale] at ha, 
-have hb:= SL2Z_inv_b A, simp only [vale] at hb, 
-have hc:= SL2Z_inv_c A, simp only [vale] at hc, 
-have hd:= SL2Z_inv_d A, simp only [vale] at hd, 
-have hdet:=det_onne A, simp only [vale] at hdet,
-simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, 
-have hz1:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.val.fst hdet, simp only [hz1], 
-have hz2:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.val.snd hdet, simp only [hz2], 
-cases z, cases A, cases z_val, dsimp at *, simp at *, } ,
-}
-
-
-
-
-
-
-
-def Eis' (k: ℤ) (z : ℍ) : Ind →  ℂ:=
-λ x, 1/(x.1.1*z+x.1.2)^k  
-
-
-lemma Eis'_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : Ind): Eis' k (moeb A z) i=  ((A.1 1 0*z+A.1 1 1)^k)*(Eis' k z (Ind_equiv' A i ) ):=
-
-begin
-rw Eis', rw Eis', rw moeb, simp, rw mat2_complex, simp, dsimp, sorry,
-end  
-
-
-
-def Eisenstein_series_weight_' (k: ℤ) : ℍ → ℂ:=
- λ z, ∑' (x : Ind), (Eis' k z x) 
-
-
-
-
-lemma Eis_is_summable (A: SL2Z) (k : ℤ) (z : ℍ) : summable (Eis' k z) :=
-
-begin
---rw summable, use (0: ℂ), rw has_sum, rw Eis', simp, sorry, 
---rw summable_iff_cauchy_seq_finset, rw cauchy_seq,
-
-
-sorry,
-end  
-
-
-lemma Eis_is_summable' (A: SL2Z) (k : ℤ) (z : ℍ) : summable (Eis' k z ∘⇑(Ind_equiv' A)) :=
-begin
-rw equiv.summable_iff (Ind_equiv' A), exact Eis_is_summable A k z,
-
-end
-
-
-lemma Eis_is_Pet (k: ℤ):  (Eisenstein_series_weight_' k) ∈ is_Petersson_weight_ k :=
-
-begin
-rw is_Petersson_weight_, rw Eisenstein_series_weight_', simp only [set.mem_set_of_eq], 
-intros A z, have h1:= Eis'_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
-have h3:=equiv.tsum_eq (Ind_equiv' A) (Eis' k z), 
-have h5:= summable.tsum_mul_left ((((A.1 1 0): ℂ) * z + ((A.1 1 1): ℂ)) ^ k) (Eis_is_summable' A k z),
- simp only [prod.forall, function.comp_app, set_coe.forall, subtype.val_eq_coe] at *,  
- rw ← h3, simp only [vale, subtype.val_eq_coe], convert h5, rw h5,
-end
--/
 
 
 /-! ### Eisenstein series -/
@@ -187,7 +44,7 @@ end
 
 
 
-
+/- This is the permutation of the summation index coming from the moebius action-/
 def Ind_perm (A : SL2Z ): ℤ × ℤ →  ℤ × ℤ:=
 λ z, (z.1* (A.1 0 0) +z.2* (A.1 1 0), z.1*(A.1 0 1)+z.2* (A.1 1 1))
 
@@ -275,7 +132,7 @@ work_on_goal 1 { dsimp at *, simp at * }, have h1:= mat_val ⟨A_val, A_property
 end  
 
 
-
+/- How the Eise function changes under the Moebius action-/
 lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A z) i=  ((A.1 1 0*z+A.1 1 1)^k)*(Eise k z (Ind_equiv A i ) ):=
 
 begin
@@ -285,8 +142,8 @@ end
 
 
 /--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, but in order to make it an actual
-modular form some constrainst will be needed -/
-def Eisenstein_series_weight_ (k: ℤ) : ℍ → ℂ:=
+modular form some constraints will be needed -/
+def Eisenstein_series_of_weight_ (k: ℤ) : ℍ → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
 
 
@@ -295,10 +152,10 @@ def Eisenstein_series_weight_ (k: ℤ) : ℍ → ℂ:=
 
 
 
-lemma Eise_is_Pet (k: ℤ)  :  (Eisenstein_series_weight_ k) ∈ is_Petersson_weight_ k :=
+lemma Eisenstein_is_Petersson (k: ℤ)  :  (Eisenstein_series_of_weight_ k) ∈ is_Petersson_weight_ k :=
 
 begin
-rw is_Petersson_weight_, rw Eisenstein_series_weight_, simp only [set.mem_set_of_eq], 
+rw is_Petersson_weight_, rw Eisenstein_series_of_weight_, simp only [set.mem_set_of_eq], 
 intros A z, have h1:= Eise_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
 have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z), 
 rw tsum_mul_left, rw h3,refl,
@@ -326,20 +183,29 @@ apply max_aux,
 end  
 
 
-def squarez (m : ℕ) : finset (ℤ × ℤ) :=((finset.Ico_ℤ (-m) m).product (finset.Ico_ℤ (-m) m)).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
 
 
 
-def square (n: ℕ):= { x: ℤ × ℤ | max (x.1).nat_abs (x.2).nat_abs=n}  
-
-lemma square_fin (n: ℕ): set.finite (square n):=
-begin
-sorry,
-end  
 
 def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
 
+lemma find (a : ℤ ) (h: a = -a): a=0:=
+begin
+exact eq_zero_of_neg_eq (eq.symm h),
+end  
 
+def Square2 (m: ℕ): finset (ℤ × ℤ):= 
+(finset.Ico_ℤ (-m) (m+1)).product {m } ∪ (finset.Ico_ℤ (-m) (m+1)).product {-(m: ℤ)} ∪    ({m} : finset (ℤ)).product (finset.Ico_ℤ (-m+1) (m)) ∪   ({-m} : finset (ℤ)).product (finset.Ico_ℤ (-m+1) (m))
+
+lemma square2_card (n: ℕ) (h: 1 ≤ n): finset.card (Square2 n)=8*n:=
+begin
+rw Square2, rw finset.card_union_eq, rw finset.card_union_eq,rw finset.card_union_eq, rw finset.card_product,
+ rw finset.card_product,rw finset.card_product, rw finset.card_product, simp, ring, sorry,
+ rw finset.disjoint_iff_ne,  intros a ha, intros b hb, simp at *, by_contra H, have haa:=ha.2, have hbb:=hb.2,
+  rw H at haa, rw hbb at haa, have hv:=eq_zero_of_neg_eq haa, simp at hv, rw hv at h, simp at h, exact h,
+
+  
+end  
 
 @[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
 begin
@@ -351,12 +217,57 @@ intro hx, rw Square, simp, simp [hx],
 sorry,
 end
 
-
-
-lemma Square_size (n : ℕ) (h: 1 ≤ n): finset.card (Square n)=8*n:=
+lemma square_mem' (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔  (x.1).nat_abs=n ∨ (x.2).nat_abs=n:=
 begin
-
 sorry,
+end
+
+
+
+def square_map: ℤ × ℤ → ℤ × ℤ:=
+λ x, if max (x.1).nat_abs (x.2).nat_abs=x.1.nat_abs ∧ x.2.nat_abs < x.1.nat_abs then (x.1+int.sign (x.1),x.2) 
+else if max (x.1).nat_abs (x.2).nat_abs=x.2.nat_abs ∧ x.1.nat_abs < x.2.nat_abs then (x.1,x.2+int.sign(x.2))
+else (x.1+int.sign x.1, x.2+int.sign x.2 )
+
+lemma inj_sqr_map: function.injective square_map:=
+begin
+unfold function.injective,
+intros a b hab, rw square_map at hab, simp at hab, tidy, sorry,
+end
+
+def Corners (n: ℕ): finset (ℤ × ℤ):=
+{(-(n: ℤ), (n: ℤ)+1),(-(n: ℤ), -(n: ℤ)-1), ((n: ℤ), (n: ℤ)+1),((n: ℤ), -(n: ℤ)-1), (-(n: ℤ)-1, (n: ℤ)),((n: ℤ)+1, (n: ℤ)), (-(n: ℤ)-1, -(n: ℤ)),((n: ℤ)+1, -(n: ℤ))}
+
+
+
+lemma card_corn (n: ℕ) : finset.card (Corners (n+1))=8:=
+begin
+rw finset.card_eq_sum_ones, rw Corners, simp, sorry,
+--induction n with m hm, simp, refl, rw nat.succ_eq_add_one, ring, rw Corners at *, ring, 
+end
+
+
+lemma sqr_alt (n: ℕ) (h : 1 ≤ n): Square (n+1)= finset.image square_map( Square n) ∪ (Corners n):=
+
+begin
+dsimp at *, ext1, cases a, rw square_mem', simp at *, fsplit, intro h1, cases h1, by_cases a_snd < n,
+
+
+/-work_on_goal 0 { intros h1 },
+ work_on_goal 1 { intros ᾰ, cases ᾰ, work_on_goal 0 { cases ᾰ, cases ᾰ_h, cases ᾰ_h_h, induction ᾰ_h_h_left, simp at *, cases h } },  -/
+sorry,
+end
+
+
+
+
+lemma Square_size (n : ℕ) : finset.card (Square (n+1))=8*(n+1):=
+begin
+induction n with m hm, simp, refl,
+
+  rw nat.succ_eq_add_one, ring_nf, rw sqr_alt, rw finset.card_union_eq, 
+have:= card_corn m,rw this, rw finset.card_image_of_injective, rw hm, ring, apply inj_sqr_map, sorry, linarith,
+
 end  
 
 lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
@@ -383,42 +294,8 @@ end
 
 
 
-@[simp]lemma square_mem' (n: ℕ) (x : ℤ × ℤ):x ∈ square n ↔ max (x.1).nat_abs (x.2).nat_abs=n:=iff.rfl 
 
-
-
-
-def sup_func_aux (k: ℤ) (n: ℕ) : square n → ℝ:=
-λ x, 1/n^k 
-
-def sup_func (k : ℤ) (n : ℕ): ℝ:=
-∑' (x : square n), sup_func_aux k n x
-
-def index_fun' (x : ℤ × ℤ): ℕ:=
-max (x.1).nat_abs (x.2).nat_abs
-
-lemma equiv_fun' (x: ℤ × ℤ) : x ∈ square  ( index_fun' x):=
-begin
-rw index_fun', simp only [square_mem'],
-end  
-
-lemma equiv_fun (x: ℤ × ℤ): x ∈ set.Union square:=
-begin
-simp only [set.mem_Union, square_mem', exists_eq'], 
-end  
-
-
-def index_union: ℤ × ℤ ≃ set.Union square:=
-{
-to_fun:=λ x, ⟨x,equiv_fun x⟩,
-inv_fun:=λ x, x.1,
-left_inv:=sorry,
-right_inv:=sorry,
-
-
-}
-
-
+/- Some summable lemmas-/
 
 variables {α : Type u} {β : Type v} {γ : Type w} {i : α → set β}
 
@@ -428,20 +305,6 @@ fsplit, intros ᾰ, cases ᾰ, fsplit, work_on_goal 1 { simp at *, fsplit, work_
 end
 
 
-/-
-lemma sum_rearrange (f: ℕ → fintype (ℤ × ℤ)) (e:  set.Union (coef ∘ f) ≃ ℤ × ℤ  ) (g: ℤ × ℤ → ℝ): summable g ↔ summable  (λ (x : ℕ) , (∑ y in  (f x).1, g y)) :=
-begin
-
-  
- have h: summable g ↔ summable (g ∘ e), rw equiv.summable_iff e,
-rw h, 
-have H0: ∀ (i j : ℕ), disjoint ((coef ∘ f) i) ((coef ∘ f) j), by {sorry,},
-have H:=tsum_union_disjoint'' (coef ∘ f) H0 (g ∘ e), rw H, rw equiv.summable_iff_of_support, simp, intros x h2, 
-
-  sorry,sorry,
-end
-
--/
 
 instance: has_coe_t  (finset (ℤ × ℤ))  (set (ℤ × ℤ)):=infer_instance
 
@@ -531,15 +394,6 @@ intros H x, rw hg, apply finset.summable,
 end
 
 
--- prod_bUnion 
-
-/-
-def Square (n: ℕ): finset (ℤ × ℤ):={
-val:= (square_is_fin n).1,
-nodup:= square_nodup n,
-
-}
--/
 
 lemma realpow (n : ℕ ) (k : ℤ): (n: ℝ)^((k : ℝ)-1)= n^(k-1):=
 begin
@@ -720,7 +574,7 @@ have H1:= (baux2 z k), norm_cast at H1, rw H1,  apply baux, have:= rfunct_pos z,
 have:= auxlem z ((x.1/x.2): ℝ), norm_cast at *, apply this.2,
 end
 
-lemma Eise_on_square ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=  
+lemma Eise_on_square_is_bounded ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=  
 begin
 by_cases C1: complex.abs (x.1: ℂ)=n,
 rw inv_le_inv,
@@ -779,10 +633,10 @@ end
 
 
 
-lemma Eise_on_square' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ n): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
+lemma Eise_on_square_is_bounded' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ n): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
 begin
 intros x hx,
-apply Eise_on_square k z n x hx hn,
+apply Eise_on_square_is_bounded k z n x hx hn,
 end
 
 
@@ -793,13 +647,13 @@ intros x hx, rw Square_zero at hx, simp only [finset.mem_singleton] at hx, simp_
 have h1: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw h1, rw complex.abs_zero, simp only [mul_zero],
 end
 
-lemma Eise_on_square'' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ k): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
+lemma Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ k): ∀ (x: ℤ × ℤ),  x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
 begin
 by_cases h0: n=0,
 {rw h0, apply Eise_on_zero_Square k z hn, },
 have Hn: 1 ≤ n, by {have:=nat.pos_of_ne_zero, simp at this, work_on_goal 0 { cases z, solve_by_elim },},
 intros x hx,
-apply Eise_on_square k z n x hx Hn,
+apply Eise_on_square_is_bounded k z n x hx Hn,
 end
 
 
@@ -824,7 +678,7 @@ begin
 nlinarith,
 end  
 
-lemma Eise_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
+lemma Eisenstein_series_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
 
 begin
 let In:=Square,
@@ -851,15 +705,15 @@ have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct
 intro n,
 simp_rw g, simp_rw f, rw Eise, simp only [one_div, complex.abs_inv, fpow_coe_nat],
 have k0: 1 ≤ k, by {linarith,},
-have BO:=  Eise_on_square'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
+have BO:=  Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
 by_cases n0: n=0, {simp_rw In, rw n0, rw Square_zero, 
 simp only [add_zero, int.cast_zero, nat.cast_zero, zero_mul, finset.sum_singleton], 
 have H0: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw H0, simp only [complex.abs_zero, inv_zero],
 have H00: (0: ℝ)^((k: ℤ)-1)=0, by { rw zero_fpow, linarith,}, rw H00, simp only [inv_zero, mul_zero],},
 have:= finset.sum_le_sum BO, simp only [finset.sum_const, complex.abs_mul, nsmul_eq_mul] at this,
 
-
- rw (Square_size n) at this,
+have hfin:= (Square_size (n-1)), have hnzo: n-1+1=n, by {rw nat.sub_add_cancel, have:= nat.pos_of_ne_zero n0, linarith,}, rw hnzo at hfin,
+ rw hfin at this,
 norm_cast at this, simp_rw In, 
 have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)= (8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, 
 by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv_mul, 
@@ -869,7 +723,7 @@ have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: 
  simp [dis], rw natpowsinv, ring, norm_cast,  intro hN, rw hN at n0, 
  simp only [eq_self_iff_true, not_true] at n0, exact n0,},
 rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
-norm_cast at ne, rw ne at this, norm_cast,  apply this, have hy:=nat.pos_of_ne_zero, simp only [ne.def] at hy, have:=hy n0,linarith,
+norm_cast at ne, rw ne at this, norm_cast,  apply this, 
 },
 
 have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
@@ -912,6 +766,3 @@ end Eisenstein_series
 
 
 
-
-
-#lint

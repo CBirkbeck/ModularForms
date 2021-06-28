@@ -345,3 +345,4 @@ instance (k : ℕ) : is_submodule (is_cusp_form k) := is_submodule.inter_submodu
 (m^k.pred : ℂ) • (sorry : modular_forms k) -- why is this • failing?
  -/
  -/
+ #lint
