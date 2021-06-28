@@ -355,6 +355,7 @@ end
 
 lemma Square_size (n : ℕ) (h: 1 ≤ n): finset.card (Square n)=8*n:=
 begin
+
 sorry,
 end  
 

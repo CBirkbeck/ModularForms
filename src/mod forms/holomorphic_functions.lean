@@ -61,6 +61,9 @@ def open_subs:={domain: set ℂ | is_open domain}
 
 
 
+/--A function is Holomorphic on an open subset of the complex numbers, if for every point in the domain
+there is a neibourhood around the point containing the derivative of the function. In order to make it work 
+with has_deriv_within_at, we first extend the function by zero to the entire complex plane. -/
 
  def is_holomorphic {domain : open_subs} (f : domain → ℂ) : Prop :=
 ∀ z : domain, ∃ f', has_deriv_within_at (extend_by_zero f) (f') domain z
@@ -68,6 +71,7 @@ def open_subs:={domain: set ℂ | is_open domain}
 
 
 variable {domain : open_subs}
+
 
 lemma ext_by_zero_eq (domain: open_subs) (c : ℂ):∀ (y : ℂ), (y ∈ (domain : set ℂ)) → extend_by_zero (λ z : domain, (c : ℂ)) y =c :=
 begin

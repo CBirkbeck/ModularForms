@@ -37,10 +37,11 @@ local notation `ℍ`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_
 
 /-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 
+/-This contains the definition of modular forms of weight `z ∈ ℤ` and level one. -/
 
 
-
-
+/--A function `f:ℍ → ℂ` is Petersson, of weight `k ∈ ℤ` (and level one), if for every matrix in `γ ∈  SL_2(ℤ)` we have
+`f(γ  • z)= (c*z+d)^k f(z)` where `γ= ![![a, b], ![c, d]]` (will later generalize to other levels), and it acts on `ℍ` via Moebius trainsformations. -/
 def is_Petersson_weight_ (k : ℤ) := { f : ℍ → ℂ | ∀ M : SL2Z, ∀ z : ℍ, f (moeb M z) = ((M 1 0 )*z + M 1 1)^k * f z}
 
 
@@ -59,7 +60,7 @@ end
 
 
 
-def mod_form_sum (k: ℤ) (f g : is_Petersson_weight_ k): ℍ → ℂ :=
+def Petersson_sum (k: ℤ) (f g : is_Petersson_weight_ k): ℍ → ℂ :=
 λ z, f.1 z + g.1 z
 
 def zero_form (k :ℤ): ℍ → ℂ:=
@@ -68,66 +69,66 @@ def zero_form (k :ℤ): ℍ → ℂ:=
 def neg_form (k : ℤ) (f : is_Petersson_weight_ k) : ℍ → ℂ:=
 λ z, - f.1 z 
 
-lemma mod_sum_is_mod (k: ℤ) (f g : is_Petersson_weight_ k): ( mod_form_sum k f g ∈  is_Petersson_weight_ k):=
+lemma Petersson_sum_is_pet (k: ℤ) (f g : is_Petersson_weight_ k): ( Petersson_sum k f g ∈  is_Petersson_weight_ k):=
 begin
-simp only [mem_pet], intros M z, rw mod_form_sum, simp only [subtype.val_eq_coe], have h1:=f.property, 
+simp only [mem_pet], intros M z, rw Petersson_sum, simp only [subtype.val_eq_coe], have h1:=f.property, 
 simp only [mem_pet, subtype.val_eq_coe] at h1, have h2:=g.property, simp only [mem_pet, subtype.val_eq_coe] at h2,
  rw [h1, h2], ring,
 end  
 
-lemma zero_form_is_form (k: ℤ) : (zero_form k ∈ is_Petersson_weight_ k):=
+lemma zero_form_is_pet (k: ℤ) : (zero_form k ∈ is_Petersson_weight_ k):=
 
 begin
 simp only [mem_pet], intros M z, rw zero_form, simp only [mul_zero], 
 end  
 
-@[simp] lemma zero_simp (k: ℤ): ∀ (x: ℍ), (⟨zero_form k,  zero_form_is_form k⟩ : is_Petersson_weight_ k).val x = (0: ℂ) := 
+@[simp] lemma zero_simp (k: ℤ): ∀ (x: ℍ), (⟨zero_form k,  zero_form_is_pet k⟩ : is_Petersson_weight_ k).val x = (0: ℂ) := 
 
 begin
 intro x, simp [zero_form], 
 end  
 
-lemma neg_form_is_form (k: ℤ) (f : is_Petersson_weight_ k): (neg_form k f ∈ is_Petersson_weight_ k ):=
+lemma neg_of_pet_is_pet (k: ℤ) (f : is_Petersson_weight_ k): (neg_form k f ∈ is_Petersson_weight_ k ):=
 
 begin
 simp only [mem_pet], rw neg_form, intros M z, have h1:=f.property, simp only [mem_pet, subtype.val_eq_coe] at h1, ring_nf, 
 rw subtype.val_eq_coe, rw h1, ring,
 end  
 
-lemma add_l_neg (k: ℤ) (f : is_Petersson_weight_ k ) : mod_form_sum k ⟨ neg_form k f, neg_form_is_form k f ⟩  f = zero_form k:=
+lemma add_l_neg (k: ℤ) (f : is_Petersson_weight_ k ) : Petersson_sum k ⟨ neg_form k f, neg_of_pet_is_pet k f ⟩  f = zero_form k:=
 
 begin
-simp only [mod_form_sum, zero_form, neg_form, add_left_neg],  
+simp only [Petersson_sum, zero_form, neg_form, add_left_neg],  
 end  
 
-lemma sum_com (k: ℤ) (f g : is_Petersson_weight_ k ): mod_form_sum k f g = mod_form_sum k g f:=
+lemma pet_sum_commutative (k: ℤ) (f g : is_Petersson_weight_ k ): Petersson_sum k f g = Petersson_sum k g f:=
 
 begin
-simp only [mod_form_sum, subtype.val_eq_coe],  ext, simp only [add_re], ring, simp only [add_im], ring,
+simp only [Petersson_sum, subtype.val_eq_coe],  ext, simp only [add_re], ring, simp only [add_im], ring,
 end  
 
 instance (k : ℤ): add_comm_group (is_Petersson_weight_ k):=
-{add:= λ f g, ⟨ mod_form_sum k f g,  mod_sum_is_mod k f g⟩, 
-add_comm:= by {intros f g, have:=sum_com k f g, cases g, cases f, dsimp at *, apply subtype.ext, assumption,},
-add_assoc:= by {intros f g h, simp only [subtype.mk_eq_mk], rw mod_form_sum, simp only [subtype.val_eq_coe], rw mod_form_sum, 
-simp only [subtype.val_eq_coe], rw mod_form_sum, 
-simp only [subtype.val_eq_coe], rw mod_form_sum, 
+{add:= λ f g, ⟨ Petersson_sum k f g,  Petersson_sum_is_pet k f g⟩, 
+add_comm:= by {intros f g, have:=pet_sum_commutative k f g, cases g, cases f, dsimp at *, apply subtype.ext, assumption,},
+add_assoc:= by {intros f g h, simp only [subtype.mk_eq_mk], rw Petersson_sum, simp only [subtype.val_eq_coe], rw Petersson_sum, 
+simp only [subtype.val_eq_coe], rw Petersson_sum, 
+simp only [subtype.val_eq_coe], rw Petersson_sum, 
 simp, ext, simp, ring, ring_nf, },
-zero:=⟨zero_form k , zero_form_is_form k⟩, 
-add_zero:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw mod_form_sum, 
+zero:=⟨zero_form k , zero_form_is_pet k⟩, 
+add_zero:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw Petersson_sum, 
 simp only [add_zero, subtype.val_eq_coe], 
-simp only [mod_form_sum, zero_form, add_zero, subtype.coe_eta, subtype.val_eq_coe],},
-zero_add:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw mod_form_sum, 
+simp only [Petersson_sum, zero_form, add_zero, subtype.coe_eta, subtype.val_eq_coe],},
+zero_add:=by {intro f, simp only, ext, simp only [zero_form, subtype.coe_mk], rw Petersson_sum, 
 simp only [add_zero, subtype.val_eq_coe], 
-simp, simp [zero_form, mod_form_sum],  },
-neg:= λ f, ⟨neg_form k f, neg_form_is_form k f ⟩, 
+simp, simp [zero_form, Petersson_sum],  },
+neg:= λ f, ⟨neg_form k f, neg_of_pet_is_pet k f ⟩, 
 add_left_neg:=by {simp, intros f h, have:=add_l_neg k ⟨f,h⟩, dsimp at *, apply subtype.ext, assumption,}  ,
 }
 
 def sca_mul_def' (k: ℤ):  ℂ →   (is_Petersson_weight_ k) →  (ℍ → ℂ):=
 λ z f , λ x , z * (f.1 x)
 
-lemma sca_is_mod (k: ℤ ) (f: is_Petersson_weight_ k) (z : ℂ) : (sca_mul_def' k  z f) ∈ is_Petersson_weight_ k:=
+lemma sca_is_pet (k: ℤ ) (f: is_Petersson_weight_ k) (z : ℂ) : (sca_mul_def' k  z f) ∈ is_Petersson_weight_ k:=
 
 begin
 simp only [sca_mul_def', mem_pet, subtype.val_eq_coe], intros M x, have h1:=f.property, 
@@ -135,14 +136,14 @@ simp only [mem_pet, subtype.val_eq_coe] at h1, rw h1, ring,
 end  
 
 def sca_mul_def (k : ℤ): ℂ → (is_Petersson_weight_ k) → (is_Petersson_weight_ k) :=
-λ z f, ⟨ sca_mul_def' k z f, sca_is_mod k f z⟩
+λ z f, ⟨ sca_mul_def' k z f, sca_is_pet k f z⟩
 
 @[simp]lemma ze_si (k : ℤ ): ∀ (x : ℍ), (0 : is_Petersson_weight_ k ).1 x = (0 : ℂ):=
 begin
 simp only [set_coe.forall, subtype.val_eq_coe], intros x , refl,
 end  
 
-@[simp]lemma mod_sum_val (k: ℤ) (f g : is_Petersson_weight_ k): (f+g).1=f.1+g.1:=
+@[simp]lemma pet_sum_val (k: ℤ) (f g : is_Petersson_weight_ k): (f+g).1=f.1+g.1:=
 begin
 simp only [subtype.val_eq_coe], refl,
 end
@@ -171,9 +172,15 @@ instance  (k : ℤ) : module ℂ (is_Petersson_weight_ k) :=
 }
   
 
-
+/--A function ` f : ℍ → ℂ` is bounded at infinity if there exist real numbers `M,A` such that 
+for all `z ∈ ℍ` with `im z ≥ A` we have `abs(f (z)) ≤ M`. i.e. the function is bounded as you approach `i∞`.  -/
 def is_bound_at_infinity := { f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M }
 
+
+
+
+/--A function ` f : ℍ → ℂ` is zero at infinity if for any `ε > 0` there exist a real number `A` such that 
+for all `z ∈ ℍ` with `im z ≥ A` we have `abs(f (z)) ≤ ε`. i.e. the function tends to zero as you approach `i∞`.  -/
 def is_zero_at_infinity := { f : ℍ → ℂ | ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε }
 
 @[simp]lemma bound_mem (f: ℍ → ℂ): (f ∈  is_bound_at_infinity ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
@@ -313,12 +320,16 @@ end
 
 
 
+/-- A function `f : ℍ → ℂ` is a modular form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and bounded at infinity -/
 
-def is_modular_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
+def is_modular_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
 
-def is_cusp_form (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
 
-lemma is_modular_form_of_is_cusp_form {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form k f) : is_modular_form k f :=
+/-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and zero at infinity -/
+
+def is_cusp_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
+
+lemma is_modular_form_of_lvl_one_weight__of_is_cusp_form_of_lvl_one_weight_ {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form_of_lvl_one_weight_ k f) : is_modular_form_of_lvl_one_weight_ k f :=
 ⟨h.1, is_zero_at_inf_is_bound' f h.2⟩
 
 
