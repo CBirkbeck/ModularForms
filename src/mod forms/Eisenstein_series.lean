@@ -204,11 +204,6 @@ end
 
 def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
 
-lemma fixme : (1: ℤ) ≤ (0: ℤ) → false:=
-begin
-intro h, linarith,
-end  
-
 
 
 def Square2 (m: ℕ): finset (ℤ × ℤ):= 
@@ -263,60 +258,93 @@ intro hx, rw Square, simp, simp [hx],
 sorry,
 end
 
-lemma square_mem' (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔  (x.1).nat_abs=n ∨ (x.2).nat_abs=n:=
+lemma square_mem' (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔  ((x.1).nat_abs=n ∧ (x.2).nat_abs <  n) ∨ ((x.2).nat_abs=n ∧ (x.1).nat_abs < n) ∨ ((x.1).nat_abs=n ∧ (x.2).nat_abs=n) :=
+begin
+sorry,
+end
+
+
+lemma nat_abs_inter (a: ℤ) (n: ℕ) (h: a.nat_abs < n): a < (n: ℤ) ∧  0 <(n: ℤ)+ a:=
+begin
+have:= int.nat_abs_eq  a, cases this,rw this, norm_cast, simp_rw h,simp,linarith,rw this,
+split, linarith, rw ←int.coe_nat_lt at h, rw ← sub_pos at h,convert h,
+end  
+
+lemma auxin (a: ℤ) (n: ℕ)(h: 0 < (n: ℤ)+a):  1 ≤  (n: ℤ)+a:=
+begin
+assumption,
+end  
+
+
+lemma auxin2 (a: ℤ) (n: ℕ)(h: 0 < (n: ℤ)+a):   -(n: ℤ) ≤ a:=
+begin
+linarith, 
+end  
+
+lemma tofind : (0: ℤ) < 1 ↔  true:=
+begin
+exact dec_trivial,
+end  
+
+lemma tofind2 (a : ℕ) : a ≤ a ↔  true:=
+begin
+simp only [iff_true] at *,
+end  
+
+lemma cat (a b : ℤ) (n: ℕ)  (h1: b=(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ a.nat_abs < n :=
+begin
+sorry,
+end
+
+lemma cat1 (a b : ℤ) (n: ℕ)  (h1: b=-(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ a.nat_abs < n :=
+begin
+sorry,
+end
+
+lemma dog (a b : ℤ) (n: ℕ)  (h1: a=(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (n:ℤ) ): a.nat_abs= n ∧ b.nat_abs < n :=
+begin
+sorry,
+end
+
+lemma dog1 (a b : ℤ) (n: ℕ)  (h1: a=-(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (n:ℤ) ): a.nat_abs= n ∧ b.nat_abs < n :=
 begin
 sorry,
 end
 
 lemma sqr_eq_sqr2 (n: ℕ): (Square n)=(Square2 n):=
 begin
-ext1, split, rw square_mem', intro ha,rw Square2,   sorry, sorry,
+ext1, split, rw square_mem', intro ha,rw Square2, simp_rw int.nat_abs_eq_iff at ha, cases ha, cases ha.1, simp, 
+have h1:= nat_abs_inter _ _ ha.2, have h2:= auxin _ _ h1.2, simp_rw [h,h1,h2], 
+simp only [true_or, eq_self_iff_true, or_true, and_self], 
+simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product], 
+have h1:= nat_abs_inter _ _ ha.2, have h2:= auxin _ _ h1.2, simp_rw [h,h1,h2],
+simp only [true_or, eq_self_iff_true, or_true, and_self], cases ha, cases ha.1, 
+simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product],
+have h1:= nat_abs_inter _ _ ha.2, have h2:= auxin2 _ _ h1.2, simp_rw [h,h2],
+simp only [true_and, lt_self_iff_false, and_true, eq_self_iff_true, or_false, and_false], have h3:=h1.1,  
+have Hk: a.1 < (n: ℤ)+1, by {linarith, }, simp only [Hk, true_or],
+simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product],
+have h1:= nat_abs_inter _ _ ha.2, have h2:= auxin2 _ _ h1.2, simp_rw [h,h2],
+simp only [true_and, and_true, int.coe_nat_pos, eq_self_iff_true, neg_lt_self_iff, add_right_neg], have h3:=h1.1,  
+have Hk: a.1 < (n: ℤ)+1, by {linarith, }, simp only [Hk, true_or, or_true],simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product], 
+cases  ha.1, cases  ha.2, simp_rw [h,h_1], simp, rw tofind, simp only [true_or],
+simp_rw [h,h_1], simp, rw tofind, simp only [true_or, or_true], cases ha.2, simp_rw [h,h_1], simp at *, rw tofind2, simp, 
+have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or],  simp_rw [h,h_1], simp at *, rw tofind2, simp, 
+have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or, or_true],
+
+intro ha, rw Square2 at ha, simp at ha, rw square_mem', cases ha, have:= cat _ _ _ ha.2 ha.1, simp_rw this,simp,
+cases ha,  have:= cat1 _ _ _ ha.2 ha.1, simp_rw this,simp, cases ha, have:= dog _ _ _ ha.1 ha.2,  simp_rw this,simp,
+ have:= dog1 _ _ _ ha.1 ha.2,  simp_rw this,simp,
 end   
 
-def square_map: ℤ × ℤ → ℤ × ℤ:=
-λ x, if max (x.1).nat_abs (x.2).nat_abs=x.1.nat_abs ∧ x.2.nat_abs < x.1.nat_abs then (x.1+int.sign (x.1),x.2) 
-else if max (x.1).nat_abs (x.2).nat_abs=x.2.nat_abs ∧ x.1.nat_abs < x.2.nat_abs then (x.1,x.2+int.sign(x.2))
-else (x.1+int.sign x.1, x.2+int.sign x.2 )
 
-lemma inj_sqr_map: function.injective square_map:=
+lemma Square_size (n : ℕ) (h: 1 ≤ n) : finset.card (Square (n))=8*(n):=
 begin
-unfold function.injective,
-intros a b hab, rw square_map at hab, simp at hab, tidy, sorry,sorry,
-end
-
-def Corners (n: ℕ): finset (ℤ × ℤ):=
-{(-(n: ℤ), (n: ℤ)+1),(-(n: ℤ), -(n: ℤ)-1), ((n: ℤ), (n: ℤ)+1),((n: ℤ), -(n: ℤ)-1), (-(n: ℤ)-1, (n: ℤ)),((n: ℤ)+1, (n: ℤ)), (-(n: ℤ)-1, -(n: ℤ)),((n: ℤ)+1, -(n: ℤ))}
-
-
-
-lemma card_corn (n: ℕ) : finset.card (Corners (n+1))=8:=
-begin
-rw finset.card_eq_sum_ones, rw Corners, simp, sorry,
---induction n with m hm, simp, refl, rw nat.succ_eq_add_one, ring, rw Corners at *, ring, 
-end
-
-
-lemma sqr_alt (n: ℕ) (h : 1 ≤ n): Square (n+1)= finset.image square_map( Square n) ∪ (Corners n):=
-
-begin
-dsimp at *, ext1, cases a, rw square_mem', simp at *, fsplit, intro h1, cases h1, by_cases a_snd < n,
-
-
-/-work_on_goal 0 { intros h1 },
- work_on_goal 1 { intros ᾰ, cases ᾰ, work_on_goal 0 { cases ᾰ, cases ᾰ_h, cases ᾰ_h_h, induction ᾰ_h_h_left, simp at *, cases h } },  -/
-sorry, sorry, sorry,sorry,
-end
-
-
-
-
-lemma Square_size (n : ℕ) : finset.card (Square (n+1))=8*(n+1):=
-begin
-induction n with m hm, simp, refl,
-
-  rw nat.succ_eq_add_one, ring_nf, rw sqr_alt, rw finset.card_union_eq, 
-have:= card_corn m,rw this, rw finset.card_image_of_injective, rw hm, ring, apply inj_sqr_map, sorry, linarith,
-
+rw sqr_eq_sqr2, apply square2_card, exact h,
 end  
 
 lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
@@ -707,7 +735,6 @@ end
 
 
 
-
 instance: field ℝ:=infer_instance
 
 lemma natpows (x : ℝ) (n : ℤ)  (h2: x ≠ 0): x^(n-1)=x^n*x⁻¹:=
@@ -761,8 +788,7 @@ have H0: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw H0, simp only [co
 have H00: (0: ℝ)^((k: ℤ)-1)=0, by { rw zero_fpow, linarith,}, rw H00, simp only [inv_zero, mul_zero],},
 have:= finset.sum_le_sum BO, simp only [finset.sum_const, complex.abs_mul, nsmul_eq_mul] at this,
 
-have hfin:= (Square_size (n-1)), have hnzo: n-1+1=n, by {rw nat.sub_add_cancel, have:= nat.pos_of_ne_zero n0, linarith,}, rw hnzo at hfin,
- rw hfin at this,
+ rw Square_size n at this,
 norm_cast at this, simp_rw In, 
 have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)= (8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, 
 by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv_mul, 
@@ -772,7 +798,7 @@ have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: 
  simp [dis], rw natpowsinv, ring, norm_cast,  intro hN, rw hN at n0, 
  simp only [eq_self_iff_true, not_true] at n0, exact n0,},
 rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
-norm_cast at ne, rw ne at this, norm_cast,  apply this, 
+norm_cast at ne, rw ne at this, norm_cast,  apply this, have hhh:= nat.pos_of_ne_zero n0, linarith,
 },
 
 have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
