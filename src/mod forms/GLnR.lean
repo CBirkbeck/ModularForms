@@ -40,7 +40,7 @@ section
 
 variables (n : Type u) [decidable_eq n] [fintype n] (R : Type v) [comm_ring R]
 
-/-- `GLn n R` is the group of `n` by `n` `R`-matrices with invertible .
+/-- `GLn n R` is the group of `n` by `n` `R`-matrices with invertible determinant.
 -/
 def GLn := { A : matrix n n R // is_unit (A.det) }
 

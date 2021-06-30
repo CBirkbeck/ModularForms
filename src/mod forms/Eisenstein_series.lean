@@ -30,6 +30,25 @@ noncomputable theory
 namespace Eisenstein_series
 
 
+
+
+/- Note that here we are using that 1/0=0, so there is nothing wrong with this defn or the resulting sum-/
+
+def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
+λ x, 1/(x.1*z+x.2)^k  
+
+/--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, 
+but in order to make it an actual modular form some constraints will be needed -/
+def Eisenstein_series_of_weight_ (k: ℤ) : ℍ → ℂ:=
+ λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
+
+
+
+
+
+
+
+
 lemma ridic (a b c d : ℤ): a*d-b*c=1 → a*d-c*b=1:=
 begin
 intro h, linarith,
@@ -84,10 +103,9 @@ end
 
 
 
-/- Note that here we are using that 1/0=0, so there is nothing wrong with this defn or the resulting sum-/
 
-def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
-λ x, 1/(x.1*z+x.2)^k  
+
+
 
 lemma wa (a b c: ℂ) (h: a ≠ 0) :  b=c → a*b⁻¹=a*c⁻¹ :=
 begin
@@ -96,7 +114,7 @@ end
 
 lemma Eise_is_nonneg (k: ℤ) (z : ℍ) (y : ℤ × ℤ): 0 ≤ abs (Eise k z y):=
 begin
-unfold Eise, simp, apply complex.abs_nonneg, 
+ apply complex.abs_nonneg, 
 end
 
 
@@ -141,10 +159,7 @@ have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= SL_det_pos' A, exa
 end  
 
 
-/--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, but in order to make it an actual
-modular form some constraints will be needed -/
-def Eisenstein_series_of_weight_ (k: ℤ) : ℍ → ℂ:=
- λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
+
 
 
 
@@ -189,23 +204,54 @@ end
 
 def Square (m: ℕ): finset (ℤ × ℤ):=((finset.Ico_ℤ (-m) (m+1)).product (finset.Ico_ℤ (-m) (m+1))).filter (λ x, max (x.1).nat_abs (x.2).nat_abs = m)
 
-lemma find (a : ℤ ) (h: a = -a): a=0:=
+lemma fixme : (1: ℤ) ≤ (0: ℤ) → false:=
 begin
-exact eq_zero_of_neg_eq (eq.symm h),
+intro h, linarith,
 end  
+
+
 
 def Square2 (m: ℕ): finset (ℤ × ℤ):= 
 (finset.Ico_ℤ (-m) (m+1)).product {m } ∪ (finset.Ico_ℤ (-m) (m+1)).product {-(m: ℤ)} ∪    ({m} : finset (ℤ)).product (finset.Ico_ℤ (-m+1) (m)) ∪   ({-m} : finset (ℤ)).product (finset.Ico_ℤ (-m+1) (m))
 
+
 lemma square2_card (n: ℕ) (h: 1 ≤ n): finset.card (Square2 n)=8*n:=
 begin
 rw Square2, rw finset.card_union_eq, rw finset.card_union_eq,rw finset.card_union_eq, rw finset.card_product,
- rw finset.card_product,rw finset.card_product, rw finset.card_product, simp, ring, sorry,
- rw finset.disjoint_iff_ne,  intros a ha, intros b hb, simp at *, by_contra H, have haa:=ha.2, have hbb:=hb.2,
-  rw H at haa, rw hbb at haa, have hv:=eq_zero_of_neg_eq haa, simp at hv, rw hv at h, simp at h, exact h,
+ rw finset.card_product,rw finset.card_product, rw finset.card_product, simp only [mul_one, one_mul, 
+ finset.Ico_ℤ.card, sub_neg_eq_add, finset.card_singleton], ring_nf, 
+ have N1:(n: ℤ)+1+(n : ℤ)=2*(n:ℤ)+1, by {ring,},
+ have N2:(n: ℤ)-(-(n: ℤ)+1)=2*(n: ℤ)-1, by {ring,},
+ rw [N1,N2], norm_cast, rw int.to_nat_coe_nat,  
+ have M1: (((2*n): ℤ)-1).to_nat=2*n-1, by {simp only [int.pred_to_nat] at *, refl, }, norm_cast at M1, rw M1, 
+ have M2: 2 * (2 * n + 1) + 2 * (2 * n - 1)=8*n+2-2, by {ring_nf, dsimp at *, simp only [nat.add_sub_cancel, 
+ int.pred_to_nat, zero_add] at *, injections_and_clear,
+ have M3: 2*(2*n-1)=4*n-2, by {rw nat.mul_sub_left_distrib,ring_nf,}, rw M3, rw nat.sub_add_cancel, ring, linarith,
+ },
 
-  
+rw M2, simp only [nat.add_sub_cancel],
+ 
+ rw finset.disjoint_iff_ne,  intros a ha, intros b hb, simp only [ne.def, finset.mem_singleton, finset.Ico_ℤ.mem,
+  finset.mem_product] at *, by_contra H, have haa:=ha.2, have hbb:=hb.2,
+  rw H at haa, rw hbb at haa, have hv:=eq_zero_of_neg_eq haa, simp only [int.coe_nat_eq_zero] at hv, rw hv at h, simp only [nat.one_ne_zero,
+   le_zero_iff] at h, exact h,
+rw finset.disjoint_iff_ne, intros a ha, intros b hb,simp only [ne.def, finset.mem_union, finset.mem_singleton, 
+finset.Ico_ℤ.mem, neg_add_le_iff_le_add, finset.mem_product] at *, cases ha, have hbb:=hb.2, have haa:=ha.2, by_contra H,
+ rw ← H at hbb,
+rw haa at hbb, simp only [lt_self_iff_false, and_false] at hbb,exact hbb,have hbb:=hb.2, have haa:=ha.2, by_contra H, rw ← H at hbb, rw haa at hbb, simp at hbb, 
+have hk:=hbb.1, linarith,
+
+rw finset.disjoint_iff_ne, intros a ha, intros b hb, simp only [ne.def, finset.mem_union, finset.union_assoc, 
+finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product] at *, by_contra H, cases ha, have hbb:=hb.2, 
+have haa:=ha.2,rw ← H at hbb,
+rw haa at hbb, simp only [lt_self_iff_false, and_false] at hbb,exact hbb, cases ha, have hbb:=hb.2, have haa:=ha.2,rw ← H at hbb,
+rw haa at hbb, simp only [int.coe_nat_pos, neg_lt_self_iff, add_right_neg] at hbb, linarith,
+have hbb:=hb.1, have haa:=ha.1,rw H at haa, rw hbb at haa, have hv:=eq_zero_of_neg_eq haa, simp only [int.coe_nat_eq_zero] at hv, rw hv at h,
+ simp only [nat.one_ne_zero, le_zero_iff] at h, exact h,
 end  
+
+
 
 @[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
 begin
@@ -222,7 +268,10 @@ begin
 sorry,
 end
 
-
+lemma sqr_eq_sqr2 (n: ℕ): (Square n)=(Square2 n):=
+begin
+ext1, split, rw square_mem', intro ha,rw Square2,   sorry, sorry,
+end   
 
 def square_map: ℤ × ℤ → ℤ × ℤ:=
 λ x, if max (x.1).nat_abs (x.2).nat_abs=x.1.nat_abs ∧ x.2.nat_abs < x.1.nat_abs then (x.1+int.sign (x.1),x.2) 
@@ -232,7 +281,7 @@ else (x.1+int.sign x.1, x.2+int.sign x.2 )
 lemma inj_sqr_map: function.injective square_map:=
 begin
 unfold function.injective,
-intros a b hab, rw square_map at hab, simp at hab, tidy, sorry,
+intros a b hab, rw square_map at hab, simp at hab, tidy, sorry,sorry,
 end
 
 def Corners (n: ℕ): finset (ℤ × ℤ):=
@@ -255,7 +304,7 @@ dsimp at *, ext1, cases a, rw square_mem', simp at *, fsplit, intro h1, cases h1
 
 /-work_on_goal 0 { intros h1 },
  work_on_goal 1 { intros ᾰ, cases ᾰ, work_on_goal 0 { cases ᾰ, cases ᾰ_h, cases ᾰ_h_h, induction ᾰ_h_h_left, simp at *, cases h } },  -/
-sorry,
+sorry, sorry, sorry,sorry,
 end
 
 
