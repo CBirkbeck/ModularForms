@@ -198,7 +198,11 @@ apply max_aux,
 end  
 
 
-
+lemma max_aux3 (a b n : ℕ) (h: max a b =n): a ≤ n ∧ b ≤ n :=
+begin
+rw ← h, split, exact le_max_left a b, exact le_max_right a b,
+end
+ 
 
 
 
@@ -246,6 +250,19 @@ have hbb:=hb.1, have haa:=ha.1,rw H at haa, rw hbb at haa, have hv:=eq_zero_of_n
  simp only [nat.one_ne_zero, le_zero_iff] at h, exact h,
 end  
 
+lemma nat_abs_inter (a: ℤ) (n: ℕ) (h: a.nat_abs < n): a < (n: ℤ) ∧  0 <(n: ℤ)+ a:=
+begin
+have:= int.nat_abs_eq  a, cases this,rw this, norm_cast, simp_rw h,simp,linarith,rw this,
+split, linarith, rw ←int.coe_nat_lt at h, rw ← sub_pos at h,convert h,
+end  
+
+lemma nat_abs_inter2 (a: ℤ) (n: ℕ) (h: a.nat_abs ≤ n): a ≤ (n: ℤ) ∧  0 ≤ (n: ℤ)+ a:=
+begin
+have := lt_or_eq_of_le h, cases this,
+have H:= nat_abs_inter a n this, have H1:= le_of_lt H.1, have H2:=le_of_lt H.2, simp [H1,H2], rw ← this,
+split, exact int.le_nat_abs, rw add_comm, rw ← neg_le_iff_add_nonneg', simp, rw ← int.abs_eq_nat_abs, 
+simp_rw neg_le_abs_self ,
+end  
 
 
 @[simp]lemma square_mem (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔ max (x.1).nat_abs (x.2).nat_abs=n:=
@@ -253,22 +270,24 @@ begin
 split,
 intro x,
 rw Square at x, simp at x, simp_rw x,
-intro hx, rw Square, simp, simp [hx], 
- 
-sorry,
+intro hx, rw Square, simp, simp [hx],
+have h2:=max_aux3 _ _ _ hx, have h21:= nat_abs_inter2 _ _ h2.1, have h22:= nat_abs_inter2 _ _ h2.2,
+split, split,rw  neg_le_iff_add_nonneg',exact h21.2, have:= h21.1,linarith,
+split,rw  neg_le_iff_add_nonneg',exact h22.2, have:= h22.1,linarith,
+
 end
 
 lemma square_mem' (n : ℕ) (x : ℤ × ℤ ) : x ∈ (Square n) ↔  ((x.1).nat_abs=n ∧ (x.2).nat_abs <  n) ∨ ((x.2).nat_abs=n ∧ (x.1).nat_abs < n) ∨ ((x.1).nat_abs=n ∧ (x.2).nat_abs=n) :=
 begin
-sorry,
+simp, split, intro c1, have:= max_aux3 _ _ _ c1,  have H:= max_aux'' _ _ _ c1, have h1:= this.1, have h2:=this.2,
+rw le_iff_lt_or_eq at h2, rw le_iff_lt_or_eq at h1, cases H, simp_rw H, simp,exact h2, simp_rw H, simp,
+exact h1,
+intro c2, cases c2, rw c2.1,simp, have :=c2.2, linarith,
+cases c2, rw c2.1, simp,have:=c2.2, linarith,rw [c2.1,c2.2], simp, 
 end
 
 
-lemma nat_abs_inter (a: ℤ) (n: ℕ) (h: a.nat_abs < n): a < (n: ℤ) ∧  0 <(n: ℤ)+ a:=
-begin
-have:= int.nat_abs_eq  a, cases this,rw this, norm_cast, simp_rw h,simp,linarith,rw this,
-split, linarith, rw ←int.coe_nat_lt at h, rw ← sub_pos at h,convert h,
-end  
+
 
 lemma auxin (a: ℤ) (n: ℕ)(h: 0 < (n: ℤ)+a):  1 ≤  (n: ℤ)+a:=
 begin
@@ -291,24 +310,28 @@ begin
 simp only [iff_true] at *,
 end  
 
-lemma cat (a b : ℤ) (n: ℕ)  (h1: b=(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ a.nat_abs < n :=
+lemma cat (a b : ℤ) (n: ℕ)  (h1: b=(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ (a.nat_abs < n ∨ a.nat_abs=n) :=
 begin
-sorry,
+ rw h1, simp, have:=int.nat_abs_eq a,cases this,rw this at h2,norm_cast at h2, have h22:=h2.2,exact nat.lt_succ_iff_lt_or_eq.mp h22,
+ rw this at h2,simp at *,have h22:=h2.1, exact lt_or_eq_of_le h22,
 end
 
-lemma cat1 (a b : ℤ) (n: ℕ)  (h1: b=-(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ a.nat_abs < n :=
+lemma cat1 (a b : ℤ) (n: ℕ)  (h1: b=-(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ): b.nat_abs= n ∧ (a.nat_abs < n ∨ a.nat_abs=n) :=
 begin
-sorry,
+ rw h1, simp, have:=int.nat_abs_eq a,cases this,rw this at h2,norm_cast at h2, have h22:=h2.2,exact nat.lt_succ_iff_lt_or_eq.mp h22,
+ rw this at h2,simp at *,have h22:=h2.1, exact lt_or_eq_of_le h22,
 end
 
 lemma dog (a b : ℤ) (n: ℕ)  (h1: a=(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (n:ℤ) ): a.nat_abs= n ∧ b.nat_abs < n :=
 begin
-sorry,
+ rw h1, simp,  have:=int.nat_abs_eq b, cases this, rw this at h2, norm_cast at h2,exact h2.2,
+ rw this at h2, have h22:= h2.1, linarith,
 end
 
 lemma dog1 (a b : ℤ) (n: ℕ)  (h1: a=-(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (n:ℤ) ): a.nat_abs= n ∧ b.nat_abs < n :=
 begin
-sorry,
+ rw h1, simp,  have:=int.nat_abs_eq b, cases this, rw this at h2, norm_cast at h2,exact h2.2,
+ rw this at h2, have h22:= h2.1, linarith,
 end
 
 lemma sqr_eq_sqr2 (n: ℕ): (Square n)=(Square2 n):=
@@ -336,8 +359,8 @@ simp_rw [h,h_1], simp, rw tofind, simp only [true_or, or_true], cases ha.2, simp
 have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or],  simp_rw [h,h_1], simp at *, rw tofind2, simp, 
 have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or, or_true],
 
-intro ha, rw Square2 at ha, simp at ha, rw square_mem', cases ha, have:= cat _ _ _ ha.2 ha.1, simp_rw this,simp,
-cases ha,  have:= cat1 _ _ _ ha.2 ha.1, simp_rw this,simp, cases ha, have:= dog _ _ _ ha.1 ha.2,  simp_rw this,simp,
+intro ha, rw Square2 at ha, simp at ha, rw square_mem', cases ha, have:= cat _ _ _ ha.2 ha.1, simp_rw this,simp, exact this.2,
+cases ha,  have:= cat1 _ _ _ ha.2 ha.1, simp_rw this,simp, exact this.2, cases ha, have:= dog _ _ _ ha.1 ha.2,  simp_rw this,simp,
  have:= dog1 _ _ _ ha.1 ha.2,  simp_rw this,simp,
 end   
 
@@ -349,12 +372,15 @@ end
 
 lemma Squares_are_disjoint: ∀ (i j : ℕ), i ≠ j → disjoint (Square i) (Square j):=
 begin
-sorry,
+intros i j hij,  rw finset.disjoint_iff_ne, intros a ha, simp at ha,intros b hb, simp at hb,by_contradiction,
+simp at h,rw h at ha, rw hb at ha,induction ha, induction h, 
+cases a, induction hb, cases b, dsimp at *, simp at *, assumption,
+
 end
 
 lemma Squares_cover_all :  ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ Square (i) :=
 begin
-sorry,
+intro y, use max y.1.nat_abs y.2.nat_abs,simp only [square_mem, and_self, forall_eq'],  
 end  
 
 
@@ -608,7 +634,7 @@ end
 
 lemma complex_abs_pow (k : ℤ) (a : ℂ): complex.abs (a^k)= (complex.abs (a))^k:=
 begin
-induction k with n hd, apply complex_abs_pow', simp only [fpow_neg_succ_of_nat, inv_inj', complex.abs_inv], apply complex_abs_pow', 
+induction k with n hd, apply complex_abs_pow', simp , apply complex_abs_pow', 
 end  
 
 lemma le_of_pow' (a b : ℝ) (k: ℕ)(h : 0 ≤ a) (h2: 0 ≤ b) (h3: a ≤ b): a^k ≤ b^k:=
@@ -779,7 +805,7 @@ let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
 
 have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, by {
 intro n,
-simp_rw g, simp_rw f, rw Eise, simp only [one_div, complex.abs_inv, fpow_coe_nat],
+simp_rw g, simp_rw f, rw Eise, simp,
 have k0: 1 ≤ k, by {linarith,},
 have BO:=  Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
 by_cases n0: n=0, {simp_rw In, rw n0, rw Square_zero, 
