@@ -162,6 +162,7 @@ split, refl, split, refl,split, refl, refl,
 end  
 
 
+
 noncomputable instance group : group (GLn n R) :=
 { mul_assoc := λ A B C, by { ext, simp [matrix.mul_assoc] },
   one_mul := λ A, by { ext, simp },
@@ -214,6 +215,47 @@ simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_fa
   ite_eq_left_iff],   
 end   
 
+
+
+
+
+
+@[simp] lemma mat_mul_expl  (A B : matrix (fin 2) (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
+
+begin
+split,  simp,
+rw  matrix.mul_apply,
+rw finset.sum_fin_eq_sum_range,
+rw finset.sum_range_succ,
+rw finset.sum_range_succ,
+simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
+  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
+  ite_eq_left_iff], 
+  split,  simp ,
+rw  matrix.mul_apply,
+rw finset.sum_fin_eq_sum_range,
+rw finset.sum_range_succ,
+rw finset.sum_range_succ,
+simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
+  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
+  ite_eq_left_iff],
+  split, simp ,
+rw  matrix.mul_apply,
+rw finset.sum_fin_eq_sum_range,
+rw finset.sum_range_succ,
+rw finset.sum_range_succ,
+simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
+  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
+  ite_eq_left_iff], 
+simp,
+rw  matrix.mul_apply,
+rw finset.sum_fin_eq_sum_range,
+rw finset.sum_range_succ,
+rw finset.sum_range_succ,
+simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
+  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
+  ite_eq_left_iff],   
+end   
 
 
 

@@ -604,27 +604,6 @@ simp_rw H1, simp,
   },
 
 
-
-/-  
-split,
-{
- rw rfunct, unfold rfunct', unfold complex.abs, unfold norm_sq, simp, 
-by_cases c1:  0 ≤ ((z: ℂ).re - 1), 
-have H: real.sqrt (((z: ℂ).re - 1) * ((z: ℂ).re - 1) + (z: ℂ).im * (z: ℂ).im) ≤ real.sqrt (((z: ℂ).re + δ) * ((z: ℂ).re + δ) + (z: ℂ).im * (z: ℂ).im), 
-by {rw real.sqrt_le, simp only [add_le_add_iff_right], 
-have i1: ((z:ℂ).re - 1) ≤  ((z: ℂ).re + δ), by {rw alem, norm_cast at h2, rw abs_le at h2 , apply h2.1,} ,
-apply mul_self_le_mul_self, apply c1, apply i1, nlinarith,},
-have h3: (rfunct z) ≤ real.sqrt (((z: ℂ).re - 1) * ((z: ℂ).re - 1) + (z: ℂ).im * (z: ℂ).im) ,
-by {sorry,},
-rw rfunct at h3, unfold rfunct' at h3, unfold complex.abs at h3, unfold norm_sq at h3, simp at h3,
-apply le_trans h3 H,
-simp at c1,
-  sorry,   },  
-
-
-
-
-{sorry,},-/
 end
 
 lemma complex_abs_pow' (k : ℕ) (a : ℂ): complex.abs (a^k)= (complex.abs (a))^k:=
@@ -773,11 +752,6 @@ end
 lemma natpowsinv (x : ℝ) (n : ℤ)  (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x:=
 begin
 have:=natpows x n  h2, rw this, have h3:=mul_fpow (x^n) (x⁻¹) (-1), rw fpow_neg at h3, simp at h3, exact h3,
-end  
-
-lemma wut (k: ℤ) (h: 3 ≤ k): 1 < k-1:=
-begin
-nlinarith,
 end  
 
 lemma Eisenstein_series_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=

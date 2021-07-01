@@ -7,6 +7,8 @@ import data.matrix.notation
 import group_theory.group_action.basic
 import algebra.group_action_hom
 import linear_algebra.matrix
+import .GLnR
+
 --import .matrix_groups
 
 /-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
@@ -30,8 +32,6 @@ def SL2Z := special_linear_group (fin 2) ℤ
 instance: group SL2Z:= infer_instance
 
 
-
-/-structure-/ 
 
 @[derive decidable_eq]
 def  integral_matrices_with_determinant (m : ℤ ) :={ A : matrix (fin 2) (fin 2) ℤ  // A.det = m }
@@ -110,22 +110,38 @@ def S2: matrix  (fin 2) (fin 2 ) ℤ:= ![![-2, 0], ![0, -1]]
 
 
 
-lemma str (A: SL2Z): det A = 1:= A.2
 
 
+lemma valorsl (A : SL2Z):  A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
+
+begin
+split, refl, split, refl,split, refl, refl,
+end  
+
+
+lemma valor_mat_m (A : integral_matrices_with_determinant m):  A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
+
+begin
+split, refl, split, refl,split, refl, refl,
+end  
 
 lemma MND (M: matrix (fin 2) (fin 2) ℤ): M.det= (M 0 0) * (M 1 1) - (M 0 1) * (M 1 0):=
 
 begin 
-sorry,
+exact GLn.det_of_22 M,  
 end   
 
 lemma det_onee (A: SL2Z):  det A= A 0 0 * A 1 1 - A 1 0 * A 0 1 :=
 
 begin
+have:= MND A.1, have ad:=A.2,simp [valorsl] at *, rw ad at this, have cg : A.1 1 0* A.1 0 1 =  A.1 0 1* A.1 1 0, by {ring,},
+simp at cg, rw cg,exact this,
 
-sorry,
 end  
+
+
+
+lemma str (A: SL2Z): det A = 1:= A.2
 
 lemma det_onne (A: SL2Z):  A 0 0 * A 1 1 - A 1 0 * A 0 1=1 :=
 
@@ -137,43 +153,31 @@ end
 lemma det_m (M: integral_matrices_with_determinant m): (M 0 0 * M 1 1 - M 1 0 * M 0 1)=m:=
 
 begin 
-sorry,
+ have H:= MND M.1, simp [valor_mat_m] at *, have m2:=M.2, simp at m2, rw m2 at H,
+ have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw cg, exact H.symm,
 end  
 
 
 lemma det_m''' (M: integral_matrices_with_determinant m) (h: M 1 0 = 0): M 0 0 * M 1 1=m:=
 
 begin 
-sorry,
+have:=det_m _ M,  rw h at this, simp at this,exact this,
 end  
 
 lemma det_m' (M: integral_matrices_with_determinant m): M 0 0 * M 1 1 - M 1 0 * M 0 1= M.val.det:=
 
 begin
-sorry,
+have:=MND M.1, simp [valor_mat_m],simp  at this, 
+ have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw cg, exact this.symm,
 end 
 
 
 lemma det_m2 (M: integral_matrices_with_determinant m): M.1 0 0 * M.1 1 1 - M.1 1 0 * M.1 0 1= M.val.det:=
 
 begin
-sorry,
+have:= det_m' _ M, simp [valor_mat_m] at *, exact this,
 end 
 
-/-instance : group SL2Z :=
-{ mul := λ A B, ⟨A.a * B.a + A.b * B.c,
-                A.a * B.b + A.b * B.d,
-                A.c * B.a + A.d * B.c,
-                A.c * B.b + A.d * B.d,
-    calc  (A.a * B.a + A.b * B.c) * (A.c * B.b + A.d * B.d) - (A.a * B.b + A.b * B.d) * (A.c * B.a + A.d * B.c)
-        = (A.a * A.d - A.b * A.c) * (B.a * B.d - B.b * B.c) : by ring
-    ... = 1 : by rw [A.det, B.det, mul_one]⟩,
-  mul_assoc := λ A B C, by cases A; cases B; cases C; ext; dsimp; ring,
-  one := ⟨1, 0, 0, 1, rfl⟩,
-  one_mul := λ A, by cases A; ext; change _ + _ = _; simp,
-  mul_one := λ A, by cases A; ext; change _ + _ = _; simp,
-  inv := λ A, ⟨A.d, -A.b, -A.c, A.a, by simpa [mul_comm] using A.det⟩,
-  mul_left_inv := λ A, by cases A; ext; change _ + _ = _; dsimp ; simp [mul_comm]; dsimp  }-/
 
 @[simp, SL2Z] lemma SL2Z_mul_a (A B : SL2Z) : (A * B) 0 0 = A 0 0 * B 0 0 + A 0 1 * B 1 0 := 
 
@@ -182,7 +186,6 @@ simp,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw sum_range_succ,
---rw sum_range_succ,
 simp only [nat.succ_pos', fin.mk_zero, dif_pos, nat.one_lt_bit0_iff, sum_singleton, fin.mk_one, range_one],
 end
 
@@ -198,7 +201,6 @@ simp,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw sum_range_succ,
---rw sum_range_succ,
 simp only [nat.succ_pos', fin.mk_zero, dif_pos, nat.one_lt_bit0_iff, sum_singleton, fin.mk_one, range_one],
 end
 
@@ -214,7 +216,6 @@ simp,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw sum_range_succ,
---rw sum_range_succ,
 simp only [nat.succ_pos', fin.mk_zero, dif_pos, nat.one_lt_bit0_iff, sum_singleton, fin.mk_one, range_one],
 end
 
@@ -230,7 +231,6 @@ simp,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw sum_range_succ,
---rw sum_range_succ,
 simp only [nat.succ_pos', fin.mk_zero, dif_pos, nat.one_lt_bit0_iff, sum_singleton, fin.mk_one, range_one],
 end
 
@@ -245,9 +245,8 @@ end
  lemma ng : Ni = (1: special_linear_group (fin 2) ℤ ):=
 
  begin
-  ext i j,
-  fin_cases i; fin_cases j, 
-   sorry, sorry,sorry,sorry,
+  rw Ni, simp_rw Sr,  ext i j,fin_cases i; fin_cases j, simp [valorsl], simp [valorsl], simp [valorsl], simp [valorsl],
+  
  end   
 
 lemma vale (A : integral_matrices_with_determinant m): A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
@@ -263,45 +262,68 @@ end
 @[simp, SL2Z] lemma SL2Z_one_d : (1 : SL2Z) 1 1 = 1 := rfl
 
 
-lemma sl2_inv (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A * B= (1: SL2Z) :=
+lemma sl2_inv (A: SL2Z) (B: SL2Z)  (h1: B.1 0 0 = A.1 1 1)  (h2: B.1 0 1= - A.1 0 1) (h3: B.1 1 0 = - A.1 1 0) (h4: B.1 1 1 = A.1 0 0): A.1 * B.1= (1: SL2Z).1 :=
 
 begin
-  ext i j,
-  simp,
-  rw mul_apply,
-  rw finset.sum_fin_eq_sum_range,
-  rw sum_range_succ,
-  rw sum_range_succ,
-  simp,
-  sorry,
-
-       
-
-
-
-
-
+have:= GLn.mat_mul_expl A.1 B.1,   
+ext i j, 
+fin_cases i; fin_cases j,
+have e1:= this.1,rw e1, rw h1, rw h3, simp,
+have Adet:= det_onne A, simp [valorsl] at Adet, ring_nf,
+have cg : A.1 1 0* A.1 0 1 =  A.1 0 1* A.1 1 0, by {ring,},
+simp at cg, rw ← cg, exact Adet, have e2:= this.2.1, rw e2, rw [h2,h4], ring,
+have e3:= this.2.2.1, rw e3, rw [h1,h3], ring, rw this.2.2.2, rw [h2,h4], simp,
+have Adet:= det_onne A, simp [valorsl] at Adet, rw add_comm, 
+have cg : A.1 1 1* A.1 0 0 =  A.1 0 0* A.1 1 1, by {ring,}, simp at cg, rw cg, convert Adet,
+ 
 end 
 
- 
+
+
+lemma sl2_inv' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A * B= 1 :=
+
+begin
+have H :=sl2_inv A B h1 h2 h3 h4, simp at H, rw ← matrix.mul_eq_mul at H, norm_cast at H,
+simp only [valorsl] at *, cases B, cases A, dsimp at *, ext1, cases j, 
+cases i, dsimp at *, simp at *, dsimp at *, solve_by_elim,
+
+end
+
+
+lemma sl2_inv'' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A⁻¹= B :=
+
+begin
+have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_of_mul_eq_one H, simp_rw this, simp,
+end  
+
+def ainv' (A: SL2Z): matrix (fin 2) (fin 2) ℤ:=![![A 1 1, -A 0 1], ![-A 1 0 , A  0 0]]
+
+lemma ainvdet (A : SL2Z): (ainv' A).det=1:=
+begin
+rw ainv', rw MND, simp, have :=det_onne A, simp only [valorsl] at *, rw mul_comm at this,
+have cg: A.val 0 1 * A.val 1 0= A.val 1 0 * A.val 0 1, by {ring,},
+rw cg, exact this,
+end 
+
+
+def Ainv (A: SL2Z): SL2Z:=
+⟨ ainv' A, ainvdet A⟩
+
+lemma Ainv_is_inv (A: SL2Z): A⁻¹ = Ainv A:=
+begin
+rw sl2_inv'' A (Ainv A), simp [valorsl] at *, rw Ainv, simp_rw ainv', ring,
+ simp [valorsl] at *, rw Ainv, simp_rw ainv', simp only [cons_val_one, neg_inj, cons_val_zero, subtype.coe_mk, head_cons],
+   simp only [valorsl], simp,
+   simp [valorsl] at *, rw Ainv, simp_rw ainv', simp,simp only [valorsl], simp,simp only [valorsl], rw Ainv, simp_rw ainv', simp [valorsl],
+end
+
+
 
 @[simp, SL2Z] lemma SL2Z_inv_a (A : SL2Z) : (A⁻¹) 0 0 = A 1 1 :=
 
 begin
- rw special_linear_group.inv_apply,
- rw adjugate_def,
- simp,
- rw cramer_apply,
- rw update_column,
+simp only [valorsl], rw Ainv_is_inv, rw Ainv,simp_rw ainv',simp only [valorsl, cons_val_zero],
 
- 
-
-/-simp,
-rw  adjugate_apply, 
-rw update_row,
-rw det,
-simp,-/
-sorry,
 end 
 
 
@@ -310,22 +332,21 @@ end
 @[simp, SL2Z] lemma SL2Z_inv_b (A : SL2Z) : (A⁻¹) 0 1 = -A 0 1 := 
 
 begin
-sorry,
+simp only [valorsl], rw Ainv_is_inv, rw Ainv,simp_rw ainv',simp only [valorsl, cons_val_one, cons_val_zero, head_cons],
 end  
 
 @[simp, SL2Z] lemma SL2Z_inv_c (A : SL2Z) : (A⁻¹) 1 0  = -A 1 0 := 
 
 begin
-sorry,
+simp only [valorsl], rw Ainv_is_inv, rw Ainv,simp_rw ainv',simp only [valorsl, cons_val_one, cons_val_zero, head_cons],
 end
-
 
 
 
 @[simp, SL2Z] lemma SL2Z_inv_d (A : SL2Z) : (A⁻¹) 1 1 = A 0 0 := 
 
 begin
-sorry 
+simp only [valorsl], rw Ainv_is_inv, rw Ainv,simp_rw ainv',simp only [valorsl, cons_val_one, head_cons],
 end 
 
 
@@ -333,17 +354,6 @@ end
 
 def SL2Z_M (m : ℤ) : SL2Z → integral_matrices_with_determinant m → integral_matrices_with_determinant m :=
 λ A B, ⟨A.1 ⬝ B.1, by erw [det_mul, A.2, B.2, one_mul]⟩
-
-
-/-def SL2Z_M (m : ℤ) : SL2Z → integral_matrices_with_determinant m → integral_matrices_with_determinant m :=
-λ X Y, {  a := X 0 0 * Y 0 0 + X 0 1 * Y 1 0,
-          b := X 0 0 * Y 0 1 + X 0 1 * Y 1 1,
-          c := X 1 0 * Y 0 0 + X 1 1 * Y 1 0,
-          d := X 1 0 * Y 0 1 + X 1 1 * Y 1 1,
-          det := begin
-            conv { to_rhs, rw ← one_mul m, congr, rw ← X.det, skip, rw ← Y.det },
-            ring
-          end}-/
 
 
 
@@ -365,11 +375,6 @@ refl,
 end   
 
 
-/-instance (m: ℤ )  :  has_scalar (SL2Z) (integral_matrices_with_determinant m):=
-
-{smul:= SL2Z_M (m : ℤ)}-/
-
-
 
 
 instance (m: ℤ )  :  mul_action  (SL2Z) (integral_matrices_with_determinant m):=
@@ -377,15 +382,6 @@ instance (m: ℤ )  :  mul_action  (SL2Z) (integral_matrices_with_determinant m)
 { smul := SL2Z_M (m : ℤ),
   one_smul := one_smull (m: ℤ ),
   mul_smul := mul_smull (m:ℤ ) }
-
-
-
-
-
-/-instance (m: ℤ):  mul_action SL2Z_M m :=
-{ mul := λ ⟨_, _, _, _, _⟩ ⟨_, _, _, _, _⟩ ⟨_, _, _, _, _⟩,
-    by ext; simp [SL2Z_M, add_mul, mul_add, mul_assoc],
-  one := λ ⟨_, _, _, _, _⟩, by ext; simp [SL2Z_M], }-/
 
 section
 
@@ -403,7 +399,8 @@ lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_de
 begin
 split,
 intro h,
-sorry, sorry, 
+have:= GLn.mat_mul_expl A M,  rw ← h, simp [valor_mat_m],intro h, ext i j, fin_cases i; fin_cases j, simp [valor_mat_m] at *, rw h.1,
+simp [valor_mat_m] at *, rw h.2.1,simp [valor_mat_m] at *, rw h.2.2.1,simp [valor_mat_m] at *, rw h.2.2.2,
 
 end  
 
@@ -500,8 +497,8 @@ def mi (m: ℤ) (M: integral_matrices_with_determinant m) : (matrix (fin 2) (fin
 lemma fff (m: ℤ) (M: integral_matrices_with_determinant m): (mi m M).det = m:=
 
 begin
-rw mi,
-sorry,
+rw mi, rw MND, simp, have:=det_m m M, simp [valor_mat_m] at *,
+have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw ← cg,exact this,
 end   
 
 
@@ -517,7 +514,11 @@ instance (m : ℤ) : has_neg (integral_matrices_with_determinant m) :=
 @[simp, SL2Z] lemma neg_b : (-B) 0 1 = -B 0 1 := rfl
 @[simp, SL2Z] lemma neg_c : (-B) 1 0 = -B 1 0  := rfl
 @[simp, SL2Z] lemma neg_d : (-B) 1 1 = -B 1 1 := rfl
-@[simp, SL2Z] protected lemma neg_neg : -(-B) = B := sorry
+@[simp, SL2Z]  lemma neg_neg : -(-B) = B :=
+begin
+ext i j, fin_cases i; fin_cases j,simp,simp, simp,simp,  
+end
+
 
 end integral_matrices_with_determinant
 
@@ -525,7 +526,10 @@ end integral_matrices_with_determinant
 
 namespace SL2Z
 
-variables (C D : SL2Z)
+variables (C D B : SL2Z)
+
+
+
 
 
 def mis (M: SL2Z) : (matrix (fin 2) (fin 2) ℤ) := ![![-M 0 0,  - M 0 1], ![-M 1 0 , -M 1 1]] 
@@ -534,9 +538,9 @@ def mis (M: SL2Z) : (matrix (fin 2) (fin 2) ℤ) := ![![-M 0 0,  - M 0 1], ![-M 
 
 lemma fffs (M: SL2Z): (mis M).det = 1:=
 
-begin
-rw mis,
-sorry,
+begin 
+rw mis, have:= det_onne M, rw MND, simp, simp [valorsl] at *,
+have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw  ← cg,exact this,
 end   
 
 def MATINVs  : SL2Z → SL2Z :=
@@ -545,9 +549,31 @@ def MATINVs  : SL2Z → SL2Z :=
 instance  : has_neg (SL2Z) :=
 ⟨λ A, MATINVs  A ⟩
 
-@[simp, SL2Z] protected lemma neg_one_mul : -1 * C = -C := sorry 
-@[simp, SL2Z] protected lemma neg_mul_neg : -C * -D = C * D := sorry
-@[simp, SL2Z] protected lemma neg_mul : -(C * D) = -C * D := sorry
-@[simp, SL2Z] protected lemma neg_neg : -(-C) = C := sorry 
+
+@[simp, SL2Z] lemma neg_a : (-B) 0 0 = -B 0 0 := rfl
+@[simp, SL2Z] lemma neg_b : (-B) 0 1 = -B 0 1 := rfl
+@[simp, SL2Z] lemma neg_c : (-B) 1 0 = -B 1 0  := rfl
+@[simp, SL2Z] lemma neg_d : (-B) 1 1 = -B 1 1 := rfl
+@[simp, SL2Z]  lemma neg_neg : -(-B) = B :=
+begin
+ext i j, fin_cases i; fin_cases j,simp,simp, simp,simp,  
+end
+
+@[simp, SL2Z] protected lemma neg_one_mul : -1 * C = -C := 
+begin
+ext i j, fin_cases i; fin_cases j, simp, simp,simp,simp,
+end
+
+
+@[simp, SL2Z] protected lemma neg_mul_neg : -C * -D = C * D :=
+begin
+ext i j, fin_cases i; fin_cases j, simp,simp,simp,simp,
+end
+
+@[simp, SL2Z] protected lemma neg_mul : -(C * D) = -C * D :=
+begin
+ext i j, fin_cases i; fin_cases j, simp, ring, simp,ring, simp,ring,simp,ring,
+end
+
 
 end SL2Z
