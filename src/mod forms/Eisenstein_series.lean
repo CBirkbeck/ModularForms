@@ -143,10 +143,15 @@ end
 lemma coe_chain (A: SL2Z) (i j : fin (2)): (A.1 i j : ℂ)= ((A.1 : (matrix (fin 2) (fin 2) ℝ) ) i j : ℂ):=
 begin
 
-simp, rw ← coe_coe, cases j, cases i, cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
- work_on_goal 0 { dsimp at *, simp at *, unfold_coes },  
-work_on_goal 1 { dsimp at *, simp at * }, have h1:= mat_val ⟨A_val, A_property⟩ , rw h1, simp, refl,
-
+simp, rw ← coe_coe, fin_cases i; fin_cases j, simp only [coe_coe],
+ work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
+  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *, simp only [int_cast_im] at *}, 
+  work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all}, 
+  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *, simp only [int_cast_im] at *}, 
+  work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all}, 
+  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *, simp only [int_cast_im] at *}, 
+  cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all}, 
+  work_on_goal 0 { dsimp at *,simp only [int_cast_re] at *, refl }, dsimp at *, simp only [int_cast_im] at *,
 end  
 
 
@@ -354,14 +359,23 @@ have h1:= nat_abs_inter _ _ ha.2, have h2:= auxin2 _ _ h1.2, simp_rw [h,h2],
 simp only [true_and, and_true, int.coe_nat_pos, eq_self_iff_true, neg_lt_self_iff, add_right_neg], have h3:=h1.1,  
 have Hk: a.1 < (n: ℤ)+1, by {linarith, }, simp only [Hk, true_or, or_true],simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
   finset.mem_product], 
-cases  ha.1, cases  ha.2, simp_rw [h,h_1], simp, rw tofind, simp only [true_or],
-simp_rw [h,h_1], simp, rw tofind, simp only [true_or, or_true], cases ha.2, simp_rw [h,h_1], simp at *, rw tofind2, simp, 
-have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or],  simp_rw [h,h_1], simp at *, rw tofind2, simp, 
-have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [hg], simp only [true_or, or_true],
+cases  ha.1, cases  ha.2, simp_rw [h,h_1], have n1: -(n: ℤ) ≤ (n: ℤ), by {linarith,}, simp_rw [n1], 
+simp only [lt_add_iff_pos_right, true_or, eq_self_iff_true, and_self, zero_lt_one],
 
-intro ha, rw Square2 at ha, simp at ha, rw square_mem', cases ha, have:= cat _ _ _ ha.2 ha.1, simp_rw this,simp, exact this.2,
-cases ha,  have:= cat1 _ _ _ ha.2 ha.1, simp_rw this,simp, exact this.2, cases ha, have:= dog _ _ _ ha.1 ha.2,  simp_rw this,simp,
- have:= dog1 _ _ _ ha.1 ha.2,  simp_rw this,simp,
+simp_rw [h,h_1],  have n1: -(n: ℤ) ≤ (n: ℤ), by {linarith,}, simp_rw [n1],
+simp only [lt_add_iff_pos_right, true_or, eq_self_iff_true, or_true, and_self, zero_lt_one],
+ cases ha.2, simp_rw [h,h_1], 
+ simp only [true_and, lt_self_iff_false, le_refl, and_true, eq_self_iff_true, or_false, and_false] at *,  
+ have n1: -(n: ℤ) < (n: ℤ)+1, by {linarith,} , simp_rw [n1],  simp only [true_or],
+have hg: -(n: ℤ) < n+1, by {linarith,}, simp_rw [h,h_1, hg], simp only [le_refl, true_or, eq_self_iff_true, or_true, and_self],  
+
+intro ha, rw Square2 at ha, 
+simp only [finset.mem_union, finset.union_assoc, finset.mem_singleton, finset.Ico_ℤ.mem, neg_add_le_iff_le_add,
+  finset.mem_product] at ha, rw square_mem', cases ha, have:= cat _ _ _ ha.2 ha.1, simp_rw this,
+simp only [true_and, lt_self_iff_false, and_true, false_or, eq_self_iff_true, and_false], exact this.2,
+cases ha,  have:= cat1 _ _ _ ha.2 ha.1, simp_rw this,simp, exact this.2, cases ha, have:= dog _ _ _ ha.1 ha.2,  
+simp_rw this,simp only [true_or, eq_self_iff_true, and_self],
+ have:= dog1 _ _ _ ha.1 ha.2,  simp_rw this,simp only [true_or, eq_self_iff_true, and_self],
 end   
 
 

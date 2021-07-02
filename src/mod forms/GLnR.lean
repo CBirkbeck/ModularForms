@@ -3,7 +3,7 @@
 The Genera Linear group $GL(n, R)$
 -/
 import linear_algebra.matrix
-import linear_algebra.nonsingular_inverse
+import linear_algebra.matrix.nonsingular_inverse
 
 
 /-!
@@ -150,8 +150,7 @@ lemma inv_is_inv (A : GLn n R) : A.nonsing_inve= (↑A)⁻¹:=
 begin
 have h1: is_unit (det A), by {have:=A.2, exact this,},
 have:=is_left_inv A, have:=nonsing_inv_mul A.1 h1, simp at this, have:=nonsing_inv_apply A h1, 
-ext, dsimp, rw nonsing_inve, rw nonsing_inv, simp only [dif_pos, h1], cases h1, cases A, cases A_property,
- dsimp at *, simp at *, injections_and_clear, dsimp at *, solve_by_elim, 
+ext, dsimp, rw nonsing_inve, rw nonsing_inv, refl, 
 end  
 
 

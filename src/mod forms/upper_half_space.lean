@@ -258,7 +258,7 @@ end
 lemma SL_det_pos (A : SL2Z): (A.1.det: ℝ) > 0:=
 
 begin
-have:=A.2, rw this, cases A, dsimp at *, simp at *, norm_cast, exact dec_trivial,
+have:=A.2, rw this, cases A, dsimp only at *,simp only [gt_iff_lt, int.cast_one, zero_lt_one] at *,
 end  
 
 lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
@@ -283,7 +283,7 @@ lemma SL_det_pos' (A : SL2Z): (A : GLn (fin 2) ℝ).1.det > 0:=
 begin
 have:=A.2, simp only [gt_iff_lt, subtype.val_eq_coe], simp only [subtype.val_eq_coe] at this, have h2:= det_coes (A.1), 
 simp only [subtype.val_eq_coe] at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2, 
-cases A, dsimp at *, simp at *, norm_cast, exact dec_trivial,
+cases A, dsimp only at *, simp only [int.cast_one, zero_lt_one] at *,
 end  
 
 instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) ℝ), by {have:= SL_det_pos' A,
