@@ -40,10 +40,20 @@ namespace Eisenstein_series
 def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 λ x, 1/(x.1*z+x.2)^k  
 
+def Eise_deriv (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
+λ x, (-k*x.1)/(x.1*z+x.2)^(k+1)  
+
+
+
 /--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, 
 but in order to make it an actual modular form some constraints will be needed -/
 def Eisenstein_series_of_weight_ (k: ℤ) : ℍ' → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
+
+def Eisenstein_deriv_weight (k: ℤ) : ℍ' → ℂ:=
+ λ z, ∑' (x : ℤ × ℤ), (Eise_deriv k z x) 
+
+
 
 
 
@@ -848,7 +858,10 @@ end
 
 lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic (Eisenstein_series_of_weight_ k):=
 begin
-rw is_holomorphic, simp,sorry,
+rw is_holomorphic, simp, intro z, use (Eisenstein_deriv_weight k z), rw Eisenstein_deriv_weight,
+rw Eisenstein_series_of_weight_, simp_rw Eise, simp_rw Eise_deriv,simp,rw has_deriv_within_at_iff_tendsto, simp,
+
+sorry,
 end
 
 

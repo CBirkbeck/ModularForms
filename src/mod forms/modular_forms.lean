@@ -335,7 +335,7 @@ structure is_modular_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
 def zero_mod_form (k: ℕ):  is_modular_form_lvl_one_weight (k : ℕ) (zero_form k):=
 { hol := zero_hol ℍ,
   transf := zero_form_is_pet k,
-  infinity := by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, rw zero_form, norm_cast, exact dec_trivial}
+  infinity := by {simp only [bound_mem', ge_iff_le], use (1: ℝ ), use (0: ℝ ), intros x  h1, rw zero_form, norm_cast, exact dec_trivial}
 }
 
 /-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and zero at infinity -/
@@ -349,10 +349,10 @@ structure is_cusp_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
 (infinity : f ∈ zero_at_infty )
 
 
-def zero_cusp_form (k: ℕ):  is_modular_form_lvl_one_weight (k : ℕ) (zero_form k):=
+def zero_cusp_form (k: ℕ):  is_cusp_form_lvl_one_weight (k : ℕ) (zero_form k):=
 { hol := zero_hol ℍ,
   transf := zero_form_is_pet k,
-  infinity := by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, rw zero_form, norm_cast, exact dec_trivial}
+  infinity := by {simp only [zero_at_inf_mem', gt_iff_lt, ge_iff_le], intros ε he, use (-1: ℝ ), intros x  h1, rw zero_form, simp,linarith}
 }
 
 
