@@ -22,8 +22,10 @@ instance: metric_space upper_half_space:=infer_instance
 
 lemma upper_half_plane_is_open: is_open upper_half_space:= 
 begin
-rw metric.is_open_iff, 
-sorry, 
+begin
+have : upper_half_space = complex.im⁻¹' set.Ioi 0 := set.ext (λ z, iff.intro (λ hz, set.mem_preimage.mp hz) $ λ hz, hz),
+exact is_open.preimage complex.continuous_im is_open_Ioi,
+end
 end
 
 lemma upper_half_plane_open_subs: upper_half_space ∈ open_subs:=
