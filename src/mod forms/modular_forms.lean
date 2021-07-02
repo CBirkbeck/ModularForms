@@ -31,7 +31,7 @@ end
 lemma upper_half_plane_open_subs: upper_half_space ∈ open_subs:=
 
 begin
-simp, exact upper_half_plane_is_open,
+simp only [open_subs_mem], exact upper_half_plane_is_open,
 end  
 
 local notation `ℍ`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_subs)
