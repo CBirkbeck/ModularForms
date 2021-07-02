@@ -86,7 +86,7 @@ rw is_holomorphic, intro z, use (0: ℂ), have h1:=has_deriv_within_at_const  z.
 
 have H:= has_deriv_within_at.congr_of_eventually_eq_of_mem h1 _ z.property , convert H, rw  eventually_eq,
  rw eventually_iff_exists_mem, use domain, have H2:= ext_by_zero_eq domain c, split,
- have h3:= domain.2, simp only [open_subs_mem, subtype.val_eq_coe] at h3, have h4:=mem_nhds_sets h3 z.2, 
+ have h3:= domain.2, simp only [open_subs_mem, subtype.val_eq_coe] at h3, have h4:=is_open.mem_nhds h3 z.2, 
  simp only [subtype.val_eq_coe], 
  convert h4, simp, rw nhds_within, simp only [inf_eq_left, le_principal_iff], exact h4, exact H2,
 
