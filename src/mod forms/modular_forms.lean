@@ -327,9 +327,35 @@ end
 def is_modular_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
 
 
+structure is_modular_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
+(hol      : is_holomorphic f)
+(transf   : is_Petersson_weight_ k f)
+(infinity : f ∈ bounded_at_infty )
+
+def zero_mod_form (k: ℕ):  is_modular_form_lvl_one_weight (k : ℕ) (zero_form k):=
+{ hol := zero_hol ℍ,
+  transf := zero_form_is_pet k,
+  infinity := by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, rw zero_form, norm_cast, exact dec_trivial}
+}
+
 /-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and zero at infinity -/
 
 def is_cusp_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
+
+
+structure is_cusp_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
+(hol      : is_holomorphic f)
+(transf   : is_Petersson_weight_ k f)
+(infinity : f ∈ zero_at_infty )
+
+
+def zero_cusp_form (k: ℕ):  is_modular_form_lvl_one_weight (k : ℕ) (zero_form k):=
+{ hol := zero_hol ℍ,
+  transf := zero_form_is_pet k,
+  infinity := by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, rw zero_form, norm_cast, exact dec_trivial}
+}
+
+
 
 lemma is_modular_form_of_lvl_one_weight__of_is_cusp_form_of_lvl_one_weight_ {k : ℕ} (f : ℍ → ℂ) (h : is_cusp_form_of_lvl_one_weight_ k f) : is_modular_form_of_lvl_one_weight_ k f :=
 ⟨h.1, is_zero_at_inf_is_bound' f h.2⟩

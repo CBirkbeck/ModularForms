@@ -12,6 +12,7 @@ import data.setoid.partition
 import topology.instances.ennreal
 import topology.instances.nnreal
 import .Riemann_zeta_fin
+import .holomorphic_functions
 
 
 
@@ -22,6 +23,8 @@ open complex
 open_locale big_operators nnreal classical
 
 local notation `ℍ` := upper_half_space
+
+local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_subs)
 noncomputable theory
 
 
@@ -39,7 +42,7 @@ def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 
 /--This defines the Eisenstein series of weight k and level one. At the moment there is no restriction on the weight, 
 but in order to make it an actual modular form some constraints will be needed -/
-def Eisenstein_series_of_weight_ (k: ℤ) : ℍ → ℂ:=
+def Eisenstein_series_of_weight_ (k: ℤ) : ℍ' → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
 
 
@@ -843,8 +846,10 @@ apply riesum',
 end  
 
 
-
-
+lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic (Eisenstein_series_of_weight_ k):=
+begin
+rw is_holomorphic, simp,sorry,
+end
 
 
 
