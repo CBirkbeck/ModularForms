@@ -40,6 +40,10 @@ namespace Eisenstein_series
 def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 λ x, 1/(x.1*z+x.2)^k  
 
+def real_Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℝ:=
+λ x, complex.abs(1/(x.1*z+x.2)^k)  
+
+
 def Eise_deriv (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 λ x, (-k*x.1)/(x.1*z+x.2)^(k+1)  
 
@@ -49,6 +53,9 @@ def Eise_deriv (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 but in order to make it an actual modular form some constraints will be needed -/
 def Eisenstein_series_of_weight_ (k: ℤ) : ℍ' → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise k z x) 
+
+def real_Eisenstein_series_of_weight_ (k: ℤ) : ℍ' → ℝ:=
+ λ z, ∑' (x : ℤ × ℤ), (real_Eise k z x)  
 
 def Eisenstein_deriv_weight (k: ℤ) : ℍ' → ℂ:=
  λ z, ∑' (x : ℤ × ℤ), (Eise_deriv k z x) 
@@ -491,6 +498,19 @@ have H2: ∀  (x : α), ∑' (y : (λ (s : α), ↥(i s)) x), (f ∘ ⇑h0) ⟨x
 simp_rw H2,
  end
 
+
+lemma tsum_disjoint_union_of_nonneg' {i : α →  set β} {f : (⋃ x, i x) → ℝ} (h: ∀ a b, a ≠ b →  disjoint (i a) (i b)) 
+ (h1: summable f): 
+ ∑' x, f x= ∑' x , ∑' (y : i x), f ⟨y , unionmem i x y⟩   :=
+ begin
+let h0:=(set.Union_eq_sigma_of_disjoint h).symm,
+have h01: ∑' x, f x = ∑' y , ( f  (h0 y)) , by {have:= equiv.tsum_eq h0 f,rw ← this,   },
+rw h01,  rw tsum_sigma, simp_rw h0,  rw set.Union_eq_sigma_of_disjoint,simp, simp_rw set.sigma_to_Union, 
+have h01: summable f ↔ summable ( f ∘ h0 ), by {have:= equiv.summable_iff h0 , rw this, }, 
+rw ← h01, exact h1,
+ end
+
+
 lemma disjoint_aux (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) : ∀ (i j : ℕ), i ≠ j → disjoint (In i) (In j):=
 begin
 intros i j h, intros a α, cases a, dsimp at *, simp at *, cases α, 
@@ -524,6 +544,23 @@ intros H x, rw hg, apply finset.summable,
 end
 
 
+lemma tsum_lemma (f: ℤ × ℤ → ℝ) (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) )  
+(hs :summable f): ∑' x, f x =  ∑'  ( n : ℕ), (∑ x in In (n), f x)  :=
+begin
+let h2:= union_equiv In HI,
+have hdis':=disjoint_aux In HI,
+have h5: ∀ (x : ℕ), finset ((coef (In x))), by {intro x, rw coef, exact finset.univ,},
+have hg:∀ (x : ℕ), (coef (In x))={y : ℤ × ℤ | y ∈ In x}, by {intros x, refl,},
+have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)), by {intros a b hab, simp_rw coef, 
+rw ← finset.disjoint_iff_disjoint_coe, apply hdis', exact hab,},
+
+have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in  (In x), f y, by {
+  simp only, intro x, apply finset.tsum_subtype', },
+simp_rw h6,  
+have HS:summable (f ∘ h2), by {rw equiv.summable_iff  h2, exact hs,},
+
+have HH:= tsum_disjoint_union_of_nonneg'  hdis HS, simp at HH, have:= equiv.tsum_eq h2 f, rw ← this, rw HH, simp_rw h6, apply unionmem,
+end
 
 lemma realpow (n : ℕ ) (k : ℤ): (n: ℝ)^((k : ℝ)-1)= n^(k-1):=
 begin
@@ -781,42 +818,20 @@ begin
 have:=natpows x n  h2, rw this, have h3:=mul_fpow (x^n) (x⁻¹) (-1), rw fpow_neg at h3, simp at h3, exact h3,
 end  
 
-lemma Eisenstein_series_is_summable (A: SL2Z) (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
-
+lemma BigClaim (k : ℕ) (z : ℍ) (h : 3 ≤ k): ∀ (n: ℕ), ∑ (y: ℤ × ℤ) in (Square n), ((real_Eise k z) y)  ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹:=
 begin
-let In:=Square,
-have HI:=Squares_cover_all,
-have Hpos:= Eise_is_nonneg k z,
-let f:=(Eise k z),
-have sum_Eq:  summable (λ x, abs (f x)) → summable f, by {apply summable_if_complex_abs_summable,},
-
-simp_rw ← f,
-apply sum_Eq,
-let g:= λ (y : ℤ × ℤ), abs (f y),
-have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {simp_rw g,intro y, apply complex.abs_nonneg,},
-simp_rw ← g,
-have index_lem:= sum_lemma g  gpos In HI,
-
-rw  index_lem,
-
-let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
-
-
-
-
-have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, by {
 intro n,
-simp_rw g, simp_rw f, rw Eise, simp,
+rw real_Eise, simp,
 have k0: 1 ≤ k, by {linarith,},
 have BO:=  Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
-by_cases n0: n=0, {simp_rw In, rw n0, rw Square_zero, 
+by_cases n0: n=0, { rw n0, rw Square_zero, 
 simp only [add_zero, int.cast_zero, nat.cast_zero, zero_mul, finset.sum_singleton], 
 have H0: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,}, rw H0, simp only [complex.abs_zero, inv_zero],
 have H00: (0: ℝ)^((k: ℤ)-1)=0, by { rw zero_fpow, linarith,}, rw H00, simp only [inv_zero, mul_zero],},
 have:= finset.sum_le_sum BO, simp only [finset.sum_const, complex.abs_mul, nsmul_eq_mul] at this,
 
  rw Square_size n at this,
-norm_cast at this, simp_rw In, 
+norm_cast at this, 
 have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)= (8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, 
 by {rw complex_abs_pow', rw complex.abs_of_nonneg, rw ← mul_pow, rw div_eq_inv_mul, 
 have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: ℤ)-1))⁻¹, by { 
@@ -826,14 +841,45 @@ have:8* ↑n * ((rfunct z * ↑n) ^ k)⁻¹= 8*((rfunct z)^k)⁻¹ * (↑n^((k: 
  simp only [eq_self_iff_true, not_true] at n0, exact n0,},
 rw this, ring, have rpos:= rfunct_pos z, apply le_of_lt rpos,},
 norm_cast at ne, rw ne at this, norm_cast,  apply this, have hhh:= nat.pos_of_ne_zero n0, linarith,
-},
 
-have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
-simp_rw e, simp only at BIGCLAIM, rw rie, simp only [one_div], intro n,
+end
+
+
+lemma SmallClaim (k : ℕ) (z : ℍ) (h : 3 ≤ k):   ∀ (n : ℕ), (λ (x: ℕ), ∑ (y : ℤ × ℤ) in (Square x), (real_Eise k z) y) n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n):=
+
+begin
+ have BIGCLAIM:= BigClaim k z h, 
+ simp only at BIGCLAIM, rw rie, simp only [one_div], intro n,
  have tr :((↑n ^ ((k: ℤ) - 1))⁻¹: ℝ)=((↑n ^ ((k: ℝ) - 1))⁻¹: ℝ), by {simp only [inv_inj'], 
  have:= realpow n k, 
  norm_cast at this, rw ← this, simp only [int.cast_coe_nat, int.cast_one, int.cast_sub],},
  rw ← tr, apply BIGCLAIM n,
+end
+
+
+lemma real_eise_is_summable (k : ℕ) (z : ℍ) (h : 3 ≤ k): summable (real_Eise k z):=
+begin
+let In:=Square,
+have HI:=Squares_cover_all,  
+let g:= λ (y : ℤ × ℤ), (real_Eise k z) y,
+have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {simp_rw g, intro y, rw real_Eise, simp,apply complex.abs_nonneg,},
+have index_lem:= sum_lemma g  gpos In HI,
+rw index_lem,
+
+let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
+
+
+
+
+have BIGCLAIM: ∀ (n : ℕ), ∑ (y : ℤ × ℤ) in (In n), g y ≤(8/((rfunct z)^k))*(n^((k: ℤ)-1))⁻¹, by {
+
+simp_rw g,  
+apply BigClaim k z h,
+},
+
+have smallerclaim:  ∀ (n : ℕ), e n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n), by {
+simp_rw e, 
+apply SmallClaim k z h,
 },
 
 have epos: ∀ (x : ℕ), 0 ≤ e x, by {simp_rw e, simp_rw g, intro x, 
@@ -850,18 +896,51 @@ have:=summable_of_nonneg_of_le epos smallerclaim,
 
 apply this,
 apply riesum',
-
-
-
 end  
+
+
+lemma Real_Eisenstein_bound (k : ℕ) (z : ℍ) (h : 3 ≤ k): (real_Eisenstein_series_of_weight_ k z) ≤ (8/(rfunct z)^k)*Riemann_zeta (k-1):=
+
+begin
+rw real_Eisenstein_series_of_weight_,rw Riemann_zeta,
+  rw ← tsum_mul_left, let In:=Square,
+have HI:=Squares_cover_all,  
+let g:= λ (y : ℤ × ℤ), (real_Eise k z) y,
+have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y, by {simp_rw g, intro y, rw real_Eise, simp,apply complex.abs_nonneg,},
+have hgsumm: summable g, by {simp_rw g, apply real_eise_is_summable k z h, },
+have index_lem:= tsum_lemma g In HI hgsumm, simp_rw g at index_lem, simp, rw index_lem,
+have ind_lem2:=sum_lemma g gpos In HI,
+
+
+have smallclaim:= SmallClaim k z h,
+have hk: 1 < ((k-1): ℤ), by { linarith, },
+have nze: ((8/((rfunct z)^k)): ℝ)  ≠ 0, by {apply div_ne_zero, simp, apply pow_ne_zero,
+ simp, by_contra HR, have:=rfunct_pos z, rw HR at this, simp at this, exact this, },
+have riesum:=int_Riemann_zeta_is_summmable (k-1) hk,
+
+
+have riesum': summable (λ (n : ℕ), (8 / (rfunct z)^k) * rie (↑k - 1) n), by {
+  rw (summable_mul_left_iff nze).symm, simp at riesum, apply riesum,}, 
+  apply tsum_le_tsum, apply smallclaim, simp_rw g at ind_lem2, rw ← ind_lem2, simp_rw g at hgsumm, apply hgsumm,apply riesum',
+end  
+
+lemma Eisenstein_series_is_summable  (k : ℕ) (z : ℍ) (h : 3 ≤ k) : summable (Eise k z) :=
+
+begin
+let f:=(Eise k z),
+have sum_Eq:  summable (λ x, abs (f x)) → summable f, by {apply summable_if_complex_abs_summable,},
+apply sum_Eq,
+simp_rw f,
+have:=real_eise_is_summable k z h, rw real_Eise at this, exact this,
+end  
+
 
 
 lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic (Eisenstein_series_of_weight_ k):=
 begin
-rw is_holomorphic, simp, intro z, use (Eisenstein_deriv_weight k z), rw Eisenstein_deriv_weight,
-rw Eisenstein_series_of_weight_, simp_rw Eise, simp_rw Eise_deriv,simp,rw has_deriv_within_at_iff_tendsto, simp,
-
-sorry,
+rw is_holomorphic, simp, intro z, use (Eisenstein_deriv_weight k z),rw has_deriv_within_at_iff_tendsto, simp, rw tendsto_zero_iff_norm_tendsto_zero,
+simp,  
+sorry, 
 end
 
 

@@ -75,10 +75,16 @@ variable {domain : open_subs}
 
 lemma ext_by_zero_eq (domain: open_subs) (c : ℂ):∀ (y : ℂ), (y ∈ (domain : set ℂ)) → extend_by_zero (λ z : domain, (c : ℂ)) y =c :=
 begin
-intros y hy, rw extend_by_zero, simp only [dite_eq_ite], cases domain, dsimp at *, simp at *, 
+intros y hy, rw extend_by_zero, simp only [dite_eq_ite], cases domain, dsimp at *, simp only [ite_eq_left_iff] at *, 
 intros ᾰ, tactic.ext1 [] {new_goals := tactic.new_goals.all}, work_on_goal 0 { dsimp at *, solve_by_elim }, 
 dsimp at *, solve_by_elim,
 end  
+
+lemma ext_by_zero_eq' (domain: open_subs) (f : domain → ℂ) (y : ℂ) (h: y ∈ (domain : set ℂ)): extend_by_zero (f ) y = (f ⟨ y, h⟩) :=
+begin
+ rw extend_by_zero, simp, cases domain, dsimp at *, exact dif_pos h,
+
+end 
 
 lemma const_hol  (c : ℂ) : is_holomorphic (λ z : domain, (c : ℂ)) :=
 begin
