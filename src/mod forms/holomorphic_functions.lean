@@ -65,10 +65,26 @@ def open_subs:={domain: set ℂ | is_open domain}
 there is a neibourhood around the point containing the derivative of the function. In order to make it work 
 with has_deriv_within_at, we first extend the function by zero to the entire complex plane. -/
 
- def is_holomorphic {domain : open_subs} (f : domain → ℂ) : Prop :=
+ def is_holomorphic_on {domain : open_subs} (f : domain → ℂ) : Prop :=
 ∀ z : domain, ∃ f', has_deriv_within_at (extend_by_zero f) (f') domain z
 
+ def is_entire  (f : ℂ → ℂ) : Prop :=
+∀ (S : open_subs), is_holomorphic_on (set.restrict f S) 
 
+
+
+lemma is_holomorphic_on_iff_differentiable_on  (domain : open_subs) (f : domain → ℂ): 
+differentiable_on ℂ  (extend_by_zero f) domain.1 ↔ is_holomorphic_on f:=
+
+begin
+rw is_holomorphic_on, split, rw differentiable_on, intro hd, intro z, have h1:= hd z.1 z.2,
+have h2:=  differentiable_within_at.has_fderiv_within_at h1, simp_rw has_deriv_within_at,  simp_rw has_deriv_at_filter,
+ simp_rw has_fderiv_within_at at h2, simp at *, dunfold fderiv_within at h2,  dunfold differentiable_within_at at h1, rw dif_pos h1 at h2,
+ use classical.some h1 1,simp,exact h2, 
+ 
+ intro hz,  rw differentiable_on, intros x hx,  have h1:= hz ⟨x, hx⟩, have h2:= classical.some_spec h1, apply has_deriv_within_at.differentiable_within_at  h2,
+
+end
 
 variable {domain : open_subs}
 
@@ -86,9 +102,14 @@ begin
 
 end 
 
-lemma const_hol  (c : ℂ) : is_holomorphic (λ z : domain, (c : ℂ)) :=
+lemma ext_by_zero_apply (domain: open_subs) (f : domain → ℂ) (y : domain) : extend_by_zero (f ) y = (f y) :=
 begin
-rw is_holomorphic, intro z, use (0: ℂ), have h1:=has_deriv_within_at_const  z.1 domain c,
+have:= ext_by_zero_eq' domain f y y.2, rw this, simp,
+end 
+
+lemma const_hol  (c : ℂ) : is_holomorphic_on (λ z : domain, (c : ℂ)) :=
+begin
+rw is_holomorphic_on, intro z, use (0: ℂ), have h1:=has_deriv_within_at_const  z.1 domain c,
 
 have H:= has_deriv_within_at.congr_of_eventually_eq_of_mem h1 _ z.property , convert H, rw  eventually_eq,
  rw eventually_iff_exists_mem, use domain, have H2:= ext_by_zero_eq domain c, split,
@@ -100,18 +121,18 @@ end
 
 
 
-lemma zero_hol (domain: open_subs) : is_holomorphic (λ z : domain, (0 : ℂ)) :=
+lemma zero_hol (domain: open_subs) : is_holomorphic_on (λ z : domain, (0 : ℂ)) :=
 begin
   apply const_hol (0:ℂ ),
 end 
 
 
-lemma one_hol (domain: open_subs) : is_holomorphic (λ z : domain, (1 : ℂ)) := 
+lemma one_hol (domain: open_subs) : is_holomorphic_on (λ z : domain, (1 : ℂ)) := 
 begin
 apply const_hol (1: ℂ),
 
 end
-lemma add_hol (f g : domain → ℂ) (f_hol : is_holomorphic f) (g_hol : is_holomorphic g) : is_holomorphic (f + g) :=
+lemma add_hol (f g : domain → ℂ) (f_hol : is_holomorphic_on f) (g_hol : is_holomorphic_on g) : is_holomorphic_on (f + g) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ Hf,
@@ -122,7 +143,7 @@ begin
   exact this, 
 end
 
-lemma mul_hol (f g : domain → ℂ) (f_hol : is_holomorphic f) (g_hol : is_holomorphic g) : is_holomorphic (f * g) :=
+lemma mul_hol (f g : domain → ℂ) (f_hol : is_holomorphic_on f) (g_hol : is_holomorphic_on g) : is_holomorphic_on (f * g) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ Hf,
@@ -136,7 +157,7 @@ end
 
 
 
-lemma neg_hol (f : domain → ℂ) (f_hol : is_holomorphic f) : is_holomorphic (-f) :=
+lemma neg_hol (f : domain → ℂ) (f_hol : is_holomorphic_on f) : is_holomorphic_on (-f) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ H,
@@ -146,7 +167,7 @@ begin
   exact h3,
 end
 
-instance (domain: open_subs) : is_subring {f : domain → ℂ | is_holomorphic f} :=
+instance (domain: open_subs) : is_subring {f : domain → ℂ | is_holomorphic_on f} :=
 { zero_mem := zero_hol domain,
   add_mem  := add_hol,
   neg_mem  := neg_hol,
@@ -158,7 +179,7 @@ instance (domain: open_subs) : is_subring {f : domain → ℂ | is_holomorphic f
 --{ dist_eq := normed_field.dist_eq,
 --norm_smul := normed_field.norm_mul }
 
-lemma smul_hol (c : ℂ) (f : domain → ℂ) (f_hol : is_holomorphic f) : is_holomorphic (c • f) :=
+lemma smul_hol (c : ℂ) (f : domain → ℂ) (f_hol : is_holomorphic_on f) : is_holomorphic_on (c • f) :=
 begin
   intro z₀,
   cases f_hol z₀ with f'z₀ Hf,
@@ -170,7 +191,7 @@ begin
 end
 
 def hol_submodule (domain: open_subs) : submodule (ℂ)  (domain → ℂ) :=
-{ carrier := {f : domain → ℂ | is_holomorphic f},
+{ carrier := {f : domain → ℂ | is_holomorphic_on f},
   zero_mem' := zero_hol domain,
   add_mem' := add_hol,
   smul_mem' := smul_hol}

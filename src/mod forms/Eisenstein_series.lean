@@ -40,11 +40,15 @@ namespace Eisenstein_series
 def Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
 λ x, 1/(x.1*z+x.2)^k  
 
+
+def Eise' (k: ℤ) (z : ℂ) : ℤ × ℤ →  ℂ:=
+λ x, 1/(x.1*z+x.2)^k  
+
 def real_Eise (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℝ:=
 λ x, complex.abs(1/(x.1*z+x.2)^k)  
 
 
-def Eise_deriv (k: ℤ) (z : ℍ) : ℤ × ℤ →  ℂ:=
+def Eise_deriv (k: ℤ) (z : ℂ) : ℤ × ℤ →  ℂ:=
 λ x, (-k*x.1)/(x.1*z+x.2)^(k+1)  
 
 
@@ -934,6 +938,14 @@ simp_rw f,
 have:=real_eise_is_summable k z h, rw real_Eise at this, exact this,
 end  
 
+
+
+lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) : is_entire (λ (z : ℂ), Eise' k z y):=
+begin
+rw is_holomorphic, intro z, use Eise_deriv k z y, simp_rw Eise, simp_rw Eise_deriv, simp, rw extend_by_zero, simp at *,  
+--has_deriv_within_at_fpow 
+sorry,
+end
 
 
 lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic (Eisenstein_series_of_weight_ k):=

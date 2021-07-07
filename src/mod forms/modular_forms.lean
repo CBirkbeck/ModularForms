@@ -324,11 +324,11 @@ end
 
 /-- A function `f : ℍ → ℂ` is a modular form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and bounded at infinity -/
 
-def is_modular_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
+def is_modular_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic_on f} ∩ (is_Petersson_weight_ k) ∩ bounded_at_infty
 
 
 structure is_modular_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
-(hol      : is_holomorphic f)
+(hol      : is_holomorphic_on f)
 (transf   : is_Petersson_weight_ k f)
 (infinity : f ∈ bounded_at_infty )
 
@@ -340,11 +340,11 @@ def zero_mod_form (k: ℕ):  is_modular_form_lvl_one_weight (k : ℕ) (zero_form
 
 /-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic, Petersson and zero at infinity -/
 
-def is_cusp_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
+def is_cusp_form_of_lvl_one_weight_ (k : ℕ) := {f : ℍ → ℂ | is_holomorphic_on f} ∩ (is_Petersson_weight_ k) ∩ zero_at_infty
 
 
 structure is_cusp_form_lvl_one_weight (k : ℕ) (f : ℍ → ℂ) : Prop :=
-(hol      : is_holomorphic f)
+(hol      : is_holomorphic_on f)
 (transf   : is_Petersson_weight_ k f)
 (infinity : f ∈ zero_at_infty )
 
