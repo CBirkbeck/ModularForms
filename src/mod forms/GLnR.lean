@@ -261,8 +261,7 @@ end
 lemma det_of_22 (M: matrix (fin 2) (fin 2) R): M.det= (M 0 0) * (M 1 1) - (M 0 1) * (M 1 0):=
 
 begin 
-
-sorry,
+rw  matrix.det_succ_row_zero, simp [fin.sum_univ_succ],ring,
 end   
 
 

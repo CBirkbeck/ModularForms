@@ -13,11 +13,15 @@ open complex
 /-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/ 
 noncomputable theory
 
+@[ext] structure upper_half_plane :=
+(point : ℂ)
+(im_pos' : 0 < point.im)
+
 def upper_half_space := {z : ℂ | z.im > 0}
 local notation `ℍ` := upper_half_space
 local notation `Mat` := integral_matrices_with_determinant
 
-instance upper_half_space.to_complex : has_coe ℍ ℂ := ⟨λ z, z.val⟩
+instance upper_half_space.to_complex : has_coe ℍ ℂ := ⟨λ z, z.1⟩
 
 instance nat.to_fintype : has_coe ℕ Type := ⟨λ n, fin n⟩
 

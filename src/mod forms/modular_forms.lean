@@ -28,13 +28,9 @@ exact is_open.preimage complex.continuous_im is_open_Ioi,
 end
 end
 
-lemma upper_half_plane_open_subs: upper_half_space ∈ open_subs:=
 
-begin
-simp only [open_subs_mem], exact upper_half_plane_is_open,
-end  
 
-local notation `ℍ`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_subs)
+local notation `ℍ`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
 
 
 /-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/

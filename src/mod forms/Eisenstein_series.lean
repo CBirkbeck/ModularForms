@@ -24,7 +24,7 @@ open_locale big_operators nnreal classical
 
 local notation `ℍ` := upper_half_space
 
-local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_open_subs⟩: open_subs)
+local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
 noncomputable theory
 
 
@@ -939,19 +939,25 @@ have:=real_eise_is_summable k z h, rw real_Eise at this, exact this,
 end  
 
 
+example (x : ℂ) (a : ℤ × ℤ) (k: ℤ) (h : x ≠ 0)  : deriv (λ x,(x:ℂ)^-k) x = -k*(x: ℂ)^(-k-1) :=
+by {have:=deriv_fpow h, convert this, norm_cast,   }
 
-lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) : is_entire (λ (z : ℂ), Eise' k z y):=
+lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) : is_holomorphic_on (λ (z : ℍ'), Eise k z y):=
 begin
-rw is_holomorphic, intro z, use Eise_deriv k z y, simp_rw Eise, simp_rw Eise_deriv, simp, rw extend_by_zero, simp at *,  
+rw is_holomorphic_on, intro z, use Eise_deriv k z y, simp_rw Eise, simp_rw Eise_deriv, simp,simp_rw extend_by_zero, 
+simp [ ext_by_zero_apply], rw has_deriv_within_at_iff_tendsto, simp, rw metric.tendsto_nhds_within_nhds, 
+intros ε hε, use ε, simp [hε],intros x hx hd, dsimp at *, rw ← dite_eq_ite, rw dif_pos hx,
 --has_deriv_within_at_fpow 
 sorry,
 end
 
 
-lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic (Eisenstein_series_of_weight_ k):=
+lemma Eisenstein_is_holomorphic (k : ℤ): is_holomorphic_on (Eisenstein_series_of_weight_ k):=
 begin
-rw is_holomorphic, simp, intro z, use (Eisenstein_deriv_weight k z),rw has_deriv_within_at_iff_tendsto, simp, rw tendsto_zero_iff_norm_tendsto_zero,
-simp,  
+rw is_holomorphic_on, simp, intros z hz, use (Eisenstein_deriv_weight k ⟨z, hz⟩),
+rw has_deriv_within_at_iff_tendsto, simp, rw tendsto_zero_iff_norm_tendsto_zero,
+simp,rw metric.tendsto_nhds_within_nhds, 
+intros ε hε, use ε, simp [hε],intros x hx hd, dsimp at *, rw extend_by_zero, simp [ ext_by_zero_apply], rw dif_pos hx,  rw dif_pos hz,
 sorry, 
 end
 
