@@ -567,7 +567,7 @@ end
 
 @[simp, SL2Z] protected lemma neg_mul_neg : -C * -D = C * D :=
 begin
-ext i j, fin_cases i; fin_cases j, simp,simp,simp,simp,
+ext i j, fin_cases i; fin_cases j; simp,
 end
 
 @[simp, SL2Z] protected lemma neg_mul : -(C * D) = -C * D :=
@@ -577,3 +577,5 @@ end
 
 
 end SL2Z
+end 
+end 

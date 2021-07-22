@@ -946,7 +946,7 @@ lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) : is_holomorphic_on (�
 begin
 rw is_holomorphic_on, intro z, use Eise_deriv k z y, simp_rw Eise, simp_rw Eise_deriv, simp,simp_rw extend_by_zero, 
 simp [ ext_by_zero_apply], rw has_deriv_within_at_iff_tendsto, simp, rw metric.tendsto_nhds_within_nhds, 
-intros ε hε, use ε, simp [hε],intros x hx hd, dsimp at *, rw ← dite_eq_ite, rw dif_pos hx,
+intros ε hε, use ε, simp [hε],intros x hx hd, dsimp at *, rw ← dite_eq_ite, rw dif_pos hx, 
 --has_deriv_within_at_fpow 
 sorry,
 end
