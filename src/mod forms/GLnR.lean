@@ -9,14 +9,14 @@ import linear_algebra.matrix.nonsingular_inverse
 /-!
 # The General Linear group $GL(n, R)$
 
-This file defines the elements of the Special Linear group `General_linear_group n R`,
-consisting of all `n` by `n` `R`-matrices with invertible determinant.
+This file defines the elements of the General Linear group `General_linear_group n R`,
+consisting of all `n` by `n` `R`-matrices with unit determinant.
 
 
 ## Main definitions
 
- * `matrix.GLnR` is the type of matrices over R with invertible determinant 
- * `matrix.GLnR.group` gives the group structure (under multiplication)
+ * `matrix.GLnR` is the type of matrices over R with unit determinant 
+ * `matrix.special_linear_group.group` gives the group structure (under multiplication)
 
 
 ## Implementation notes
@@ -40,7 +40,7 @@ section
 
 variables (n : Type u) [decidable_eq n] [fintype n] (R : Type v) [comm_ring R]
 
-/-- `GLn n R` is the group of `n` by `n` `R`-matrices with invertible determinant.
+/-- `GLn n R` is the group of `n` by `n` `R`-matrices with unit determinant.
 -/
 def GLn := { A : matrix n n R // is_unit (A.det) }
 

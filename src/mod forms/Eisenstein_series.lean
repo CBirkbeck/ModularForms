@@ -192,14 +192,10 @@ end
 
 
 
-
-
-
-
-lemma Eisenstein_is_Petersson (k: ℤ)  :  (Eisenstein_series_of_weight_ k) ∈ is_Petersson_weight_ k :=
+lemma Eisenstein_is_modular (Γ : subgroup SL2Z) (k: ℤ)  :  (Eisenstein_series_of_weight_ k) ∈ is_modular_of_level_and_weight Γ k :=
 
 begin
-rw is_Petersson_weight_, rw Eisenstein_series_of_weight_, simp only [set.mem_set_of_eq], 
+rw is_modular_of_level_and_weight, rw Eisenstein_series_of_weight_, simp only [set.mem_set_of_eq], 
 intros A z, have h1:= Eise_moeb k z A,  have h2:=tsum_congr h1, convert h2, simp only [subtype.val_eq_coe], 
 have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z), 
 rw tsum_mul_left, rw h3,refl,
