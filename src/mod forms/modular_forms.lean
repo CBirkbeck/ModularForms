@@ -226,8 +226,8 @@ begin
 simp only [algebra.id.smul_eq_mul, pi.smul_apply],
 end  
 
-
-lemma bounded_at_infty_is_submodule: submodule (ℂ) (ℍ  → ℂ):={ 
+/--This is the submodule of functions that are bounded at infinity-/
+def bounded_at_infty_submodule: submodule (ℂ) (ℍ  → ℂ):={ 
   carrier :={ f : ℍ → ℂ | ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M },
   zero_mem' :=by {simp, use (1: ℝ ), use (0: ℝ ), intros x  h1, norm_cast, exact dec_trivial},
   add_mem' := by  {intros f g hf hg, begin
@@ -259,8 +259,8 @@ lemma bounded_at_infty_is_submodule: submodule (ℂ) (ℍ  → ℂ):={
   end  }, }
 
  
- 
-lemma zero_at_infty_is_submodule: submodule (ℂ) (ℍ  → ℂ):={ 
+ /--The submodule of functions that are zero at infinity-/
+def zero_at_infty_submodule: submodule (ℂ) (ℍ  → ℂ):={ 
   carrier :={ f : ℍ → ℂ | ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε },
   zero_mem' :=by {simp, intros ε he, use (-1: ℝ ), intros x  h1, linarith},
   add_mem' := by  {intros f g hf hg ε hε, begin
@@ -298,10 +298,10 @@ lemma zero_at_infty_is_submodule: submodule (ℂ) (ℍ  → ℂ):={
  
 
 
-@[simp]lemma bound_mem' (f: ℍ → ℂ): (f ∈  is_bound_at_infinity ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
+lemma bound_mem' (f: ℍ → ℂ): (f ∈  is_bound_at_infinity ) ↔ ∃ (M A : ℝ), ∀ z : ℍ, im z ≥ A → abs (f z) ≤ M:=iff.rfl
 
 
-@[simp]lemma zero_at_inf_mem' (f: ℍ → ℂ): (f ∈  is_zero_at_infinity  ) ↔ ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε:=iff.rfl
+lemma zero_at_inf_mem' (f: ℍ → ℂ): (f ∈  is_zero_at_infinity  ) ↔ ∀ ε : ℝ, ε > 0 → ∃ A : ℝ, ∀ z : ℍ, im z ≥ A → abs (f z) ≤ ε:=iff.rfl
 
 
 
