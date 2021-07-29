@@ -150,6 +150,13 @@ rw ← str A,
 rw det_onee,
 end 
 
+lemma det_onne' (A: SL2Z):  A 0 0 * A 1 1 - A 0 1 * A 1 0=1 :=
+
+begin
+rw ← str A,
+rw det_onee,ring,
+end 
+
 lemma det_m (M: integral_matrices_with_determinant m): (M 0 0 * M 1 1 - M 1 0 * M 0 1)=m:=
 
 begin 

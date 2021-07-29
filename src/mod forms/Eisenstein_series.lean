@@ -174,8 +174,8 @@ end
 lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A z) i=  ((A.1 1 0*z+A.1 1 1)^k)*(Eise k z (Ind_equiv A i ) ):=
 
 begin
-rw Eise, rw Eise, rw moeb, simp, rw mat2_complex,  dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
-have hm:= mat_vals A, sorry,
+rw Eise, rw Eise, rw moeb, simp, rw mat2_complex,   dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
+have hm:= mat_vals A, unfold_coes at hm, simp at hm, unfold_coes, simp, 
 have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= matrix.GL_plus.SL_det_pos' _ _ A, 
 rw det_coe_sl, norm_cast,  exact h2,simp only [subtype.coe_prop], 
 end  

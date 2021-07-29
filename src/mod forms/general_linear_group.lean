@@ -19,7 +19,7 @@ consisting of all invertible `n` by `n` `R`-matrices.
 
  * `matrix.GL` is the type of matrices over R with unit determinant
  * `matrix.GL.group` gives the group structure (under multiplication)
-
+ * `matrix.GL_plus.GL_pos` gives the subgroup of matrices with positive determinant (over a linear ordered ring)
 
 ## Implementation notes
 
@@ -42,7 +42,8 @@ section
 
 variables (n : Type u) [decidable_eq n] [fintype n] (R : Type v) [comm_ring R]
 
-/-- `GL n R` is the group of `n` by `n` `R`-matrices with unit determinant. Defined as a subtype of matrices
+/-- `GL n R` is the group of `n` by `n` `R`-matrices with unit determinant. 
+Defined as a subtype of matrices
 -/
 abbreviation GL (R : Type*) [comm_ring R] :  Type* := units (matrix n n R )
 
@@ -63,7 +64,7 @@ units.map_equiv to_lin_alg_equiv'.to_mul_equiv
 
 /--Given a matrix with unit determinant we get an element of `GL n R`-/
 noncomputable def GL.mk' (A: matrix n n R) (h: is_unit (det A)): GL n R:=
-nonsing_inv_unit A h
+⟨A, nonsing_inv A, by {apply mul_nonsing_inv, apply h,}, by  {apply nonsing_inv_mul, apply h, }⟩ 
 
 end
 namespace GL
@@ -80,7 +81,7 @@ instance coe_fun : has_coe_to_fun (GL n R) :=
 { F   := λ _, n → n → R,
   coe := λ A, A.val }
 
-/--Given a element of `GL n R` it gives the associate linear map-/
+/--Given a element of `GL n R` it gives the associated linear map-/
 
 def to_lin' (A : GL n R) := matrix.to_lin' A
 
@@ -94,9 +95,6 @@ end
 (GL.ext_iff A B).mpr
 
 
-
-
-instance : inhabited (GL n R) := ⟨1⟩
 
 section coe_lemmas
 
@@ -165,72 +163,29 @@ begin
 have:=A.2, simp at *,
 end
 
+
+
+
 noncomputable instance SL_to_GL: has_coe (special_linear_group n R) (GL n R):=
- ⟨λ A,  nonsing_inv_unit A (sl_det_is_unit A)  ⟩
+ ⟨λ A,  ⟨A.1, nonsing_inv A.1, by {apply mul_nonsing_inv, apply sl_det_is_unit A,}, by  {apply nonsing_inv_mul, apply sl_det_is_unit A, } ⟩ ⟩
 
 
 
 
-@[simp] lemma valor (A : GL (fin 2) R):  A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
-
+@[simp] lemma GL_vals (A : GL n R): ∀ i j, A i j = A.1 i j:=
 begin
-split, refl, split, refl,split, refl, refl,
+unfold_coes, intros i j, 
+refl,
 end  
 
 
-
-@[simp] lemma mat_mul_expl  (A B : matrix (fin 2) (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
-
-begin
-split,  simp,
-rw  matrix.mul_apply,
-rw finset.sum_fin_eq_sum_range,
-rw finset.sum_range_succ,
-rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
-  ite_eq_left_iff], 
-  split,  simp ,
-rw  matrix.mul_apply,
-rw finset.sum_fin_eq_sum_range,
-rw finset.sum_range_succ,
-rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-  ite_eq_left_iff],
-  split, simp ,
-rw  matrix.mul_apply,
-rw finset.sum_fin_eq_sum_range,
-rw finset.sum_range_succ,
-rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
-  ite_eq_left_iff], 
-simp,
-rw  matrix.mul_apply,
-rw finset.sum_fin_eq_sum_range,
-rw finset.sum_range_succ,
-rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe, 
-  ite_eq_left_iff],   
-end   
-
-@[simp] lemma mat_mul_real  (A B : GL (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
-
-begin
-  simp only [mul_val, subtype.val_eq_coe, valor], apply mat_mul_expl,
-end   
 
 lemma det_not_zero [nontrivial R] (A: GL n R): det A ≠ 0:=
 begin
 have:=GL.is_unit_det _ _ A, simp, by_contradiction, unfold_coes at *, rw h at this, simp at *, exact this,
  end  
 
-lemma det_coe (A: GL n R): det A = A.1.det:=
-begin
-refl,
-end  
+
 
 end GL
 
@@ -259,13 +214,13 @@ begin
 have h0:=(GL.is_unit_det _ _ A),
 have h1:=is_unit_nonsing_inv_det A h0,
 have h2:= nonsing_inv_det A h0,
-have h3: 0 < det ⇑A*  det (⇑A)⁻¹ , by {rw mul_comm, rw h2, simp,}, unfold_coes at *,
+have h3: 0 < det ⇑A*  det (⇑A)⁻¹ , by {rw mul_comm, rw h2, linarith}, unfold_coes at *,
 convert (zero_lt_mul_left h).mp h3,
 end
 
 
 
-/-- This is the subgroup of nxn matrices with  entries over a
+/-- This is the subgroup of `nxn` matrices with  entries over a
 linear ordered ring and positive determinant-/
 
 
@@ -280,7 +235,7 @@ noncomputable def GL_pos : subgroup (GL n R) :=
 
 
 
-@[simp] lemma mem_GLnR_pos (A: GL n R ) :
+@[simp] lemma mem_GL_pos (A: GL n R ) :
   A  ∈ (GL_pos n R)  ↔ 0 < A.1.det := iff.rfl
 
 
@@ -292,7 +247,7 @@ lemma SL_det_pos' (A : special_linear_group n R): 0< (A).1.det:=
 
 begin
 have:=A.2, simp only [gt_iff_lt, subtype.val_eq_coe],
- simp only [subtype.val_eq_coe] at this,  rw this, simp,
+ simp only [subtype.val_eq_coe] at this,  rw this,linarith,
 end
 
 noncomputable instance SL_to_GL_pos: has_coe (special_linear_group n R) (GL_pos n R):=

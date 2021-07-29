@@ -132,6 +132,22 @@ def mat2_complex (M: GL (fin 2) ℝ) (z : ℂ) : ℂ :=
 (M.1 0 0 * z + M.1 0 1) / (M.1 1 0 * z + M.1 1 1)
 
 
+
+variables (R : Type*) [comm_ring R]
+
+@[simp] lemma mat_mul_expl  (A B : matrix (fin 2) (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
+
+begin
+ exact GLn.mat_mul_expl A B, 
+
+end   
+
+@[simp] lemma mat_mul_real  (A B : GL (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
+
+begin
+  simp only [GL.mul_val, subtype.val_eq_coe, GL.GL_vals], apply mat_mul_expl,
+end   
+
 /- this lemma will be used later to prove we have an action-/
 
 
@@ -139,7 +155,7 @@ lemma mul_smul'  (A B : GL (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + �
 
 begin  
 simp only [mat2_complex],
-have:= GL.mat_mul_real A B,  simp only [GL.valor] at this, simp only [this],
+have:= mat_mul_real _ A B,  simp only [GL.GL_vals] at this, simp only [this],
 have:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.1 1 0) (B.1 1 1) z h,  
 simp, rw this, 
 end   
@@ -298,6 +314,9 @@ instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.
 
 /- basic map from matrix over Z to matrix over R and some lemmas-/
 
+
+
+
 def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
 
@@ -313,11 +332,19 @@ rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2,
 end
 
 
+@[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
 
+begin
+rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], 
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
+simp only [matrix.head_cons, matrix.cons_val_one],
+
+end  
 
 instance SLZ_to_GLZ: has_coe SL2Z (special_linear_group (fin 2 ) ℝ):= 
-⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw GLn.det_of_22, have:= det_onne A, 
-unfold_coes at this, sorry}, ⟩⟩ 
+⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw GLn.det_of_22, have:= det_onne' A, simp, unfold_coes at this,
+ norm_cast, exact this,}, ⟩⟩ 
 
 
 
@@ -328,12 +355,16 @@ instance SLZ_to_GL_pos: has_coe SL2Z (GL2P):= ⟨λ A,  ((A: (special_linear_gro
 @[simp]lemma mat_vals (A: SL2Z) (i j : fin 2): ( A : (GL (fin 2) ℝ)) i j = (A.1 i j : ℝ):=
 
 begin
-sorry,
+unfold_coes,  simp [mat_val],
+rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], refl,refl,refl,refl,
+
 end  
 
 @[simp] lemma det_coe_sl (A: SL2Z): (A: GL (fin 2) ℝ).val.det= (A.val.det: ℝ):=
 begin
-sorry,
+have:=A.2, rw this, simp, rw ← coe_coe, rw ← coe_coe, unfold_coes, simp,rw mat_Z_to_R,rw GLn.det_of_22,
+simp, have hdet:= det_onne' A, unfold_coes at hdet, norm_cast,exact hdet,
+
 end
 
 /-- This is the Moebius action on the upper half plane, defined as follows: Given a `2 × 2`matrix `M=![![a, b], ![c, d]]` 
