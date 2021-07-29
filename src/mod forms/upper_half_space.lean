@@ -7,6 +7,7 @@ import .SL2Z_generators
 import tactic.linarith
 import linear_algebra.determinant
 import group_theory.group_action
+import .general_linear_group
 
 open complex
  
@@ -19,7 +20,10 @@ noncomputable theory
 
 def upper_half_space := {z : ℂ | z.im > 0}
 local notation `ℍ` := upper_half_space
+
 local notation `Mat` := integral_matrices_with_determinant
+
+local notation `GL2P` := matrix.GL_plus.GL_pos (fin 2 ) ℝ
 
 instance upper_half_space.to_complex : has_coe ℍ ℂ := ⟨λ z, z.1⟩
 
@@ -124,24 +128,24 @@ end
 
 /- definition of what will end up being the action of matrices on the upper half space -/
 
-def mat2_complex (M: GLn (fin 2) ℝ) (z : ℂ) : ℂ :=
+def mat2_complex (M: GL (fin 2) ℝ) (z : ℂ) : ℂ :=
 (M.1 0 0 * z + M.1 0 1) / (M.1 1 0 * z + M.1 1 1)
 
 
 /- this lemma will be used later to prove we have an action-/
 
 
-lemma mul_smul'  (A B : GLn (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + ↑(B.1 1 1)) = 0 ) :  mat2_complex (A * B) z = mat2_complex A (mat2_complex B z):=
+lemma mul_smul'  (A B : GL (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + ↑(B.1 1 1)) = 0 ) :  mat2_complex (A * B) z = mat2_complex A (mat2_complex B z):=
 
 begin  
 simp only [mat2_complex],
-have:= GLn.mat_mul_real A B,  simp only [GLn.valor] at this, simp only [this],
+have:= GL.mat_mul_real A B,  simp only [GL.valor] at this, simp only [this],
 have:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.1 1 0) (B.1 1 1) z h,  
-simp at this, simp, rw this, 
+simp, rw this, 
 end   
 
 /- I dont know why this is a theorem and not a lemma-/
-theorem preserve_ℍ.aux (A: GLn (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (hz : z ∈ ℍ) :
+theorem preserve_ℍ.aux (A: GL (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (hz : z ∈ ℍ) :
   ↑ (A.1 1 0) * z + A.1 1 1 ≠ 0 :=
 begin
   intro H,
@@ -154,7 +158,7 @@ begin
 end
 
 
-lemma preserve_ℍ (A: GLn (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (h : z.im > 0) :
+lemma preserve_ℍ (A: GL (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (h : z.im > 0) :
 (mat2_complex A z).im > 0 :=
 
 begin
@@ -169,36 +173,35 @@ have h2: (mat2_complex A z).im = (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im 
  
 end 
 
-theorem GL2R_H.aux (A:  GLn (fin 2) ℝ) (h : det A > 0) : (A.1 0 0) * A.1 1 1 - A.1 0 1 * A.1 1 0 > 0 :=
+theorem GL2R_H.aux (A:  GL (fin 2) ℝ) (h : det A > 0) : (A.1 0 0) * A.1 1 1 - A.1 0 1 * A.1 1 0 > 0 :=
 begin
 rw [GLn.det_of_22] at h, simp at h, simp only [gt_iff_lt, sub_pos, subtype.val_eq_coe], exact h,
 end  
 
 
 /-more basic matrix lemmas due to me being crap at lean-/
-
-lemma one_meme: det (1:GLn (fin 2) ℝ ) > 0:=
+/-
+lemma one_meme: det (1:GL (fin 2) ℝ ) > 0:=
 begin
-simp only [det_one, gt_iff_lt, GLn.one_apply], norm_cast, exact dec_trivial, 
+simp only [det_one, gt_iff_lt, GLn.one_apply], simp, 
 end 
 
-lemma mul_meme (A B :GLn (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
+lemma mul_meme (A B :GL (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
 
 begin
 simp only [gt_iff_lt, det_mul, mul_eq_mul], apply mul_pos h1 h2,
 end
 
-lemma stupd (A: GLn (fin 2) ℝ ) : det A = A.1.det:=
+lemma stupd (A: GL (fin 2) ℝ ) : det A = A.1.det:=
 begin
-simp only [subtype.val_eq_coe], refl,
+refl,
 end  
 
-lemma det_in (A: GLn (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
+lemma det_in (A: GL (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
 
 begin
-simp only [subtype.val_eq_coe], 
-have h1: A.1.det ≠ 0, {have:=A.2, simp only [subtype.val_eq_coe] at this, rw is_unit_iff_exists_inv at this, by_contradiction, simp only [not_not, subtype.val_eq_coe] at h,
- rw h at this, simp only [zero_mul, exists_false, zero_ne_one] at this, exact this },
+
+have h1: A.1.det ≠ 0, {apply GL.det_not_zero, },
 simp only [ne.def, subtype.val_eq_coe] at h1, apply mul_inv_cancel h1, 
 
 end  
@@ -246,10 +249,6 @@ def GL2R_pos : subgroup  (GLn (fin 2) ℝ) :=
 
 
 
-/- basic map from matrix over Z to matrix over R and some lemmas-/
-
-def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
-![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
 
 
 
@@ -295,33 +294,72 @@ instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) �
 rw ← coe_coe, exact this  }⟩ ⟩ 
 
 instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
+-/
+
+/- basic map from matrix over Z to matrix over R and some lemmas-/
+
+def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
+![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
+
+
+
+instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩ 
+
+lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
+
+begin
+have h2: a ≠ 0, {simp only [ne.def], by_contradiction h1, rw h1 at h, simp only [lt_self_iff_false] at h, exact h},
+rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2, 
+end
 
 
 
 
+instance SLZ_to_GLZ: has_coe SL2Z (special_linear_group (fin 2 ) ℝ):= 
+⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw GLn.det_of_22, have:= det_onne A, 
+unfold_coes at this, sorry}, ⟩⟩ 
+
+
+
+
+instance SLZ_to_GL_pos: has_coe SL2Z (GL2P):= ⟨λ A,  ((A: (special_linear_group (fin 2 ) ℝ)): GL2P ) ⟩
+
+
+@[simp]lemma mat_vals (A: SL2Z) (i j : fin 2): ( A : (GL (fin 2) ℝ)) i j = (A.1 i j : ℝ):=
+
+begin
+sorry,
+end  
+
+@[simp] lemma det_coe_sl (A: SL2Z): (A: GL (fin 2) ℝ).val.det= (A.val.det: ℝ):=
+begin
+sorry,
+end
 
 /-- This is the Moebius action on the upper half plane, defined as follows: Given a `2 × 2`matrix `M=![![a, b], ![c, d]]` 
 with positive determinant, it sends `z ∈ ℍ` to `(a*z+b)/(c*z+d)` -/
-def moeb:  (GL2R_pos) → ℍ → ℍ :=
+def moeb:  (GL2P) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
 
 
+lemma one_vals : (1: GL2P).val 0 0 = 1 ∧ (1: GL2P).val 0 1 = 0 ∧ (1: GL2P).val 1 0 = 0 ∧ (1: GL2P).val 1 1 = 1 :=
+begin
+split, refl,split, refl,split, refl,refl,
+end  
 
-
-lemma one_smul''  : ∀ (z : ℍ  ),  moeb (1: GL2R_pos) z= z :=
+lemma one_smul''  : ∀ (z : ℍ  ),  moeb (1: GL2P) z= z :=
 
 begin
- intro z, 
-simp only [moeb], simp only [mat2_complex, nat.one_ne_zero, add_zero, one_mul, of_real_zero, fin.one_eq_zero_iff, GLn.one_val, zero_mul,
-  fin.zero_eq_one_iff, one_apply_eq, ne.def, zero_add, not_false_iff, subtype.coe_eta, of_real_one, div_one,
-  subgroup.coe_one, subtype.val_eq_coe, one_apply_ne],
+ intro z,  
+simp only [moeb, mat2_complex], have:=one_vals, unfold_coes at this, simp at *, simp_rw this, simp,
+
 end
 
 variable (v: ℍ)
 
 
 
-lemma mul_smul''  (A B : GL2R_pos) (z : ℍ)  :  moeb (A * B) z = moeb A (moeb B z):=
+lemma mul_smul''  (A B : GL2P) (z : ℍ)  :  moeb (A * B) z = moeb A (moeb B z):=
 
 begin 
 have h:  ¬ (↑(B.1 1 0) * z.1 + ↑(B.1 1 1)) = 0, have:= preserve_ℍ.aux B B.2 z.1 z.2, simp only [ne.def, subtype.val_eq_coe] at this, exact this, 
@@ -331,7 +369,7 @@ end
 
 /-finally, here is the action of GL_2R^+ on the H-/
 
-instance : mul_action (GL2R_pos) (ℍ) :=
+instance : mul_action (GL2P) (ℍ) :=
 { smul:= moeb,
   one_smul := one_smul'',
   mul_smul :=  mul_smul''}

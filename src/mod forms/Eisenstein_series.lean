@@ -2,7 +2,7 @@ import tactic.ring
 import tactic.choose 
 import tactic.pi_instances
 import .modular_group
-import .GLnR
+import .general_linear_group
 import .modular_forms
 import ring_theory.coprime
 import ring_theory.int.basic
@@ -153,15 +153,6 @@ end
 
 
 
-@[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
-
-begin
-rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], 
-simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
-simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
-simp only [matrix.head_cons, matrix.cons_val_one],
-
-end  
 
 
 lemma coe_chain (A: SL2Z) (i j : fin (2)): (A.1 i j : ℂ)= ((A.1 : (matrix (fin 2) (fin 2) ℝ) ) i j : ℂ):=
@@ -183,8 +174,10 @@ end
 lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A z) i=  ((A.1 1 0*z+A.1 1 1)^k)*(Eise k z (Ind_equiv A i ) ):=
 
 begin
-rw Eise, rw Eise, rw moeb, simp, rw mat2_complex, simp, dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
-have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= SL_det_pos' A, exact h2,simp only [subtype.coe_prop], 
+rw Eise, rw Eise, rw moeb, simp, rw mat2_complex,  dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
+have hm:= mat_vals A, sorry,
+have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= matrix.GL_plus.SL_det_pos' _ _ A, 
+rw det_coe_sl, norm_cast,  exact h2,simp only [subtype.coe_prop], 
 end  
 
 
@@ -961,8 +954,3 @@ end
 
 
 end Eisenstein_series
-
-
-
-
-
