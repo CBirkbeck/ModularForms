@@ -13,14 +13,14 @@ import topology.instances.ennreal
 import topology.instances.nnreal
 import .Riemann_zeta_fin
 import .holomorphic_functions
-
+import order.filter.archimedean
 
 
 universes u v w
 
 open complex
 
-open_locale big_operators nnreal classical
+open_locale big_operators nnreal classical filter
 
 local notation `ℍ` := upper_half_space
 
@@ -175,7 +175,9 @@ lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A 
 
 begin
 rw Eise, rw Eise, rw moeb, simp, rw mat2_complex,   dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
+
 have hm:= mat_vals A, simp at hm,  simp, simp_rw hm, rw ← coe_coe, simp, simp [h1],
+
 have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= matrix.GL_plus.SL_det_pos' _ _ A, 
 rw det_coe_sl, norm_cast,  exact h2,simp only [subtype.coe_prop], 
 end  
@@ -797,7 +799,6 @@ end
 
 
 
-instance: field ℝ:=infer_instance
 
 lemma natpows (x : ℝ) (n : ℤ)  (h2: x ≠ 0): x^(n-1)=x^n*x⁻¹:=
 begin
@@ -930,6 +931,26 @@ end
 
 example (x : ℂ) (a : ℤ × ℤ) (k: ℤ) (h : x ≠ 0)  : deriv (λ x,(x:ℂ)^-k) x = -k*(x: ℂ)^(-k-1) :=
 by {have:=deriv_fpow h, convert this, norm_cast,   }
+
+def eisen_chunk (k : ℤ) (n: ℕ): ℍ → ℂ:=
+λ z, ∑ x in Square n, Eise k z x
+
+lemma Eisenstein_series_is_sum_eisen_chunks (k: ℤ): (Eisenstein_series_of_weight_ k) = ∑' (n : ℕ), eisen_chunk k n:=
+begin
+rw Eisenstein_series_of_weight_, simp_rw eisen_chunk, sorry,
+end  
+
+def Eisen_partial_sums (k: ℤ) (n : ℕ): ℍ → ℂ:=
+λ z, ∑ x in (finset.range n), (eisen_chunk k x z)
+
+lemma Eisen_partial_tends_to_uniformly (k: ℤ): 
+tendsto_uniformly (Eisen_partial_sums k) (Eisenstein_series_of_weight_ k) filter.at_top:=
+begin
+rw metric.tendsto_uniformly_iff, intros ε hε, tidy, use 0, 
+sorry,
+end
+
+
 
 lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) : is_holomorphic_on (λ (z : ℍ'), Eise k z y):=
 begin
