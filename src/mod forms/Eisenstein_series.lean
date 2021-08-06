@@ -175,7 +175,7 @@ lemma Eise_moeb (k: ℤ) (z : ℍ) (A : SL2Z) (i : ℤ × ℤ ): Eise k (moeb A 
 
 begin
 rw Eise, rw Eise, rw moeb, simp, rw mat2_complex,   dsimp, rw ← coe_coe, rw ← coe_coe, rw calc_lem, have h1:= coe_chain A, simp at h1, rw h1, rw h1, rw h1, rw h1, rw ← coe_coe, 
-have hm:= mat_vals A, unfold_coes at hm, simp at hm, unfold_coes, simp, 
+have hm:= mat_vals A, simp at hm,  simp, simp_rw hm, rw ← coe_coe, simp, simp [h1],
 have hh:= preserve_ℍ.aux A, apply hh, have:=A.2,  have h2:= matrix.GL_plus.SL_det_pos' _ _ A, 
 rw det_coe_sl, norm_cast,  exact h2,simp only [subtype.coe_prop], 
 end  
@@ -278,7 +278,7 @@ lemma nat_abs_inter2 (a: ℤ) (n: ℕ) (h: a.nat_abs ≤ n): a ≤ (n: ℤ) ∧ 
 begin
 have := lt_or_eq_of_le h, cases this,
 have H:= nat_abs_inter a n this, have H1:= le_of_lt H.1, have H2:=le_of_lt H.2, simp [H1,H2], rw ← this,
-split, exact int.le_nat_abs, rw add_comm, rw ← neg_le_iff_add_nonneg', simp, rw ← int.abs_eq_nat_abs, 
+split, exact int.le_nat_abs, rw add_comm, rw ← neg_le_iff_add_nonneg', rw ← int.abs_eq_nat_abs, 
 simp_rw neg_le_abs_self ,
 end  
 
