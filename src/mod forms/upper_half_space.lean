@@ -2,16 +2,15 @@ import data.complex.basic
 import tactic.ring
 import tactic.tidy
 import .modular_group
-import .GLnR
 import .SL2Z_generators
 import tactic.linarith
 import linear_algebra.determinant
 import group_theory.group_action
-import .general_linear_group
+import linear_algebra.general_linear_group
 
 open complex
- 
-/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/ 
+
+/-  This is an attempt to update the kbb birthday repo, so most is not orginal to me-/
 noncomputable theory
 
 @[ext] structure upper_half_plane :=
@@ -43,7 +42,7 @@ lemma a1 (a b c d e f g h: ℂ) : a*((b+d)/c)=((a*b+a*d)/c):=
 
 begin
 ring,
-end 
+end
 
 
 @[simp]lemma a2 (a b c d : ℂ) : (a/b)/(c/d)=(a*d)/(b*c):=
@@ -65,33 +64,33 @@ calc (a*(b/c)+d)/(e*(b/c)+f)=(a*(b/c)+d)*(e*(b/c)+f)⁻¹ : by ring
      ...=((a*b)*c⁻¹+d)*(e*b*c⁻¹+f)⁻¹ : by rw mul_assoc
      ...= ((a*b)*c⁻¹+d)*((e*b)*c⁻¹+f)⁻¹ : by rw mul_assoc
      ...=((a*b)/c+d)*((e*b)*c⁻¹+f)⁻¹ : by rw  div_eq_mul_inv
-     ...=((a*b)/c+d)*((e*b)/c+f)⁻¹  : by ring 
+     ...=((a*b)/c+d)*((e*b)/c+f)⁻¹  : by ring
      ...=((a*b+d*c)/c)*((e*b)/c+f)⁻¹ : by rw [div_add' (a*b) d c h1]
      ...=((a*b+d*c)/c)*((e*b+f*c)/c)⁻¹ : by rw [div_add' (e*b) f c h1]
      ...=((a*b+d*c)/c)/((e*b+f*c)/c) : by ring
      ...=((a*b+d*c)*c)/(c*(e*b+f*c)) : by rw [a2 (a*b+d*c) c (e*b+f*c) c ]
      ...=((a*b+d*c)*c)*(c*(e*b+f*c))⁻¹ : by ring
-     ...=((a*b+d*c)*c)*(c⁻¹ *(e*b+f*c)⁻¹): by rw mul_inv' 
-     ...=(a*b+d*c)*c*c⁻¹ *(e*b+f*c)⁻¹ : by  ring 
-      ...=(a*b+d*c)*(c*c⁻¹) *(e*b+f*c)⁻¹ : by  ring 
+     ...=((a*b+d*c)*c)*(c⁻¹ *(e*b+f*c)⁻¹): by rw mul_inv'
+     ...=(a*b+d*c)*c*c⁻¹ *(e*b+f*c)⁻¹ : by  ring
+      ...=(a*b+d*c)*(c*c⁻¹) *(e*b+f*c)⁻¹ : by  ring
      ...=(a*b+d*c)*1*(e*b+f*c)⁻¹  : by rw [mul_inv_cancel h1]
     ...=(a*b+d*c)*(e*b+f*c)⁻¹  : by ring
      ...=(a*b+d*c)/(e*b+f*c)  : by  rw  div_eq_mul_inv,
-end  
+end
 
 lemma a4 (a b c d e f h : ℂ )  : a*(b*(c+d)+e*(f+h))⁻¹ =a*(b*c+b*d+e*f+e*h)⁻¹:=
 
 begin
 have h1:  b*(c+d)+e*(f+h)= b*c+b*d+e*f+e*h, by {ring},
 rw h1,
-end   
+end
 
 lemma a5 (a b c d e f h t r : ℂ )  : a/(b*(c*d)+t+e*(f*h)+r) =a/(b*c*d + e*f*h+t+r):=
 
 begin
 have h1: b*(c*d)+t+e*(f*h)+r=b*c*d + e*f*h+t+r, by {ring},
 rw h1,
-end   
+end
 
 
 lemma a6 (a b c z d d2 r s: ℂ) : a/(b*r*z+c*s*z+d+d2)=a/((b*r+c*s)*z+d+d2):=
@@ -99,14 +98,14 @@ lemma a6 (a b c z d d2 r s: ℂ) : a/(b*r*z+c*s*z+d+d2)=a/((b*r+c*s)*z+d+d2):=
 begin
 have h1: b*r*z+c*s*z+d+d2=(b*r+c*s)*z+d+d2, by {ring},
 rw h1,
-end   
+end
 
 lemma a7 (a b z c f d h :ℂ): a/(b*z+c*f+d*h)=a/(b*z+(c*f+d*h)):=
 
 begin
 have h1: b*z+c*f+d*h=b*z+(c*f+d*h), by {ring},
 rw h1,
-end  
+end
 
 lemma alg (a b c d e f g h : ℂ ) (z : ℂ) (h1: ¬ g*z+h = 0)   : (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d)=((a*e+b*g)*z+(a*f+b*h))/((c*e+d*g)*z+(c*f+d*h)):=
 
@@ -114,13 +113,13 @@ begin
 
 calc (a*((e*z+f)/(g*z+h) )+b)/ (c*((e*z+f)/(g*z+h))+d) = (a*(e*z+f)+b*(g*z+h))/ (c*(e*z+f)+d*(g*z+h))       : by rw  [a3 a (e*z+f) (g*z+h) b c d h1]
                                        ... = (a*(e*z+f)+b*(g*z+h))* (c*(e*z+f)+d*(g*z+h))⁻¹ : by  rw  div_eq_mul_inv
-                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)* (c*(e*z+f)+d*(g*z+h))⁻¹ : by ring 
-                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)*  (c*((e*z)+f)+d*((g*z)+h))⁻¹ : by ring 
+                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)* (c*(e*z+f)+d*(g*z+h))⁻¹ : by ring
+                                       ...= (a*(e*z)+a*f+b*(g*z)+b*h)*  (c*((e*z)+f)+d*((g*z)+h))⁻¹ : by ring
                                         ...= (a*(e*z)+a*f+b*(g*z)+b*h)* (c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by rw [a4 (a*(e*z)+a*f+b*(g*z)+b*h) c (e*z) f d (g*z) h]
                                         ...= (a*e*z+a*f+b*g*z+b*h)* (c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by ring
-                                       ...=((a*e+b*g)*z+a*f+b*h)*(c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by ring 
+                                       ...=((a*e+b*g)*z+a*f+b*h)*(c*(e*z)+c*f+d*(g*z)+d*h)⁻¹  : by ring
                                        ...=((a*e+b*g)*z+a*f+b*h)/ (c*(e*z)+c*f+d*(g*z)+d*h) : by rw  div_eq_mul_inv
-                                       ...=((a*e+b*g)*z+a*f+b*h)/(c*e*z+d*g*z+(c*f)+(d*h)) : by rw [a5 ((a*e+b*g)*z+a*f+b*h) c e z d g z (c*f) (d*h)] 
+                                       ...=((a*e+b*g)*z+a*f+b*h)/(c*e*z+d*g*z+(c*f)+(d*h)) : by rw [a5 ((a*e+b*g)*z+a*f+b*h) c e z d g z (c*f) (d*h)]
                                        ...=((a*e+b*g)*z+a*f+b*h)/ ((c*e+d*g)*z+c*f+d*h) : by rw [a6 ((a*e+b*g)*z+a*f+b*h) c d z (c*f) (d*h) e g ]
                                       ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+c*f+d*h) : by rw add_assoc
                                       ...=((a*e+b*g)*z+(a*f+b*h))/ ((c*e+d*g)*z+(c*f+d*h)) : by rw [a7 ((a*e+b*g)*z+(a*f+b*h)) (c*e+d*g) z c f d h],
@@ -138,27 +137,27 @@ variables (R : Type*) [comm_ring R]
 @[simp] lemma mat_mul_expl  (A B : matrix (fin 2) (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
 
 begin
- exact GLn.mat_mul_expl A B, 
+ exact GLn.mat_mul_expl A B,
 
-end   
+end
 
 @[simp] lemma mat_mul_real  (A B : GL (fin 2) R) : (A * B) 0 0 =  A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧ (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧ (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧ (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1:=
 
 begin
-  simp only [GL.mul_val, subtype.val_eq_coe, GL.GL_vals], apply mat_mul_expl,
-end   
+  simp, apply mat_mul_expl,
+end
 
 /- this lemma will be used later to prove we have an action-/
 
 
 lemma mul_smul'  (A B : GL (fin 2) ℝ) (z : ℂ) (h:  ¬ (↑(B.1 1 0) * z + ↑(B.1 1 1)) = 0 ) :  mat2_complex (A * B) z = mat2_complex A (mat2_complex B z):=
 
-begin  
+begin
 simp only [mat2_complex],
-have:= mat_mul_real _ A B,  simp only [GL.GL_vals] at this, simp only [this],
-have:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.1 1 0) (B.1 1 1) z h,  
-simp, rw this, 
-end   
+have h1:= mat_mul_real _ A B,  simp only [general_linear_group.coe_fn_eq_coe] at h1,
+have h2:= alg   ↑(A.1 0 0)  (A.1 0 1) (A.1 1 0) (A.1 1 1) (B.1 0 0) (B.1 0 1) (B.1 1 0) (B.1 1 1) z h,
+simp, simp at h2, rw h2, simp at h1, simp_rw h1,simp,
+end
 
 /- I dont know why this is a theorem and not a lemma-/
 theorem preserve_ℍ.aux (A: GL (fin 2) ℝ ) (det : det A.1 > 0) (z : ℂ) (hz : z ∈ ℍ) :
@@ -167,7 +166,7 @@ begin
   intro H,
   have H1 : A.1 1 0 = 0 ∨ z.im = 0, by simpa using congr_arg complex.im H,
   cases H1,
-  { simp [H1, of_real_zero] at H, rw GLn.det_of_22 A.1 at det, 
+  { simp [H1, of_real_zero] at H, rw GLn.det_of_22 A.1 at det,
     simp [H, H1] at det,exact det,},
   change z.im > 0 at hz,
   linarith,
@@ -181,26 +180,26 @@ begin
   have det': A.1.det > 0, by {apply det,},
    rw GLn.det_of_22 A.1 at det,
 have h2: (mat2_complex A z).im = (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im * (norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)))⁻¹ ,
- by {simp [mat2_complex, div_eq_mul_inv, -add_comm], dsimp [norm_sq], simp, ring_nf,}, 
+ by {simp [mat2_complex, div_eq_mul_inv, -add_comm], dsimp [norm_sq], simp, ring_nf,},
  have h3: (A.1 0 0 * A.1 1 1 - A.1 0 1 * A.1 1 0) * z.im >0 , by {apply mul_pos det h,  },
  have h4: 0 < norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)) , by{apply norm_sq_pos.2 (preserve_ℍ.aux A  det' z h), },
  have h5: 0< (norm_sq (↑ (A.1 1 0) * z + ↑ (A.1 1 1)))⁻¹ , by {simp, simp at h4, exact h4, }, rw h2, apply mul_pos h3 h5,
 
- 
-end 
+
+end
 
 theorem GL2R_H.aux (A:  GL (fin 2) ℝ) (h : det A > 0) : (A.1 0 0) * A.1 1 1 - A.1 0 1 * A.1 1 0 > 0 :=
 begin
 rw [GLn.det_of_22] at h, simp at h, simp only [gt_iff_lt, sub_pos, subtype.val_eq_coe], exact h,
-end  
+end
 
 
 /-more basic matrix lemmas due to me being crap at lean-/
 /-
 lemma one_meme: det (1:GL (fin 2) ℝ ) > 0:=
 begin
-simp only [det_one, gt_iff_lt, GLn.one_apply], simp, 
-end 
+simp only [det_one, gt_iff_lt, GLn.one_apply], simp,
+end
 
 lemma mul_meme (A B :GL (fin 2) ℝ ) (h1: det A >0 ) (h2: det B >0): det (A*B)>0:=
 
@@ -211,45 +210,45 @@ end
 lemma stupd (A: GL (fin 2) ℝ ) : det A = A.1.det:=
 begin
 refl,
-end  
+end
 
 lemma det_in (A: GL (fin 2) ℝ) : A.1.det * (A.1.det)⁻¹=1:=
 
 begin
 
 have h1: A.1.det ≠ 0, {apply GL.det_not_zero, },
-simp only [ne.def, subtype.val_eq_coe] at h1, apply mul_inv_cancel h1, 
+simp only [ne.def, subtype.val_eq_coe] at h1, apply mul_inv_cancel h1,
 
-end  
+end
 
 
 lemma det_ive2 (A B : GLn (fin 2) ℝ ) (h: det A * det B =1) : det A= (det B)⁻¹ :=
 
 begin
-simp only [stupd, subtype.val_eq_coe],simp only [stupd, subtype.val_eq_coe] at h, have h1: A.1.det * B.1.det* (B.1.det)⁻¹ = 1 * (B.1.det)⁻¹, simp, rw h, simp only [one_mul], simp only [one_mul, subtype.val_eq_coe] at h1, rw ←  h1, rw mul_assoc, simp only, have:=det_in B, 
+simp only [stupd, subtype.val_eq_coe],simp only [stupd, subtype.val_eq_coe] at h, have h1: A.1.det * B.1.det* (B.1.det)⁻¹ = 1 * (B.1.det)⁻¹, simp, rw h, simp only [one_mul], simp only [one_mul, subtype.val_eq_coe] at h1, rw ←  h1, rw mul_assoc, simp only, have:=det_in B,
 simp only [subtype.val_eq_coe] at this, rw this, simp only [mul_one],
-end  
+end
 
 
 lemma det_inv (A: GLn (fin 2) ℝ )  (h: det A >0) : (det A)⁻¹ = det (A⁻¹):=
 
 begin
-have h1: is_unit(det A), by {have:= inv_pos.2 h, rw is_unit_iff_exists_inv, use (det A)⁻¹, rw mul_inv_cancel, simp only [ne.def], 
+have h1: is_unit(det A), by {have:= inv_pos.2 h, rw is_unit_iff_exists_inv, use (det A)⁻¹, rw mul_inv_cancel, simp only [ne.def],
 intro hh, rw hh at h, simp only [lt_self_iff_false, gt_iff_lt] at h, exact h,},
-have:= nonsing_inv_det A.1 h1,simp only [subtype.val_eq_coe] at this, rw stupd, 
+have:= nonsing_inv_det A.1 h1,simp only [subtype.val_eq_coe] at this, rw stupd,
 have h5: A.nonsing_inve= (↑A)⁻¹, {apply GLn.inv_is_inv,},
-have h3: (A.1.det)⁻¹ = (A.1⁻¹).det, {simp only [subtype.val_eq_coe], have:= det_ive2 A⁻¹ A this, simp only [stupd, GLn.inv_apply, subtype.val_eq_coe] at this, 
+have h3: (A.1.det)⁻¹ = (A.1⁻¹).det, {simp only [subtype.val_eq_coe], have:= det_ive2 A⁻¹ A this, simp only [stupd, GLn.inv_apply, subtype.val_eq_coe] at this,
 rw ← this, dsimp, rw h5}, rw h3, refl,
 
 
-end  
+end
 
 lemma inv_meme (A:GLn (fin 2) ℝ ) (h: det A >0): det A⁻¹ >0:=
 
-begin 
+begin
 have h2: (det A)⁻¹ = det (A⁻¹), by {apply det_inv A h,},
  rw ← h2, apply inv_pos.2 h,
-end  
+end
 
 
 /-- This is the subgroup of 2x2 matrices with real entries and positive determinant-/
@@ -272,44 +271,44 @@ lemma SL_det_inv (A : SL2Z): is_unit (A.1.det : ℝ) :=
 
 begin
 have:=A.2, rw this, cases A, dsimp at *, simp at *,
-end  
+end
 
 lemma SL_det_pos (A : SL2Z): (A.1.det: ℝ) > 0:=
 
 begin
 have:=A.2, rw this, cases A, dsimp only at *,simp only [gt_iff_lt, int.cast_one, zero_lt_one] at *,
-end  
+end
 
 lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
 
 begin
 have h2: a ≠ 0, {simp only [ne.def], by_contradiction h1, rw h1 at h, simp only [lt_self_iff_false] at h, exact h},
-rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2, 
+rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2,
 end
 
-instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩ 
+instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩
 
 lemma det_coes (A: matrix (fin 2) (fin 2) ℤ ): det (A : matrix (fin 2) (fin 2) ℝ )= ((A.det): ℝ):=
 begin
 rw MND, rw GLn.det_of_22, simp only [int.cast_mul, int.cast_sub], refl,
-end  
+end
 
-instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, by {have:= SL_det_pos A,   have:= nonzero_inv (A.1.det: ℝ ) this, 
-simp at this, simp [det_coes], exact this}⟩ ⟩ 
+instance SL_to_GL: has_coe SL2Z (GLn (fin 2) ℝ):= ⟨λ A, ⟨ A.1, by {have:= SL_det_pos A,   have:= nonzero_inv (A.1.det: ℝ ) this,
+simp at this, simp [det_coes], exact this}⟩ ⟩
 
 lemma SL_det_pos' (A : SL2Z): (A : GLn (fin 2) ℝ).1.det > 0:=
 
 begin
-have:=A.2, simp only [gt_iff_lt, subtype.val_eq_coe], simp only [subtype.val_eq_coe] at this, have h2:= det_coes (A.1), 
-simp only [subtype.val_eq_coe] at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2, 
+have:=A.2, simp only [gt_iff_lt, subtype.val_eq_coe], simp only [subtype.val_eq_coe] at this, have h2:= det_coes (A.1),
+simp only [subtype.val_eq_coe] at h2, rw this at h2, rw ← coe_coe at h2, rw ← coe_coe, rw h2,
 cases A, dsimp only at *, simp only [int.cast_one, zero_lt_one] at *,
-end  
+end
 
 instance SL_to_GL_pos: has_coe SL2Z (GL2R_pos):= ⟨λ A, ⟨ (A: GLn (fin 2) ℝ), by {have:= SL_det_pos' A,
- simp only [gt_iff_lt, mem_GL2R_pos, subtype.val_eq_coe], simp only [gt_iff_lt, subtype.val_eq_coe] at this, 
-rw ← coe_coe, exact this  }⟩ ⟩ 
+ simp only [gt_iff_lt, mem_GL2R_pos, subtype.val_eq_coe], simp only [gt_iff_lt, subtype.val_eq_coe] at this,
+rw ← coe_coe, exact this  }⟩ ⟩
 
-instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩ 
+instance GL2R_pos_to_GL2R : has_coe (GL2R_pos)  (GLn (fin 2) ℝ) := ⟨λ A, A.val⟩
 -/
 
 /- basic map from matrix over Z to matrix over R and some lemmas-/
@@ -322,34 +321,29 @@ def mat_Z_to_R (A:matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 
 
 
-instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩ 
+instance Z_to_R: has_coe (matrix (fin 2) (fin 2) ℤ) (matrix (fin 2) (fin 2) ℝ ) :=⟨λ A, mat_Z_to_R A⟩
 
 lemma nonzero_inv (a: ℝ) (h: 0 < a): is_unit (a):=
 
 begin
 have h2: a ≠ 0, {simp only [ne.def], by_contradiction h1, rw h1 at h, simp only [lt_self_iff_false] at h, exact h},
-rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2, 
+rw  is_unit_iff_exists_inv, use a⁻¹, apply mul_inv_cancel h2,
 end
 
 
 @[simp]lemma mat_val (A: SL2Z) (i j : fin 2): (mat_Z_to_R A.1) i j = (A.1 i j : ℝ):=
 
 begin
-rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], 
+rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero],
 simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
 simp only [matrix.head_cons, matrix.cons_val_one, matrix.cons_val_zero],
 simp only [matrix.head_cons, matrix.cons_val_one],
 
-end  
+end
 
-instance SLZ_to_GLZ: has_coe SL2Z (special_linear_group (fin 2 ) ℝ):= 
+instance SLZ_to_GLZ: has_coe SL2Z (special_linear_group (fin 2 ) ℝ):=
 ⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw GLn.det_of_22, have:= det_onne' A, simp, unfold_coes at this,
- norm_cast, exact this,}, ⟩⟩ 
-
-
-
-
-instance SLZ_to_GL_pos: has_coe SL2Z (GL2P):= ⟨λ A,  ((A: (special_linear_group (fin 2 ) ℝ)): GL2P ) ⟩
+ norm_cast, exact this,}, ⟩⟩
 
 
 @[simp]lemma mat_vals (A: SL2Z) (i j : fin 2): ( A : (GL (fin 2) ℝ)) i j = (A.1 i j : ℝ):=
@@ -358,7 +352,7 @@ begin
 unfold_coes,  simp [mat_val],
 rw mat_Z_to_R, fin_cases i; fin_cases j, simp only [matrix.cons_val_zero], refl,refl,refl,refl,
 
-end  
+end
 
 @[simp] lemma det_coe_sl (A: SL2Z): (A: GL (fin 2) ℝ).val.det= (A.val.det: ℝ):=
 begin
@@ -367,7 +361,7 @@ simp, have hdet:= det_onne' A, unfold_coes at hdet, norm_cast,exact hdet,
 
 end
 
-/-- This is the Moebius action on the upper half plane, defined as follows: Given a `2 × 2`matrix `M=![![a, b], ![c, d]]` 
+/-- This is the Moebius action on the upper half plane, defined as follows: Given a `2 × 2`matrix `M=![![a, b], ![c, d]]`
 with positive determinant, it sends `z ∈ ℍ` to `(a*z+b)/(c*z+d)` -/
 def moeb:  (GL2P) → ℍ → ℍ :=
 λ M z, ⟨mat2_complex M z, preserve_ℍ M.1 M.2 z z.property⟩
@@ -376,14 +370,13 @@ def moeb:  (GL2P) → ℍ → ℍ :=
 lemma one_vals : (1: GL2P).val 0 0 = 1 ∧ (1: GL2P).val 0 1 = 0 ∧ (1: GL2P).val 1 0 = 0 ∧ (1: GL2P).val 1 1 = 1 :=
 begin
 split, refl,split, refl,split, refl,refl,
-end  
+end
 
 lemma one_smul''  : ∀ (z : ℍ  ),  moeb (1: GL2P) z= z :=
 
 begin
- intro z,  
-simp only [moeb, mat2_complex], have:=one_vals, unfold_coes at this, simp at *, simp_rw this, simp,
-
+ intro z,
+simp only [moeb, mat2_complex], have:=one_vals, unfold_coes at this, simp at *,
 end
 
 variable (v: ℍ)
@@ -392,10 +385,10 @@ variable (v: ℍ)
 
 lemma mul_smul''  (A B : GL2P) (z : ℍ)  :  moeb (A * B) z = moeb A (moeb B z):=
 
-begin 
-have h:  ¬ (↑(B.1 1 0) * z.1 + ↑(B.1 1 1)) = 0, have:= preserve_ℍ.aux B B.2 z.1 z.2, simp only [ne.def, subtype.val_eq_coe] at this, exact this, 
-simp only [moeb, subtype.mk_eq_mk, subgroup.coe_mul, subtype.coe_mk],   apply mul_smul' A B z.1 h, 
-end   
+begin
+have h:  ¬ (↑(B.1 1 0) * z.1 + ↑(B.1 1 1)) = 0, have:= preserve_ℍ.aux B B.2 z.1 z.2, simp only [ne.def, subtype.val_eq_coe] at this, exact this,
+simp only [moeb, subtype.mk_eq_mk, subgroup.coe_mul, subtype.coe_mk],   apply mul_smul' A B z.1 h,
+end
 
 
 /-finally, here is the action of GL_2R^+ on the H-/
@@ -408,4 +401,4 @@ instance : mul_action (GL2P) (ℍ) :=
 
 
 
-end   
+end

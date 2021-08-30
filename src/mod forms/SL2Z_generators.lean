@@ -1,6 +1,6 @@
 import .modular_group
 import group_theory.group_action.basic
-import linear_algebra.matrix 
+import linear_algebra.matrix
 import linear_algebra.determinant
 import data.matrix.notation
 
@@ -32,7 +32,7 @@ variables (a b c d : ℕ )
 
 namespace SL2Z_M
 
- 
+
 
 def S': matrix  (fin 2) (fin 2 ) ℤ:= ![![0, -1], ![1, 0]]
 def T' : matrix  (fin 2) (fin 2 ) ℤ:= ![![1, 1], ![0, 1]]
@@ -44,7 +44,7 @@ lemma SD: S'.det =1 :=
 begin
 rw S',
 refl,
-end   
+end
 
 
 lemma TD: T'.det =1 :=
@@ -52,10 +52,10 @@ lemma TD: T'.det =1 :=
 begin
 rw T',
 refl,
-end   
+end
 
 def S : SL2Z := ⟨ S', SD ⟩
-def T: SL2Z := ⟨ T',TD⟩ 
+def T: SL2Z := ⟨ T',TD⟩
 
 
 
@@ -72,22 +72,22 @@ def T: SL2Z := ⟨ T',TD⟩
 
 variable (m : ℤ)
 
-local notation `Mat` := integral_matrices_with_determinant 
+local notation `Mat` := integral_matrices_with_determinant
 
-@[simp, SL2Z] lemma S_mul_a (A : Mat m) : (S • A) 0 0 = -A 1 0 := 
+@[simp, SL2Z] lemma S_mul_a (A : Mat m) : (S • A) 0 0 = -A 1 0 :=
 
 begin
   rw   SL2Z_M_aa,
  simp only [neg_mul_eq_neg_mul_symm, one_mul, S_a, zero_mul, S_b, zero_add],
-end 
+end
 
 
-@[simp, SL2Z] lemma S_mul_b (A : Mat m) : (S • A) 0 1 = -A 1 1 := 
+@[simp, SL2Z] lemma S_mul_b (A : Mat m) : (S • A) 0 1 = -A 1 1 :=
 
 begin
   rw   SL2Z_M_ba,
    simp only [neg_mul_eq_neg_mul_symm, one_mul, S_a, zero_mul, S_b, zero_add],
-end 
+end
 
 
 
@@ -107,7 +107,7 @@ simp only [SL2Z_one_b, SL2Z_one_d, int.coe_nat_zero, SL2Z_one_a, eq_self_iff_tru
 simp only [pow_succ, T_d, one_mul, zero_mul, T_a, T_c, int.coe_nat_succ, T_b, zero_add, SL2Z_mul_d, SL2Z_mul_c, SL2Z_mul_a,
   SL2Z_mul_b],
 rw [hd.1], simp only [add_right_eq_self], rw [hd.2.1], simp only [add_right_inj], rw hd.2.2.1, rw hd.2.2.2, simp only [eq_self_iff_true, and_self],
-end  
+end
 
 lemma T_pow_aux (n : ℤ  ) : (T^n) 0 0 = 1 ∧ (T^n) 0 1 = n ∧ (T^n) 1 0 = 0 ∧ (T^n) 1 1 = 1 :=
 
@@ -116,32 +116,31 @@ induction n with d hd,
 simp only [int.of_nat_eq_coe, gpow_coe_nat],
 apply T_pow_aux',
 simp only [SL2Z_inv_d, SL2Z_inv_c, SL2Z_inv_b, gpow_neg_succ_of_nat, SL2Z_inv_a, neg_eq_zero], simp only [pow_succ, T_d, one_mul, zero_mul, T_a, T_c, T_b, neg_add_rev, zero_add, SL2Z_mul_d, SL2Z_mul_c, SL2Z_mul_a,
-  SL2Z_mul_b], rw (T_pow_aux' hd).2.2.1, rw (T_pow_aux' hd).2.2.2, rw (T_pow_aux' hd).1, rw (T_pow_aux' hd).2.1, 
-simp only [true_and, add_zero, and_true, eq_self_iff_true], rw int.neg_succ_of_nat_eq', ring, 
-end 
+  SL2Z_mul_b], rw (T_pow_aux' hd).2.2.1, rw (T_pow_aux' hd).2.2.2, rw (T_pow_aux' hd).1, rw (T_pow_aux' hd).2.1,
+simp only [true_and, add_zero, and_true, eq_self_iff_true], rw int.neg_succ_of_nat_eq', ring,
+end
 
 @[simp, SL2Z] lemma T_pow_a (n : ℤ) : (T^n) 0 0 = 1 := (T_pow_aux n).1
 @[simp, SL2Z] lemma T_pow_b (n : ℤ) : (T^n) 0 1 = n := (T_pow_aux n).2.1
 @[simp, SL2Z] lemma T_pow_c (n : ℤ) : (T^n) 1 0 = 0 := (T_pow_aux n).2.2.1
 @[simp, SL2Z] lemma T_pow_d (n : ℤ) : (T^n) 1 1 = 1 := (T_pow_aux n).2.2.2
 
-@[simp, SL2Z] lemma S_mul_S : S * S = (-1: SL2Z) := 
+@[simp, SL2Z] lemma S_mul_S : S * S = (-1: SL2Z) :=
 
 begin
 ext i j,
-simp only [matrix.special_linear_group.mul_apply],
 fin_cases i; fin_cases j,
 simp only [integral_matrices_with_determinant.neg_a, SL2Z_one_a], refl,
-simp only [SL2Z_one_b, integral_matrices_with_determinant.neg_b, neg_zero], refl, 
+simp only [SL2Z_one_b, integral_matrices_with_determinant.neg_b, neg_zero], refl,
 simp only [SL2Z_one_c, neg_zero, integral_matrices_with_determinant.neg_c], refl,
 simp only [SL2Z_one_d, integral_matrices_with_determinant.neg_d], refl,
-end   
+end
 
 @[simp, SL2Z] lemma S_min: -S = -1 * S:=
 
 begin
 simp only [SL2Z.neg_one_mul],
-end   
+end
 
 @[simp, SL2Z] lemma S_inv' : -S * S= 1:=
 
@@ -150,14 +149,14 @@ rw S_min,
 rw  mul_assoc,
 rw S_mul_S,
 simp only [mul_one, SL2Z.neg_mul_neg],
-end  
+end
 
 @[simp, SL2Z] lemma S_inv: -S = S⁻¹ :=
 
 begin
 rw  eq_inv_iff_mul_eq_one,
 rw S_inv',
-end  
+end
 
 @[simp, SL2Z] lemma S_n_T: S*S*S*T*S*T*S=T⁻¹:=
 
@@ -173,7 +172,7 @@ simp only [T_d, add_zero, mul_one, S_a, T_a, T_c, SL2Z_inv_b, S_c, mul_neg_eq_ne
   add_left_neg, SL2Z_mul_d, SL2Z_mul_c, neg_neg, int.add_neg_one, S_d, mul_zero, neg_zero],
   simp only [SL2Z_inv_d, add_zero, mul_one, S_a, zero_sub, zero_mul, T_a, T_c, SL2Z_inv_c, S_c, mul_neg_eq_neg_mul_symm, S_b, T_b,
   SL2Z_mul_d, SL2Z_mul_c, neg_neg, int.add_neg_one, S_d, mul_zero],
-end 
+end
 
 
 lemma fixlem (m : ℤ) (A : Mat m) (H : int.nat_abs (A 1 0) ≠ 0): A 0 0 + -(A 0 0/ A 1 0)*( A 1 0)= A 0 0 % A 1 0:=
@@ -183,13 +182,13 @@ simp only [neg_mul_eq_neg_mul_symm],
 rw  ← sub_eq_add_neg,
 rw mul_comm,
 rw  ← int.mod_def,
-end   
+end
 
 attribute [elab_as_eliminator] nat.strong_induction_on
 
 def reps (m : ℤ) : set (Mat m) :=
 {A : Mat m | A 1 0 = 0 ∧ 0 < A 0 0 ∧ 0 ≤ A 0 1 ∧ int.nat_abs (A 0 1) < int.nat_abs (A 1 1) }
- 
+
 
 
 theorem reduce_aux (m : ℤ) (A : Mat m) (H : int.nat_abs (A 1 0) ≠ 0) :
@@ -349,15 +348,15 @@ simp at *,
 have h4: b*c >0 ,{ rw h3 at h1, exact h1},
 replace h2:= le_of_lt h2,
 apply pos_of_mul_pos_right  h4 h2,
-end   
+end
 
 lemma one_time' (a b : ℤ) (h1: a > 0) (h2: (a = 1 ∧ b=1) ∨ (a=-1 ∧ b=-1)): (a=1 ∧ b=1):=
 
 begin
-by_contra h, 
-cases h2, work_on_goal 0 { cases h2, simp at *, solve_by_elim }, cases h2, simp at *, rw h2_left at h1, have h4 : 0 < (-1: ℤ) ↔ false, simp only [neg_nonpos, not_lt, iff_false], 
+by_contra h,
+cases h2, work_on_goal 0 { cases h2, simp at *, solve_by_elim }, cases h2, simp at *, rw h2_left at h1, have h4 : 0 < (-1: ℤ) ↔ false, simp only [neg_nonpos, not_lt, iff_false],
 work_on_goal 0 { exact dec_trivial }, cases h4, simp at *, solve_by_elim,
-end  
+end
 
 
 
@@ -366,14 +365,14 @@ theorem reps_unique (m : ℤ) (hm : m ≠ 0) :
 begin
   rintros  M A B
     ⟨g_eq, e_pos, f_nonneg, f_bound⟩ ⟨k_eq, H6, f'_nonneg, f'_bound⟩ B_eq, rw ← B_eq,
-    rw m_a_b at B_eq, 
+    rw m_a_b at B_eq,
   have ht: M 1 0 = 0, {rw [k_eq, g_eq] at B_eq, simp only [add_zero, zero_eq_mul, mul_zero] at B_eq, cases B_eq.2.2.1, exact h, rw h at e_pos, exact (irrefl _ e_pos).elim, },
   have d1: (M 0 0)*(M 1 1)=1, { rw ← det_onne M, rw ht, simp only [zero_mul, sub_zero],   },
   have mg0: (M  0 0) > 0, {rw g_eq at B_eq, simp only [add_zero, mul_zero] at B_eq, exact one_time (B 0 0) (M 0 0) (A 0 0) H6 e_pos B_eq.1, },
   have htt: M 0 0 =1 ∧ M 1 1 =1, { rw int.mul_eq_one at d1, apply one_time' (M 0 0) (M 1 1) mg0 d1,  },
   have httv: M 1 1 =1, { simp only [htt], },
   have htv: ((A 0 1)+ (M 0 1)*(A 1 1)) ≥ 0, {rw B_eq.2.1 at f'_nonneg, rw htt.1 at f'_nonneg, simp only [one_mul] at f'_nonneg, exact f'_nonneg},
-  have httt: M 0 1 =0, {rw B_eq.2.2.2 at f'_bound, rw B_eq.2.1 at f'_bound, 
+  have httt: M 0 1 =0, {rw B_eq.2.2.2 at f'_bound, rw B_eq.2.1 at f'_bound,
   rw ht at f'_bound, rw htt.1 at f'_bound,  rw httv at f'_bound, simp only [one_mul, zero_mul, zero_add] at f'_bound, apply num_gt_sum (A 1 1) (A 0 1) (M 0 1)  f_nonneg  f_bound htv, exact f'_bound, },
   have M1: M = (1: SL2Z),{ext i j, fin_cases i; fin_cases j, exact htt.1, exact  httt, exact ht, exact httv},
   rw M1, simp only [one_smul], exact hm,
@@ -393,7 +392,7 @@ lemma dm  (a b c d : ℤ ) : (PT a b c d).det = a*d-b*c:=
 begin
 rw PT,
 apply MND (PT a b c d),
-end   
+end
 
 
 @[simp] lemma em  (a b c d : ℤ ) :  (PT a b c d) 0 0 = a ∧ (PT a b c d) 0 1 = b ∧ (PT a b c d) 1 0 = c ∧ (PT a b c d) 1 1 = d  :=
@@ -401,7 +400,7 @@ end
 begin
 rw PT,
 simp only [matrix.head_cons, eq_self_iff_true, and_self, matrix.cons_val_one, matrix.cons_val_zero],
-end   
+end
 
 
 
@@ -410,14 +409,14 @@ lemma nat_pos (m: ℕ+) (a : fin(m+1)): a ≥ 0:=
 
 begin
 exact dec_trivial,
-end  
+end
 
 
 lemma pos_nat (m: ℕ+) (a : fin(m+1)): 0 ≤ a:=
 
 begin
 exact dec_trivial,
-end  
+end
 
 lemma en_pos (m : ℕ+) (A: matrix (fin 2) (fin 2) ℤ) (h1: A.det= ↑ m) (h2: 0 < A 0 0) (h3: A 1 0 =0) : 0 ≤ A 1 1:=
 
@@ -426,67 +425,67 @@ rw MND at h1,
 rw h3 at h1,
 simp only [sub_zero, mul_zero, coe_coe] at h1,
 by_contradiction h,
-simp only [not_le] at h, 
+simp only [not_le] at h,
 have h5: A 1 1 * A 0 0 < 0, {apply mul_neg_of_neg_of_pos h h2},
  rw mul_comm at h1, rw h1 at h5, cases m, dsimp at *, simp at *, rw ← int.coe_nat_lt at m_property, rw ←  not_le at h5, dsimp at *, simp at *, assumption,
 end
 
 instance reps.fintype_pos (m:ℕ+) : fintype (reps m) :=
 fintype.of_equiv {v : fin (m+1) × fin (m+1) × fin (m+1) // v.1.1 * v.2.2.1 = m ∧ v.2.1.1 < v.2.2.1}
-{ to_fun := λ A, ⟨ ⟨PT  A.1.1.1  A.1.2.1.1 (0: ℤ)  A.1.2.2.1 , by {rw  [dm  A.1.1.1  A.1.2.1.1 (0 : ℤ)  A.1.2.2.1], rw [ mul_zero, sub_zero, ← int.coe_nat_mul, A.2.1, coe_coe]}⟩, 
+{ to_fun := λ A, ⟨ ⟨PT  A.1.1.1  A.1.2.1.1 (0: ℤ)  A.1.2.2.1 , by {rw  [dm  A.1.1.1  A.1.2.1.1 (0 : ℤ)  A.1.2.2.1], rw [ mul_zero, sub_zero, ← int.coe_nat_mul, A.2.1, coe_coe]}⟩,
 rfl, by {simp only [vale, int.coe_nat_pos, em, subtype.val_eq_coe], have agt: 0 <A.1.1.1, {have age: 0 ≤ A.1.1.1, {apply nat_pos,}, rw le_iff_lt_or_eq at age, cases age, cases A, cases m, work_on_goal 0 { assumption }, cases A, cases m, cases A_property, cases A_val, cases A_val_snd, cases A_val_fst, cases A_val_snd_snd, cases A_val_snd_fst, dsimp at *, induction age, induction A_property_left, simp at *, assumption,  }, exact agt, } , by {simp only [vale, true_and, int.nat_abs_of_nat, fin.coe_fin_lt, int.coe_nat_nonneg, em, subtype.val_eq_coe], exact A.2.2,   }⟩,
-  inv_fun := λ A, ⟨    (     ⟨int.nat_abs (A.1 0 0), nat.lt_succ_of_le $ nat.le_of_dvd m.2 ⟨int.nat_abs (A.1 1 1), 
+  inv_fun := λ A, ⟨    (     ⟨int.nat_abs (A.1 0 0), nat.lt_succ_of_le $ nat.le_of_dvd m.2 ⟨int.nat_abs (A.1 1 1),
       have a1: (A).val 1 0 = 0, {apply A.2.1},
       have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp only [subtype.val_eq_coe], apply a1},
-      by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this, 
+      by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this,
       rw ← coe_coe at this, rw [← int.nat_abs_mul], simp only [subtype.val_eq_coe], rw coe_coe at this, simp only [vale, subtype.val_eq_coe], rw this, simp only [int.nat_abs_of_nat, coe_coe]}  ⟩ ⟩,
     ⟨int.nat_abs (A.1 0 1), nat.lt_succ_of_le $ le_trans (le_of_lt A.2.2.2.2) $ nat.le_of_dvd m.2 ⟨int.nat_abs (A.1 0 0),
      have a1: (A).val 1 0 = 0, {apply A.2.1},
       have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp only [subtype.val_eq_coe], apply a1,},
-     by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this, 
+     by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this,
       rw ← coe_coe at this, rw [← int.nat_abs_mul], simp only [subtype.val_eq_coe], rw coe_coe at this, rw ← mul_comm at this, simp only [vale, subtype.val_eq_coe], rw this, simp only [int.nat_abs_of_nat, coe_coe],},  ⟩⟩,
     ⟨int.nat_abs (A.1 1 1), nat.lt_succ_of_le $ nat.le_of_dvd m.2 ⟨int.nat_abs (A.1 0 0),
       have a1: (A).val 1 0 = 0, {apply A.2.1},
       have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp, apply a1,},
-       by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this, 
-      rw ← coe_coe at this, rw [← int.nat_abs_mul], simp only [subtype.val_eq_coe], rw coe_coe at this, rw ← mul_comm at this, simp only [vale, subtype.val_eq_coe], rw this, simp only [int.nat_abs_of_nat, coe_coe],},  ⟩⟩), 
+       by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this,
+      rw ← coe_coe at this, rw [← int.nat_abs_mul], simp only [subtype.val_eq_coe], rw coe_coe at this, rw ← mul_comm at this, simp only [vale, subtype.val_eq_coe], rw this, simp only [int.nat_abs_of_nat, coe_coe],},  ⟩⟩),
      have a1: (A).val 1 0 = 0, {apply A.2.1},
       have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp, apply a1,},
-      by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this, 
+      by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this,  rw ←   coe_coe at this, simp only [subtype.val_eq_coe] at ao, rw ← coe_coe at ao, rw ao at this, simp only [sub_zero, mul_zero, coe_coe] at this, rw ← coe_coe at this,
       rw ← coe_coe at this, rw [← int.nat_abs_mul], simp only [subtype.val_eq_coe], rw coe_coe at this,  simp only [vale, subtype.val_eq_coe], rw this, simp only [int.nat_abs_of_nat, coe_coe],}, A.2.2.2.2⟩,
-  left_inv := λ ⟨⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨d, hd⟩⟩, H1, H2⟩, subtype.eq $ prod.ext 
+  left_inv := λ ⟨⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨d, hd⟩⟩, H1, H2⟩, subtype.eq $ prod.ext
     (fin.eq_of_veq $ int.nat_abs_of_nat _) $ prod.ext
     (fin.eq_of_veq $ int.nat_abs_of_nat _)
     (fin.eq_of_veq $ int.nat_abs_of_nat _),
-  
-  right_inv := λ ⟨ ⟨A ,H1⟩,  H2, H3, H4, H5⟩,  by {simp only [vale, subtype.mk_eq_mk], ext i j, fin_cases i; fin_cases j, simp only [em], 
-   simp only [vale] at H3, rw ← int.abs_eq_nat_abs, apply abs_of_pos H3,  simp only [em],  simp only [vale] at H4, rw ← int.abs_eq_nat_abs, 
-   apply abs_of_nonneg H4, simp only [em], simp only [vale] at H2, simp only [H2], simp only [em],  simp only [vale] at H5, 
-   have h7: A 0 1 < (A 1 1).nat_abs, {simp only [vale] at H4, rw ← int.coe_nat_lt at H5, rw  int.nat_abs_of_nonneg H4 at H5, exact H5}, 
+
+  right_inv := λ ⟨ ⟨A ,H1⟩,  H2, H3, H4, H5⟩,  by {simp only [vale, subtype.mk_eq_mk], ext i j, fin_cases i; fin_cases j, simp only [em],
+   simp only [vale] at H3, rw ← int.abs_eq_nat_abs, apply abs_of_pos H3,  simp only [em],  simp only [vale] at H4, rw ← int.abs_eq_nat_abs,
+   apply abs_of_nonneg H4, simp only [em], simp only [vale] at H2, simp only [H2], simp only [em],  simp only [vale] at H5,
+   have h7: A 0 1 < (A 1 1).nat_abs, {simp only [vale] at H4, rw ← int.coe_nat_lt at H5, rw  int.nat_abs_of_nonneg H4 at H5, exact H5},
     simp only [vale] at H4, have h8: 0 <(A 1 1).nat_abs, {rw ← int.coe_nat_lt, apply lt_of_le_of_lt H4 h7 },
-     rw ← int.abs_eq_nat_abs, rw ← int.coe_nat_lt at h8, rw ← int.abs_eq_nat_abs at h8, simp only [abs_eq_self], 
-     simp only [vale] at H3, apply en_pos m A H1 H3 H2}} 
+     rw ← int.abs_eq_nat_abs, rw ← int.coe_nat_lt at h8, rw ← int.abs_eq_nat_abs at h8, simp only [abs_eq_self],
+     simp only [vale] at H3, apply en_pos m A H1 H3 H2}}
 
 
 
-def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)  
+def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)
 | (int.of_nat $ n+1) H := reps.fintype_pos ⟨n+1, nat.zero_lt_succ n⟩
 | 0 H := (H rfl).elim
 | -[1+ n] H := fintype.of_equiv (reps (⟨n+1, nat.zero_lt_succ _⟩:pnat))
-{to_fun := λ A, ⟨ ⟨PT (A.1 0 0) (A.1 0 1) (A.1 1 0) (-A.1 1 1), 
+{to_fun := λ A, ⟨ ⟨PT (A.1 0 0) (A.1 0 1) (A.1 1 0) (-A.1 1 1),
   have a1: (A).val 1 0 = 0, {apply A.2.1},
   have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp only [subtype.val_eq_coe], apply a1,},
  by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, simp only [pnat.mk_coe, int.coe_nat_succ] at this,
 rw MND at this, rw dm, simp only [vale, mul_neg_eq_neg_mul_symm, subtype.val_eq_coe],simp only [subtype.val_eq_coe] at ao, rw ao,  rw ao at this, simp only [sub_zero, mul_zero], simp only [sub_zero, mul_zero] at this, rw this, rw int.neg_succ_of_nat_coe,  refl} ⟩,
     A.2.1, A.2.2.1, A.2.2.2.1, trans_rel_left _ A.2.2.2.2 $ eq.symm $ int.nat_abs_neg _⟩,
 
-  inv_fun := λ A, ⟨⟨PT (A.1 0 0) (A.1 0 1) (A.1 1 0) (-A.1 1 1), 
+  inv_fun := λ A, ⟨⟨PT (A.1 0 0) (A.1 0 1) (A.1 1 0) (-A.1 1 1),
  have a1: (A).val 1 0 = 0, {apply A.2.1},
   have ao: (A.1).val 1 0 = 0, {simp only [vale, subtype.val_eq_coe] at a1, simp only [subtype.val_eq_coe], apply a1,},
  by have := A.1.2; {simp only [subtype.val_eq_coe, coe_coe] at this, rw MND at this, rw dm, simp only [vale, mul_neg_eq_neg_mul_symm, subtype.val_eq_coe],
   simp only [subtype.val_eq_coe] at ao, rw ao, rw ao at this, simp only [sub_zero, mul_zero], simp only [pnat.mk_coe, int.coe_nat_succ, coe_coe], simp only [sub_zero, mul_zero] at this, rw this, refl} ⟩,
     A.2.1, A.2.2.1, A.2.2.2.1, trans_rel_left _ A.2.2.2.2 $ eq.symm $ int.nat_abs_neg _⟩,
-  left_inv := λ ⟨ ⟨A, H1⟩, H2⟩, by {simp only [vale, subtype.mk_eq_mk, neg_neg, em], ext i j, fin_cases i; fin_cases j, simp only [em], simp only [em], simp only [em], simp only [em],  }, 
+  left_inv := λ ⟨ ⟨A, H1⟩, H2⟩, by {simp only [vale, subtype.mk_eq_mk, neg_neg, em], ext i j, fin_cases i; fin_cases j, simp only [em], simp only [em], simp only [em], simp only [em],  },
   right_inv := λ ⟨⟨A, H1⟩, H2⟩, by {simp only [vale, subtype.mk_eq_mk, neg_neg, em], ext i j, fin_cases i; fin_cases j, simp only [em], simp only [em], simp only [em], simp only [em],  },
    }
 
@@ -499,7 +498,7 @@ def orbit_rel'' (m : ℤ): setoid (Mat m) :=
     λ a b, by simp only [mul_action.orbit_eq_iff.symm, implies_true_iff, eq_self_iff_true] {contextual := tt}⟩ }
 
 def π : reps m → quotient (orbit_rel'' m ) :=
-  λ A, (@quotient.mk _ (orbit_rel'' m)) A 
+  λ A, (@quotient.mk _ (orbit_rel'' m)) A
 
 
 set_option eqn_compiler.zeta true
@@ -509,18 +508,18 @@ by letI := (orbit_rel'' m ); from
     let ⟨MA, HA⟩ := reduce_spec m A in
     let ⟨MB, HB⟩ := reduce_spec m B in
     subtype.eq $ reps_unique m hm (MB * M⁻¹ * MA⁻¹) _ _ (reduce_mem_reps m hm A) (reduce_mem_reps m hm B) $
-    by {simp only, rw ← HA, rw mul_smul, simp only [inv_smul_smul], rw mul_smul, simp only [_x, forall_true_left] at _fun_match, 
+    by {simp only, rw ← HA, rw mul_smul, simp only [inv_smul_smul], rw mul_smul, simp only [_x, forall_true_left] at _fun_match,
     simp only at H, rw ← H,  simp only [exists_imp_distrib] at _let_match, rw H, rw ← HB, simp, rw ← H, simp only [inv_smul_smul],},
-  inv_fun := λ A, ⟦A.1⟧, 
-  left_inv := λ x, by {simp only [subtype.val_eq_coe], induction x, work_on_goal 0 { cases x, dsimp at *, simp at * }, work_on_goal 1 { refl }, 
+  inv_fun := λ A, ⟦A.1⟧,
+  left_inv := λ x, by {simp only [subtype.val_eq_coe], induction x, work_on_goal 0 { cases x, dsimp at *, simp at * }, work_on_goal 1 { refl },
   apply quotient.sound, apply reduce_spec m ⟨ x_val, x_property⟩},
-  
+
 
   right_inv := λ A, subtype.eq $
     let ⟨MA, HA⟩ := reduce_spec m A in
     reps_unique m hm MA⁻¹ _ _ (reduce_mem_reps m hm A) A.2 $
     show  MA⁻¹ • (reduce m A) = A,
-    by {rw [← HA], simp only [inv_smul_smul], }, } 
+    by {rw [← HA], simp only [inv_smul_smul], }, }
 end
 
 protected def decidable_eq (hm : m ≠ 0) : decidable_eq (quotient (orbit_rel'' m )) :=
