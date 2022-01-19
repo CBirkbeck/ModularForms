@@ -2,7 +2,6 @@ import mod_forms.Eisenstein_series
 import mod_forms.unform_limits_of_holomorphic
 import mod_forms.mod_forms2
 
-
 universes u v w
 
 open complex
@@ -70,7 +69,7 @@ begin
   have hz: z ∈ (upper_half_space_slice A B), by {apply hball, simp  [hε .le],},
   have hu:= (Eisen_partial_tends_to_uniformly k h A B hA hB),
   have hu2:
-    tendsto_uniformly_on (Eisen_par_sum_slice k A B ) (Eisenstein_series_restrict k A B hB)
+    tendsto_uniformly_on (Eisen_par_sum_slice k A B ) (Eisenstein_series_restrict k A B)
     filter.at_top (metric.closed_ball ⟨z, hz⟩ ε), by {apply hu.tendsto_uniformly_on},
   clear hu,
   simp_rw Eisenstein_series_restrict at *,
@@ -129,7 +128,7 @@ end
 
 
 lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
-  is_holomorphic_on (Eisenstein_series_of_weight_ k):=
+  is_holomorphic_on (modular_forms.hol_extn (Eisenstein_series_of_weight_ k)):=
 begin
   rw ←  is_holomorphic_on_iff_differentiable_on,
   apply diff_on_diff,
@@ -264,10 +263,10 @@ begin
 end
 
 lemma mod_form_periodic (k : ℤ) (f : ℍ → ℂ)
-  (h: f ∈ (modular_forms.modular_submodule k (⊤ : subgroup SL2Z))) : ∀ (z : ℍ) (n : ℤ),
+  (h: f ∈ (modular_forms.weakly_modular_submodule k (⊤ : subgroup SL2Z))) : ∀ (z : ℍ) (n : ℤ),
   f( ((TN n) : matrix.GL_pos (fin 2) ℝ)  • z ) = f(z) :=
 begin
-  simp only [modular_forms.modular_mem', coe_coe] at h,
+  simp only [modular_forms.wmodular_mem', coe_coe] at h,
   intros z n,
   have htop : (TN n) ∈ (⊤ : subgroup SL2Z), by {simp,},
   have H:= h ⟨(TN n), htop⟩ z,
@@ -360,7 +359,7 @@ intros z hz hz2,
 have trans := upp_half_translation ⟨z,hz⟩,
 obtain ⟨n, hn⟩:= trans,
 have mod_period := mod_form_periodic k (λ z : ℍ, Eisenstein_series_of_weight_ k z)
-  (Eisenstein_is_modular (⊤ : subgroup SL2Z) k) ⟨z, hz⟩ n,
+  (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) ⟨z, hz⟩ n,
 simp only [coe_coe] at mod_period,
 simp_rw ← mod_period,
 set Z : ℍ := (((TN n) : matrix.GL_pos (fin 2) ℝ)  • ⟨z,hz⟩),
@@ -392,11 +391,11 @@ end
 lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
  modular_forms.is_modular_form_of_lvl_and_weight (⊤ : subgroup SL2Z) k
  (λ z : ℍ, Eisenstein_series_of_weight_ k z) :=
- {hol:= by {simp_rw modular_forms.hol_extn, apply Eisenstein_is_holomorphic k hk, },
- transf := by {simp only, apply Eisenstein_is_modular (⊤ : subgroup SL2Z) k, },
+ {hol:= by {simp_rw modular_forms.hol_extn, rw mdiff_iff_holo, apply Eisenstein_is_holomorphic k hk, },
+ transf := by {simp only, apply Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k, },
  infinity := by {intros A,
- have := (modular_forms.modular_mem k (⊤ : subgroup SL2Z)
- (λ z : ℍ, Eisenstein_series_of_weight_ k z)).1 (Eisenstein_is_modular (⊤ : subgroup SL2Z) k) A,
+ have := (modular_forms.wmodular_mem k (⊤ : subgroup SL2Z)
+ (λ z : ℍ, Eisenstein_series_of_weight_ k z)).1 (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) A,
  rw this,
  apply Eisenstein_is_bounded k hk,}}
 
