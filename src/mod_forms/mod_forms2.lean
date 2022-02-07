@@ -81,16 +81,15 @@ begin
   simp_rw aux1,
 end
 
-lemma slash_k_add (k : ℤ) (A : GL(2, ℝ)⁺) (f g : ℍ → ℂ ) : (f +g )  ∣[k] A = (f ∣[k] A) + (g ∣[k] A) :=
+lemma slash_k_add (k : ℤ) (A : GL(2, ℝ)⁺) (f g : ℍ → ℂ) : (f + g) ∣[k] A = (f ∣[k] A) + (g ∣[k] A) :=
 begin
-  simp_rw slash_k,
-  simp only [pi.add_apply, matrix.general_linear_group.coe_det_apply, subtype.val_eq_coe, coe_coe],
+  simp only [slash_k, pi.add_apply, matrix.general_linear_group.coe_det_apply, subtype.val_eq_coe, coe_coe],
   ext1,
   simp only [pi.add_apply],
   ring,
 end
 
-lemma slash_k_mul_one (k : ℤ) (f : ℍ → ℂ ) : (f ∣[k] 1) = f :=
+lemma slash_k_mul_one (k : ℤ) (f : ℍ → ℂ) : (f ∣[k] 1) = f :=
 begin
  simp_rw slash_k,
  ext1,
@@ -233,7 +232,7 @@ end
 
 lemma mul_modular  (k_1 k_2 : ℤ) (Γ : subgroup SL(2,ℤ)) (f g : ℍ → ℂ)
   (hf : f ∈  weakly_modular_submodule k_1 Γ)  (hg : g ∈ weakly_modular_submodule k_2 Γ) :
-  f*g  ∈  weakly_modular_submodule (k_1+k_2) Γ :=
+  f * g  ∈  weakly_modular_submodule (k_1+k_2) Γ :=
 begin
   simp only [wmodular_mem', pi.mul_apply, coe_coe] at *,
   intros γ z,
@@ -436,16 +435,19 @@ end
 /--The extension of a function from `ℍ` to `ℍ'`-/
 def hol_extn (f : ℍ → ℂ) : ℍ' → ℂ := λ (z : ℍ'), (f (z : ℍ) )
 
+instance : has_coe (ℍ → ℂ) (ℍ' → ℂ) :=
+⟨λ f, hol_extn f ⟩
+
 /-- A function `f : ℍ → ℂ` is a modular form of level `Γ` and weight `k ∈ ℤ` if it is holomorphic,
  Petersson and bounded at infinity -/
 
   structure is_modular_form_of_lvl_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ) : Prop :=
-  (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f))
+  (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ))
   (transf   :  f ∈ weakly_modular_submodule k Γ )
   (infinity : ∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_bound_at_infinity )
 
 lemma mk (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ)
-  (h : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f) )
+  (h : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ) )
   (h2: f ∈ weakly_modular_submodule k Γ )
   (h3 : ∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_bound_at_infinity ) :
   is_modular_form_of_lvl_and_weight Γ k f :={
@@ -454,7 +456,7 @@ lemma mk (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ)
   infinity := h3,}
 
 lemma mod_mem (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ) : is_modular_form_of_lvl_and_weight Γ k f ↔
-  mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f) ∧
+  mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ) ∧
   f ∈ weakly_modular_submodule k Γ  ∧
   (∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_bound_at_infinity) :=
 begin
@@ -466,10 +468,9 @@ begin
   apply mk Γ k f h.1 h.2.1 h.2.2,
 end
 
-
   /-- The zero modular form is a modular form-/
 lemma zero_mod_form :  (is_modular_form_of_lvl_and_weight Γ   (k : ℤ) ) (zero_form ):=
-{ hol :=  by {rw hol_extn, have := zero_hol ℍ', apply holo_to_mdiff,simp_rw zero_form, apply this,},
+{ hol :=  by { have := zero_hol ℍ', apply holo_to_mdiff,simp_rw zero_form, apply this,},
   transf := (weakly_modular_submodule k Γ).zero_mem',
   infinity := by {simp only [bound_mem, ge_iff_le],
   intro A,
@@ -484,12 +485,12 @@ lemma zero_mod_form :  (is_modular_form_of_lvl_and_weight Γ   (k : ℤ) ) (zero
 /-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic,
  Petersson and zero at infinity -/
 structure is_cusp_form_of_lvl_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ) : Prop :=
-  (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f))
+  (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ))
   (transf   : f ∈ weakly_modular_submodule k Γ)
   (infinity : ∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_zero_at_infinity )
 
 lemma is_cuspform_mk (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ)
-  (h : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f) )
+  (h : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ) )
   (h2 : f ∈ weakly_modular_submodule k Γ)
   (h3 :  ∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_zero_at_infinity ) :
   is_cusp_form_of_lvl_and_weight Γ k f :={
@@ -499,7 +500,7 @@ lemma is_cuspform_mk (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ)
 }
 
 lemma cusp_mem (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f: ℍ → ℂ): is_cusp_form_of_lvl_and_weight Γ k f ↔
-  mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (hol_extn f) ∧
+  mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ) ∧
   f ∈ weakly_modular_submodule k Γ ∧
   ( ∀ (A : (⊤ : subgroup SL(2,ℤ))), (f ∣[k] A) ∈ is_zero_at_infinity) :=
 begin
@@ -514,7 +515,7 @@ end
 
 /-- The zero modular form is a cusp form-/
 lemma zero_cusp_form :  (is_cusp_form_of_lvl_and_weight Γ k)  (zero_form ) :=
-  { hol := by {rw hol_extn, rw mdiff_iff_holo, exact zero_hol ℍ', },
+  { hol := by { rw mdiff_iff_holo, exact zero_hol ℍ', },
   transf := (weakly_modular_submodule k Γ).zero_mem',
   infinity := by {simp only [zero_at_inf_mem, gt_iff_lt, ge_iff_le],
   intros A ε he,
