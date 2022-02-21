@@ -713,28 +713,46 @@ begin
   simp,
 end
 
--- TO DO: Show that the constant function is modular
+/-- The constant function 1 is invariant under any subgroup of SL2Z -/
+lemma const_one_form_is_invar (Γ: subgroup SL(2,ℤ)) (A : Γ) :
+  const_one_form ∣[0] A = const_one_form :=
+begin
+  have hd: ((A : GL(2,ℝ)⁺).1.det : ℂ) = (A : SL(2,ℤ)) .1.det, by {simp [det_coe_sl], norm_cast,
+  rw ← coe_coe,
+  rw ← coe_coe,
+  rw ← coe_coe, apply matrix.special_linear_group.det_coe,},
+  
+  rw slash_k,
+  rw const_one_form,
+  simp only [pi.const_ring_hom_apply],
+  rw zero_sub,
+  rw [hd, (A : SL(2,ℤ)).2],
+  ext1,
+  simp,
+end
 
-/- lemma const_mod_form :  
+/-- The constant function 1 is modular of weight 0 -/
+lemma const_mod_form :  
   (is_modular_form_of_lvl_and_weight Γ 0 ) (const_one_form ):= 
 { 
   hol :=  by 
-  { have := one_hol ℍ', apply holo_to_mdiff,simp_rw const_one_form, apply this,
+  { 
+    have := one_hol ℍ', 
+    apply holo_to_mdiff,
+    simp_rw const_one_form, 
+    apply this,
   },
-  transf := by { sorry },
+  transf := by {
+    intro γ, 
+    apply const_one_form_is_invar,
+  },
   infinity := by 
   {
-    simp only [bound_mem, ge_iff_le],
     intro A,
-    use (1: ℝ ),
-    use (0: ℝ ),
-    intros x  h1,
-    rw const_one_form,
-    simp only [coe_coe],
-    rw slash_k,
-    simp only [zero_le_one, zero_mul, pi.const_monoid_hom_apply, complex.abs_zero],
+    rw (const_one_form_is_invar ⊤ A),
+    exact const_one_form_is_bound,
   }
-} -/
+}
 
 end const_mod_form
 
