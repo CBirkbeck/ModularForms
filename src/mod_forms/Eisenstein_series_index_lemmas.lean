@@ -1,5 +1,5 @@
 import tactic.pi_instances
-import mod_forms.modular_group
+import mod_forms.mod_group
 import linear_algebra.general_linear_group
 import mod_forms.mod_forms2
 import data.matrix.notation
@@ -14,17 +14,20 @@ import mod_forms.upper_half_plane
 import topology.compact_open
 import analysis.calculus.deriv
 import mod_forms.modular
+import mod_forms.mat_m
 
 universes u v w
 
 open complex
-
-open_locale big_operators nnreal classical filter
+open modular_group
+open integral_matrices_with_determinant
+open_locale big_operators nnreal classical filter matrix
 
 local notation `ℍ` := upper_half_plane
 
 local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
 
+local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
 
 namespace Eisenstein_series
@@ -48,11 +51,11 @@ def Ind_equiv (A : SL2Z): ℤ × ℤ ≃ ℤ × ℤ:={
   to_fun:=Ind_perm A,
   inv_fun:=Ind_perm A⁻¹,
   left_inv:=λ z, by {rw Ind_perm, rw Ind_perm,
-  have ha:= SL2Z_inv_a A, simp only [vale] at ha,
-  have hb:= SL2Z_inv_b A, simp only [vale] at hb,
-  have hc:= SL2Z_inv_c A, simp only [vale] at hc,
-  have hd:= SL2Z_inv_d A, simp only [vale] at hd,
-  have hdet:=det_onne A, simp only [vale] at hdet,
+  have ha:= SL2Z_inv_a A, simp only [mat_m_vals] at ha,
+  have hb:= SL2Z_inv_b A, simp only [mat_m_vals] at hb,
+  have hc:= SL2Z_inv_c A, simp only [mat_m_vals] at hc,
+  have hd:= SL2Z_inv_d A, simp only [mat_m_vals] at hd,
+  have hdet:=det_onne A, simp only [mat_m_vals] at hdet,
   simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, rw mul_comm at hdet, simp only [hdet],
   have ht: A.val 1 1 * A.val 1 0 - A.val 1 0 * A.val 1 1=0, by {ring, }, simp only [ht],
   have ht2: -(A.val 0 1 * A.val 0 0) + A.val 0 0 * A.val 0 1=0, by {ring,}, simp only [ht2],
@@ -65,11 +68,11 @@ def Ind_equiv (A : SL2Z): ℤ × ℤ ≃ ℤ × ℤ:={
   simp only [ht3],
   ring_nf, simp only [prod.mk.eta, add_zero, zero_mul, zero_add], },
   right_inv:= λ z, by { rw Ind_perm, rw Ind_perm,
-  have ha:= SL2Z_inv_a A, simp only [vale] at ha,
-  have hb:= SL2Z_inv_b A, simp only [vale] at hb,
-  have hc:= SL2Z_inv_c A, simp only [vale] at hc,
-  have hd:= SL2Z_inv_d A, simp only [vale] at hd,
-  have hdet:=det_onne A, simp only [vale] at hdet,
+  have ha:= SL2Z_inv_a A, simp only [mat_m_vals] at ha,
+  have hb:= SL2Z_inv_b A, simp only [mat_m_vals] at hb,
+  have hc:= SL2Z_inv_c A, simp only [mat_m_vals] at hc,
+  have hd:= SL2Z_inv_d A, simp only [mat_m_vals] at hd,
+  have hdet:=det_onne A, simp only [mat_m_vals] at hdet,
   simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf,
   have hz1:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.fst hdet, simp only [hz1],
   have hz2:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.snd hdet,

@@ -209,7 +209,12 @@ begin
 simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
-
+lemma det_onne (A: SL2Z) :  A 0 0 * A 1 1 - A 1 0 * A 0 1=1 :=
+begin
+rw ← A.2,
+rw det_of_22, 
+simp [mul_comm],
+end
 
 def mat_Z_to_R (A : matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
@@ -255,7 +260,6 @@ end
 begin
 have:=A.2, rw this, simp, rw ← coe_coe, rw ← coe_coe, simp,
 end
-
 
 end modular_group
 

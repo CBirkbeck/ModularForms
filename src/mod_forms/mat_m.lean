@@ -56,6 +56,8 @@ begin
 intros i j, refl,
 end
 
+
+
 def SLnZ_M (m : ℤ) :
 special_linear_group n ℤ → (integral_matrices_with_determinant n  m) → (integral_matrices_with_determinant n m) :=
 λ A B, ⟨A.1 ⬝ B.1, by erw [det_mul, A.2, B.2, one_mul]⟩
@@ -119,6 +121,9 @@ simp,
 end
 
 end has_neg
+
+
+
 
 end integral_matrices_with_determinant
 

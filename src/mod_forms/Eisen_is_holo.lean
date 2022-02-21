@@ -11,6 +11,7 @@ open_locale big_operators nnreal classical filter
 local notation `ℍ` := upper_half_plane
 
 local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
+local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
 
 namespace Eisenstein_series
@@ -209,7 +210,7 @@ def Tn (n : ℤ) : matrix  (fin 2) (fin 2 ) ℤ := ![![1, n], ![0, 1]]
 lemma Tndet (n : ℤ) : matrix.det (Tn(n)) = 1 :=
 begin
   simp_rw Tn,
-  rw det_of_22,
+  rw modular_group.det_of_22,
   simp only [matrix.head_cons, mul_one, sub_zero, matrix.cons_val_one, mul_zero,
   matrix.cons_val_zero],
 end
@@ -218,7 +219,7 @@ lemma coe_aux (γ : SL2Z) :
  ∀ i j, ((γ : matrix.GL_pos (fin 2) ℝ) i j : ℝ) = ((γ i j : ℤ) : ℝ) :=
 begin
   intros i j,
-  have :=SL2Z.mat_vals  γ i j,
+  have := modular_group.mat_vals  γ i j,
   simp only [of_real_int_cast, subtype.val_eq_coe, matrix.general_linear_group.coe_fn_eq_coe, coe_coe] at *,
   simp,
 end

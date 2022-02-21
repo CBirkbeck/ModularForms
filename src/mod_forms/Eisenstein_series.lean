@@ -10,6 +10,8 @@ open_locale big_operators nnreal classical filter
 local notation `ℍ` := upper_half_plane
 
 local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
+
+local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
 
 
