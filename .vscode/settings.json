@@ -1,14 +1,14 @@
 {
-    "files.exclude": {
-        "**/.DS_Store": false,
-        "**/.git": false,
-        "**/.hg": false,
-        "**/.svn": false,
-        "**/CVS": false
-    },
-    "search.exclude": {
-        "**/*.code-search": false,
-        "**/bower_components": false,
-        "**/node_modules": false
-    }
-}
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.rulers" : [
+      
+      100],
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "search.usePCRE2": true
+  }
+  
