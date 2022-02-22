@@ -305,9 +305,9 @@ begin
 end
 
 
-open_locale direct_sum
+/- open_locale direct_sum
 
-/-
+
 instance gmod  (Γ : subgroup SL(2,ℤ)) : direct_sum.gcomm_monoid (λ k, weakly_modular_submodule k Γ) :=
 begin
 have one_mem : (1 : ℍ → ℂ) ∈ weakly_modular_submodule 0 Γ, by {simp only [wmodular_mem',
@@ -511,7 +511,7 @@ instance : has_coe (ℍ → ℂ) (ℍ' → ℂ) :=
 ⟨λ f, hol_extn f ⟩
 
 /-- A function `f : ℍ → ℂ` is a modular form of level `Γ` and weight `k ∈ ℤ` if it is holomorphic,
- Petersson and bounded at infinity -/
+ weakly modular, and bounded at infinity -/
 
   structure is_modular_form_of_lvl_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ) : Prop :=
   (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ))
@@ -540,7 +540,7 @@ begin
   apply mk Γ k f h.1 h.2.1 h.2.2,
 end
 
-  /-- The zero modular form is a modular form-/
+/-- The zero modular form is a modular form of weight k for all k -/
 lemma zero_mod_form :  (is_modular_form_of_lvl_and_weight Γ   (k : ℤ) ) (zero_form ):=
 { hol :=  by { have := zero_hol ℍ', apply holo_to_mdiff,simp_rw zero_form, apply this,},
   transf := (weakly_modular_submodule k Γ).zero_mem',
@@ -555,7 +555,7 @@ lemma zero_mod_form :  (is_modular_form_of_lvl_and_weight Γ   (k : ℤ) ) (zero
   simp only [zero_le_one, zero_mul, pi.zero_apply, complex.abs_zero],}}
 
 /-- A function `f : ℍ → ℂ` is a cusp form of level one and weight `k ∈ ℤ` if it is holomorphic,
- Petersson and zero at infinity -/
+ weakly modular, and zero at infinity -/
 structure is_cusp_form_of_lvl_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ) (f : ℍ → ℂ) : Prop :=
   (hol      : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) (↑f : ℍ' → ℂ))
   (transf   : f ∈ weakly_modular_submodule k Γ)
@@ -585,7 +585,7 @@ begin
 end
 
 
-/-- The zero modular form is a cusp form-/
+/-- The zero modular form is a cusp form -/
 lemma zero_cusp_form :  (is_cusp_form_of_lvl_and_weight Γ k)  (zero_form ) :=
   { hol := by { rw mdiff_iff_holo, exact zero_hol ℍ', },
   transf := (weakly_modular_submodule k Γ).zero_mem',
@@ -641,7 +641,7 @@ def space_of_mod_forms_of_level_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ): 
 
 localized "notation `Mₖ[`k`](`Γ`)`:= space_of_mod_forms_of_level_and_weight Γ k" in modular_forms
 
-/-- This is the space of cuspforms of level `Γ` and weigth `k`-/
+/-- This is the space of cuspforms of level `Γ` and weight `k`-/
 def space_of_cusp_forms_of_level_and_weight (Γ : subgroup SL(2,ℤ)) (k : ℤ): submodule ℂ (ℍ → ℂ):={
   carrier:={ f : ℍ → ℂ | is_cusp_form_of_lvl_and_weight Γ k f},
   zero_mem':=by {simp only [set.mem_set_of_eq], apply zero_cusp_form, },
@@ -698,5 +698,62 @@ begin
   exact (hf_infinity A),
   exact (hg_infinity A),
 end
+
+/- Constant functions as modular forms -/
+section const_mod_form 
+
+def const_one_form: ℍ → ℂ := (1 : (ℍ → ℂ))
+
+/-- The constant function is bounded at infinity -/
+lemma const_one_form_is_bound : (const_one_form ) ∈  is_bound_at_infinity :=
+begin
+  use(1 : ℝ),
+  use(1 : ℝ),
+  rw const_one_form,
+  simp,
+end
+
+/-- The constant function 1 is invariant under any subgroup of SL2Z -/
+lemma const_one_form_is_invar (Γ: subgroup SL(2,ℤ)) (A : Γ) :
+  const_one_form ∣[0] A = const_one_form :=
+begin
+  have hd: ((A : GL(2,ℝ)⁺).1.det : ℂ) = (A : SL(2,ℤ)) .1.det, by {simp [det_coe_sl], norm_cast,
+  rw ← coe_coe,
+  rw ← coe_coe,
+  rw ← coe_coe, apply matrix.special_linear_group.det_coe,},
+  
+  rw slash_k,
+  rw const_one_form,
+  simp only [pi.const_ring_hom_apply],
+  rw zero_sub,
+  rw [hd, (A : SL(2,ℤ)).2],
+  ext1,
+  simp,
+end
+
+/-- The constant function 1 is modular of weight 0 -/
+lemma const_mod_form :  
+  (is_modular_form_of_lvl_and_weight Γ 0 ) (const_one_form ):= 
+{ 
+  hol :=  by 
+  { 
+    have := one_hol ℍ', 
+    apply holo_to_mdiff,
+    simp_rw const_one_form, 
+    apply this,
+  },
+  transf := by {
+    intro γ, 
+    apply const_one_form_is_invar,
+  },
+  infinity := by 
+  {
+    intro A,
+    rw (const_one_form_is_invar ⊤ A),
+    exact const_one_form_is_bound,
+  }
+}
+
+end const_mod_form
 
 end modular_forms
