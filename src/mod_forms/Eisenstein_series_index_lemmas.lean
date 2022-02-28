@@ -1,7 +1,7 @@
 import tactic.pi_instances
 import mod_forms.mod_group
 import linear_algebra.general_linear_group
-import mod_forms.mod_forms2
+import for_mathlib.mod_forms2
 import data.matrix.notation
 import data.setoid.partition
 import topology.instances.ennreal
