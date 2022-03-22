@@ -1,6 +1,6 @@
 import mod_forms.Eisenstein_series
 import mod_forms.unform_limits_of_holomorphic
-import mod_forms.mod_forms2
+import for_mathlib.mod_forms2
 
 universes u v w
 
