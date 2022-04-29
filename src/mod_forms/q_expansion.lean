@@ -1,6 +1,6 @@
 import for_mathlib.mod_forms2
 import analysis.complex.removable_singularity
-
+import mod_forms.upper_half_plane_manifold
 /-!
 # q-expansions of periodic functions
 
@@ -130,157 +130,158 @@ include hh hf
 end bounded_inf_on_C
 
 
---section periodic_on_H
+section periodic_on_H
 
--- local notation `ℍ` := (⟨upper_half_space, upper_half_plane_is_open⟩ : open_subs)
+local notation `ℍ` := (⟨upper_half_space, upper_half_plane_is_open⟩ : open_subs)
 
--- def unit_disc_sset := {z : ℂ | z.abs <  1}
+def unit_disc_sset := {z : ℂ | z.abs <  1}
 
--- lemma unit_disc_is_open : is_open unit_disc_sset :=
--- begin
---   exact is_open.preimage complex.continuous_abs is_open_Iio,
--- end
+lemma unit_disc_is_open : is_open unit_disc_sset :=
+begin
+  exact is_open.preimage complex.continuous_abs is_open_Iio,
+end
 
--- def punc_disc_sset := {z : ℂ | z.abs <  1 ∧ z ≠ 0}
+ def punc_disc_sset := {z : ℂ | z.abs <  1 ∧ z ≠ 0}
 
--- lemma punc_disc_is_open : is_open punc_disc_sset :=
--- begin
---   have : punc_disc_sset = complex.abs⁻¹' (set.Ioo 0 1),
---   { ext, simp only [set.mem_preimage, set.mem_Iio],
---     split,
---     { intro hx, split, rw complex.abs_pos, exact hx.2, exact hx.1 },
---     { intro hx, split, exact hx.2, rw ←complex.abs_pos, exact hx.1 }, },
---   rw this, exact is_open.preimage complex.continuous_abs is_open_Ioo,
--- end
+ lemma punc_disc_is_open : is_open punc_disc_sset :=
+ begin
+   have : punc_disc_sset = complex.abs⁻¹' (set.Ioo 0 1),
+   { ext, simp only [set.mem_preimage, set.mem_Iio],
+     split,
+     { intro hx, split, rw complex.abs_pos, exact hx.2, exact hx.1 },
+     { intro hx, split, exact hx.2, rw ←complex.abs_pos, exact hx.1 }, },
+   rw this, exact is_open.preimage complex.continuous_abs is_open_Ioo,
+ end
 
--- local notation `𝔻` := ( ⟨ unit_disc_sset, unit_disc_is_open ⟩ : open_subs)
--- local notation `𝔻⋆`:= ( ⟨ punc_disc_sset, punc_disc_is_open ⟩ : open_subs)
+ local notation `𝔻` := ( ⟨ unit_disc_sset, unit_disc_is_open ⟩ : open_subs)
+ local notation `𝔻⋆`:= ( ⟨ punc_disc_sset, punc_disc_is_open ⟩ : open_subs)
 
--- instance : has_vadd ℝ ℍ :=
--- begin
---   split, intros h z, refine ⟨z.1 + h, _⟩, dsimp at *,
---   suffices : 0 < im (z.1 + h), { exact this },
---   rw [add_im, of_real_im, add_zero], exact z.2,
--- end
+ instance : has_vadd ℝ ℍ :=
+ begin
+   split, intros h z, refine ⟨z.1 + h, _⟩, dsimp at *,
+   suffices : 0 < im (z.1 + h), { exact this },
+   rw [add_im, of_real_im, add_zero], exact z.2,
+ end
 
--- variables (h : ℝ) (hh : 0 < h) (f : ℍ → ℂ) (hf : ∀ (w : ℍ), f(h +ᵥ w) = f(w))
+ variables (h : ℝ) (hh : 0 < h) (f : ℍ → ℂ) (hf : ∀ (w : ℍ), f(h +ᵥ w) = f(w))
 
--- include hh
+ include hh
 
--- -- lemma q_in_Dstar (z : ℍ) :
--- --   abs (exp (2 * π * I * z / h)) < 1 ∧ exp (2 * π * I * z / h) ≠ 0:=
--- -- begin
--- --   split,
--- --   rw [abs_exp,real.exp_lt_one_iff, mul_assoc],
--- --   have : 2 * (π : ℂ) = ((2 * π : ℝ) : ℂ) := by simp, rw this,
--- --   rw [div_eq_inv_mul, ←of_real_inv, of_real_mul_re],
--- --   apply mul_neg_of_pos_of_neg (inv_pos.mpr hh),
--- --   rw [of_real_mul_re, mul_neg_iff], left, split,
--- --   { exact real.two_pi_pos },
--- --   simp only [I_re, one_mul, I_im, zero_sub, right.neg_neg_iff, zero_mul,
--- --     upper_half_plane.coe_im, mul_re],
--- --   exact upper_half_plane.im_pos z,
--- --   apply exp_ne_zero,
--- -- end
+  lemma q_in_Dstar (z : ℍ) :
+    abs (exp (2 * π * I * z / h)) < 1 ∧ exp (2 * π * I * z / h) ≠ 0:=
+  begin
+    split,
+    rw [abs_exp,real.exp_lt_one_iff, mul_assoc],
+    have : 2 * (π : ℂ) = ((2 * π : ℝ) : ℂ) := by simp, rw this,
+    rw [div_eq_inv_mul, ←of_real_inv, of_real_mul_re],
+    apply mul_neg_of_pos_of_neg (inv_pos.mpr hh),
+    rw [of_real_mul_re, mul_neg_iff], left, split,
+    { exact real.two_pi_pos },
+    simp only [I_re, one_mul, I_im, zero_sub, right.neg_neg_iff, zero_mul,
+      upper_half_plane.coe_im, mul_re],
+    exact upper_half_plane.im_pos z,
+    apply exp_ne_zero,
+  end
 
--- lemma z_in_H (q : 𝔻⋆) : 0 < im (h / (2 * π * I) * log q) :=
--- begin
---   rw mul_im,
---   have : (↑h / (2 * ↑π * I)).re = 0 := by { rw [div_re], simp, },
---   rw [this, zero_mul, zero_add],
---   apply mul_pos_of_neg_of_neg,
---   { rw div_eq_mul_inv, rw of_real_mul_im,
---     apply mul_neg_of_pos_of_neg hh,
---     rw inv_im, apply div_neg_of_neg_of_pos,
---     swap, { rw norm_sq_pos, exact two_pi_I_ne_zero },
---     apply neg_neg_of_pos,
---     have : 2 * (π : ℂ) = ((2 * π : ℝ) : ℂ) := by simp, rw this,
---     rw of_real_mul_im, rw I_im,
---     simp only [mul_one, zero_lt_bit0, zero_lt_mul_left, zero_lt_one],
---     exact real.pi_pos, },
---   rw log_re,
---   cases q, dsimp,
---   apply real.log_neg, rw complex.abs_pos,
---   exact q_property.2,
---   exact q_property.1,
--- end
+ lemma z_in_H (q : 𝔻⋆) : 0 < im (h / (2 * π * I) * log q) :=
+ begin
+   rw mul_im,
+   have : (↑h / (2 * ↑π * I)).re = 0 := by { rw [div_re], simp, },
+   rw [this, zero_mul, zero_add],
+   apply mul_pos_of_neg_of_neg,
+   { rw div_eq_mul_inv, rw of_real_mul_im,
+     apply mul_neg_of_pos_of_neg hh,
+     rw inv_im, apply div_neg_of_neg_of_pos,
+     swap, { rw norm_sq_pos, exact two_pi_I_ne_zero },
+     apply neg_neg_of_pos,
+     have : 2 * (π : ℂ) = ((2 * π : ℝ) : ℂ) := by simp, rw this,
+     rw of_real_mul_im, rw I_im,
+     simp only [mul_one, zero_lt_bit0, zero_lt_mul_left, zero_lt_one],
+     exact real.pi_pos, },
+   rw log_re,
+   cases q, dsimp,
+   apply real.log_neg, rw complex.abs_pos,
+   exact q_property.2,
+   exact q_property.1,
+ end
 
--- include hf
+ include hf
 
--- lemma extend_periodic (w : ℂ) : (extend_by_zero f)(w + h) = (extend_by_zero f)(w) :=
--- begin
---   by_cases hw : 0 < im w,
---   { rw (restrict_extend_eq_self' f w hw),
---     have : 0 < im (w + ↑h), {rw [add_im, of_real_im, add_zero], exact hw },
---     rw (restrict_extend_eq_self' f _ this), exact hf ⟨ w, hw ⟩, },
---   { have : extend_by_zero f w = 0,
---     { rw extend_by_zero, simp, intro bad, exfalso, exact hw bad },
---     rw this,
---     have : extend_by_zero f (w + ↑h) = 0,
---     { rw extend_by_zero, simp, intro bad, exfalso,
---       have : 0 < im (w + h) := by tauto, rw [add_im, of_real_im, add_zero] at this,
---       exact hw this, },
---     exact this }
--- end
+/-
+ lemma extend_periodic (w : ℂ) : (extend_by_zero f)(w + h) = (extend_by_zero f)(w) :=
+ begin
+   by_cases hw : 0 < im w,
+   { rw (restrict_extend_eq_self' f w hw),
+     have : 0 < im (w + ↑h), {rw [add_im, of_real_im, add_zero], exact hw },
+     rw (restrict_extend_eq_self' f _ this), exact hf ⟨ w, hw ⟩, },
+   { have : extend_by_zero f w = 0,
+     { rw extend_by_zero, simp, intro bad, exfalso, exact hw bad },
+     rw this,
+     have : extend_by_zero f (w + ↑h) = 0,
+     { rw extend_by_zero, simp, intro bad, exfalso,
+       have : 0 < im (w + h) := by tauto, rw [add_im, of_real_im, add_zero] at this,
+       exact hw this, },
+     exact this }
+ end
 
--- def cusp_fcn_H : ℂ → ℂ := cusp_fcn h (extend_by_zero f)
+ def cusp_fcn_H : ℂ → ℂ := cusp_fcn h (extend_by_zero f)
 
--- lemma eq_cusp_fcn_H (z : ℍ) : f z = (cusp_fcn_H h hh f hf) (Q h z) :=
--- begin
---   have t := eq_cusp_fcn h hh (extend_by_zero f) (extend_periodic h hh f hf) z,
---   rw cusp_fcn_H, dsimp only, convert t,
---   rw restrict_extend_eq_self' f _ _, { simp }, { cases z, tauto, },
--- end
+ lemma eq_cusp_fcn_H (z : ℍ) : f z = (cusp_fcn_H h hh f hf) (Q h z) :=
+ begin
+   have t := eq_cusp_fcn h hh (extend_by_zero f) (extend_periodic h hh f hf) z,
+   rw cusp_fcn_H, dsimp only, convert t,
+   rw restrict_extend_eq_self' f _ _, { simp }, { cases z, tauto, },
+ end
 
--- lemma cusp_fcn_diff_at_H (hf_hol : is_holomorphic_on f) (q : 𝔻⋆) :
---   differentiable_at ℂ (cusp_fcn_H h hh f hf) q :=
--- begin
---   let z := Z h q,
---   have hz := z_in_H h hh q,
---   have : (Q h z : ℂ) = q,
---   { rw Q, dsimp,
---     have : z = ↑h / (2 * ↑π * I) * log ↑q := by refl, rw this,
---     have : 2 * ↑π * I * (↑h / (2 * ↑π * I) * log ↑q) / ↑h = log q,
---     { field_simp [two_pi_I_ne_zero, of_real_ne_zero.mpr hh.ne'], ring, }, rw this,
---     exact exp_log q.2.right, },
---   rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
---   replace hf_hol := hf_hol z hz,
---   dsimp at hf_hol,
---   replace hf_hol := hf_hol.differentiable_at
---     ((is_open_iff_mem_nhds.mp upper_half_plane_is_open) z hz),
---   have t := (cusp_fcn_diff_at h hh (extend_by_zero f) (extend_periodic h hh f hf)) z hf_hol,
---   rw this at t,
---   rw cusp_fcn_H, dsimp,
---   exact t,
--- end
+ lemma cusp_fcn_diff_at_H (hf_hol : is_holomorphic_on f) (q : 𝔻⋆) :
+   differentiable_at ℂ (cusp_fcn_H h hh f hf) q :=
+ begin
+   let z := Z h q,
+   have hz := z_in_H h hh q,
+   have : (Q h z : ℂ) = q,
+   { rw Q, dsimp,
+     have : z = ↑h / (2 * ↑π * I) * log ↑q := by refl, rw this,
+     have : 2 * ↑π * I * (↑h / (2 * ↑π * I) * log ↑q) / ↑h = log q,
+     { field_simp [two_pi_I_ne_zero, of_real_ne_zero.mpr hh.ne'], ring, }, rw this,
+     exact exp_log q.2.right, },
+   rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
+   replace hf_hol := hf_hol z hz,
+   dsimp at hf_hol,
+   replace hf_hol := hf_hol.differentiable_at
+     ((is_open_iff_mem_nhds.mp upper_half_plane_is_open) z hz),
+   have t := (cusp_fcn_diff_at h hh (extend_by_zero f) (extend_periodic h hh f hf)) z hf_hol,
+   rw this at t,
+   rw cusp_fcn_H, dsimp,
+   exact t,
+ end
 
--- lemma cusp_fcn_bound_near_zero (hf_hol : is_holomorphic_on f) (hf_bd : is_bound_at_infinity f) :
---   differentiable_at ℂ (cusp_fcn_H h hh f hf) 0 :=
--- begin
---   obtain ⟨M, A, hMA⟩ := hf_bd,
---   let F := cusp_fcn_H h hh f hf,
---   let a := real.exp (- 2 * π * A ),
---   let s := { q : ℂ | (abs q < a) ∧ (abs q < 1) },
---   have s_nhd : s ∈ 𝓝 (0:ℂ),
---   { apply is_open.mem_nhds,
---     sorry, simp only [set.mem_set_of_eq, complex.abs_zero, zero_lt_one, and_true],
---     apply real.exp_pos },
---   have F_bd_1 : ∀ (q : ℂ), (q ∈ s) → abs( F(q) ) ≤ M,
---   {
---     sorry,
---   },
---   have F_diff : differentiable_on ℂ F (s \ {0}),
---   {
---     sorry,
---   },
---   have F_bd_2 : bdd_above (norm ∘ F '' (s \ {0})),
---   {
---     sorry,
---   },
---   have := differentiable_on_update_lim_of_bdd_above s_nhd F_diff F_bd_2,
---   convert this.differentiable_at s_nhd,
---   ext1 q, rw function.update, split_ifs,
---   rw cusp_fcn_H,
--- end
-
--- end periodic_on_H
+ lemma cusp_fcn_bound_near_zero (hf_hol : is_holomorphic_on f) (hf_bd : is_bound_at_infinity f) :
+   differentiable_at ℂ (cusp_fcn_H h hh f hf) 0 :=
+ begin
+   obtain ⟨M, A, hMA⟩ := hf_bd,
+   let F := cusp_fcn_H h hh f hf,
+   let a := real.exp (- 2 * π * A ),
+   let s := { q : ℂ | (abs q < a) ∧ (abs q < 1) },
+   have s_nhd : s ∈ 𝓝 (0:ℂ),
+   { apply is_open.mem_nhds,
+     sorry, simp only [set.mem_set_of_eq, complex.abs_zero, zero_lt_one, and_true],
+     apply real.exp_pos },
+   have F_bd_1 : ∀ (q : ℂ), (q ∈ s) → abs( F(q) ) ≤ M,
+   {
+     sorry,
+   },
+   have F_diff : differentiable_on ℂ F (s \ {0}),
+   {
+     sorry,
+   },
+   have F_bd_2 : bdd_above (norm ∘ F '' (s \ {0})),
+   {
+     sorry,
+   },
+   have := differentiable_on_update_lim_of_bdd_above s_nhd F_diff F_bd_2,
+   convert this.differentiable_at s_nhd,
+   ext1 q, rw function.update, split_ifs,
+   rw cusp_fcn_H,
+ end
+-/
+ end periodic_on_H
