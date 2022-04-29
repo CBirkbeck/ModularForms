@@ -3,14 +3,14 @@ Copyright (c) 2022 Chris Birkbeck. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Chris Birkbeck
 -/
-
-
 import algebra.module.submodule
 import mod_forms.upper_half_plane
 import linear_algebra.general_linear_group
 import linear_algebra.special_linear_group
 import algebra.direct_sum.ring
 import mod_forms.modular
+import mod_forms.mfderiv
+import geometry.manifold.mfderiv
 universes u v
 
 
@@ -26,8 +26,6 @@ We then define `bounded_at_infinity` and `zero_at_infinity`. Finally we construc
 space of modular forms and prove that the product of two modular forms is a modular form
 (of higher weight).
 -/
-
-universes u v
 
 open complex
 
@@ -399,7 +397,7 @@ begin
   apply prod_of_bound_is_bound _ _ (hf.3 A) (hg.3 A) }⟩,
 end
 
-end modular_forms
+
 
 
 /- Constant functions as modular forms -/
@@ -420,18 +418,16 @@ end
 lemma const_one_form_is_invar (Γ: subgroup SL(2,ℤ)) (A : Γ) :
   const_one_form ∣[0] A = const_one_form :=
 begin
-  have hd: ((A : GL(2,ℝ)⁺).1.det : ℂ) = (A : SL(2,ℤ)) .1.det, by {simp [det_coe_sl], norm_cast,
-  rw ← coe_coe,
-  rw ← coe_coe,
-  rw ← coe_coe, apply matrix.special_linear_group.det_coe,},
-
+  have hd: ((A : GL(2,ℝ)⁺).1.det : ℂ) = (A : SL(2,ℤ)) .1.det, by {simp,},
   rw slash_k,
   rw const_one_form,
   simp only [pi.const_ring_hom_apply],
-  rw zero_sub,
-  rw [hd, (A : SL(2,ℤ)).2],
-  ext1,
+  have : (((↑ₘ(A : GL(2,ℝ)⁺)).det): ℝ) = 1,
+  by {simp only [coe_coe,matrix.special_linear_group.coe_GL_pos_coe_GL_coe_matrix,
+  matrix.special_linear_group.det_coe],},
+  rw [zero_sub, this],
   simp,
+  refl,
 end
 
 /-- The constant function 1 is modular of weight 0 -/
@@ -439,11 +435,8 @@ lemma const_mod_form :
   (is_modular_form_of_lvl_and_weight Γ 0 ) (const_one_form ):=
 {
   hol :=  by
-  {
-    have := one_hol ℍ',
-    apply holo_to_mdiff,
-    simp_rw const_one_form,
-    apply this,
+  {simp_rw const_one_form,
+    apply mdifferentiable_one,
   },
   transf := by {
     intro γ,
