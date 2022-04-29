@@ -21,11 +21,8 @@ universes u v w
 open complex
 open modular_group
 open integral_matrices_with_determinant
-open_locale big_operators nnreal classical filter matrix
+open_locale big_operators nnreal classical filter matrix upper_half_plane
 
-local notation `ℍ` := upper_half_plane
-
-local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
 
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
@@ -56,17 +53,17 @@ def Ind_equiv (A : SL2Z): ℤ × ℤ ≃ ℤ × ℤ:={
   have hc:= SL2Z_inv_c A, simp only [mat_m_vals] at hc,
   have hd:= SL2Z_inv_d A, simp only [mat_m_vals] at hd,
   have hdet:=det_onne A, simp only [mat_m_vals] at hdet,
-  simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, rw mul_comm at hdet, simp only [hdet],
+  simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, rw mul_comm at hdet,
   have ht: A.val 1 1 * A.val 1 0 - A.val 1 0 * A.val 1 1=0, by {ring, }, simp only [ht],
   have ht2: -(A.val 0 1 * A.val 0 0) + A.val 0 0 * A.val 0 1=0, by {ring,}, simp only [ht2],
   have ht3: -(A.val 0 1 * A.val 1 0) + A.val 0 0 * A.val 1 1 =1, by {rw add_comm,
   rw mul_comm at hdet, simp,
   simp at *,
   ring_nf,
-  rw ridic,
-  exact hdet, },
+  rw mul_comm,
+  apply hdet },
   simp only [ht3],
-  ring_nf, simp only [prod.mk.eta, add_zero, zero_mul, zero_add], },
+  ring_nf, rw hdet, simp  [prod.mk.eta, add_zero, zero_mul, zero_add],   },
   right_inv:= λ z, by { rw Ind_perm, rw Ind_perm,
   have ha:= SL2Z_inv_a A, simp only [mat_m_vals] at ha,
   have hb:= SL2Z_inv_b A, simp only [mat_m_vals] at hb,
@@ -91,9 +88,7 @@ end
 
 lemma max_aux (a b : ℕ):a= max a b  ∨  b=max a b :=
 begin
-have:= (max_aux' a b),  cases this, work_on_goal 0 { simp at * }, work_on_goal 1 { simp at * },
-have h1: max a b = a, apply max_eq_left this, rw h1, simp only [true_or, eq_self_iff_true],rw max_comm,
-have h2: max b a=b, apply max_eq_left this, rw h2, simp only [eq_self_iff_true, or_true],
+have:= (max_aux' a b),  cases this, simp [this], simp [this],
 end
 
 lemma max_aux'' (a b n : ℕ) (h: max a b =n): a=n ∨ b =n :=
@@ -472,8 +467,8 @@ begin
   intros H,
   cases H,
   fsplit,
-  work_on_goal 1 { simp at *, fsplit,
-  work_on_goal 1 { assumption } },
+  apply H_val,
+  simp at *, fsplit, work_on_goal 2 { assumption },
   end
 
 instance: has_coe_t  (finset (ℤ × ℤ))  (set (ℤ × ℤ)):=infer_instance
@@ -491,7 +486,7 @@ begin
   cases h1_h,
   dsimp at *,
   simp at *,
-  fsplit, work_on_goal 1 { assumption },
+  fsplit, work_on_goal 2 { assumption },
 end
 
 def fnn  (In: ℕ → finset (ℤ × ℤ))  (HI: ∀ (y : ℤ × ℤ), ∃! (i : ℕ), y ∈ In (i) ) (x:  ℤ × ℤ)  :
