@@ -516,7 +516,7 @@ def Eisen_partial_sums (k: ℤ) (n : ℕ): ℍ → ℂ:=
 λ z, ∑ x in (finset.range n), (eisen_square k x z)
 
 def upper_half_space_slice (A B : ℝ) :=
-  {z : ℍ | complex.abs(z.1.1) ≤ A ∧ complex.abs(z.1.2) ≥ B  }
+  {z : ℍ' | complex.abs(z.1.1) ≤ A ∧ complex.abs(z.1.2) ≥ B  }
 
 instance upper_half_space_slice_to_uhs (A B : ℝ) :
   has_coe (upper_half_space_slice A B) ℍ := ⟨λ z, z.1⟩
@@ -527,7 +527,7 @@ instance upper_half_space_slice_to_uhs (A B : ℝ) :
 lemma slice_in_upper_half (A B : ℝ) (x : (upper_half_space_slice A B) ) :
   x.1.1 ∈ ℍ'.1:=
 begin
-have hx : 0 < (x.1).im, by {apply upper_half_plane.im_pos,},
+have hx : 0 < x.1.1.im, by {apply upper_half_plane.im_pos,},
 simp at hx,
 simp,
 apply hx,
@@ -689,6 +689,7 @@ begin
   simp_rw lbpoint,
   simp only [ min_le_iff, le_min_iff,subtype.val_eq_coe],
   cases z,
+  have zpos:= upper_half_plane.im_pos z_val,
   cases z_property,
   cases z_val,
   dsimp at *,
@@ -709,17 +710,20 @@ begin
   simp,
   rw inv_le_inv,
   simp,
+  simp_rw [hcoe] at z_val_property,
+  simp at z_val_property,
   have i1: (((z_val_val.im)^2)⁻¹ : ℝ)≤ ((B^2)⁻¹ : ℝ) ,
     by {rw inv_le_inv,
     have h' : 0 ≤ B , by {linarith,},
-    have z_prop' : 0 ≤ z_val_val.im, by {linarith,},
+    have z_prop' : 0 ≤ z_val_val.im, by {apply zpos.le, },
     apply aux6 _ _ h' z_prop',
     have : z_val_val.im = complex.abs (z_val_val.im),
-    by  {norm_cast, have:= abs_of_pos z_val_property, exact this.symm,},
+    by  {norm_cast, have:= abs_of_pos zpos, exact this.symm,},
     norm_cast at this,
     rw this,
     exact z_property_right,
     apply pow_two_pos_of_ne_zero,
+     have z_prop2 : 0 < z_val_val.im, by {apply zpos, },
     linarith,
     apply pow_two_pos_of_ne_zero, linarith,},
   have i2: ((z_val_val.re)^2 : ℝ )≤ (A^2 : ℝ),
