@@ -220,15 +220,11 @@ def at_I_inf := filter.at_top.comap upper_half_plane.im
 lemma at_I_inf_mem : ∀ (S : set ℍ), S ∈ at_I_inf ↔ (∃ A : ℝ, ∀ z : ℍ, A ≤ im z → z ∈ S) :=
 begin
   intro S,
-  rw [at_I_inf, filter.mem_comap', filter.mem_at_top_sets],
-  simp,
+  simp only [at_I_inf, filter.mem_comap', filter.mem_at_top_sets, ge_iff_le, set.mem_set_of_eq,
+    upper_half_plane.coe_im],
   split,
-  { intro h, cases h with a h, use a,
-  intros z hz, specialize h (im z), replace h := h hz,
-  apply h, refl},
-  {
-    intro h, cases h with A h, use A, intros b hb x hx, apply (h x), rw hx, exact hb,
-  }
+  {intro h, cases h with a h, refine ⟨a, (λ  z hz, by {apply  h (im z) hz , refl})⟩},
+  {refine (λ h, by {cases h with A h, refine ⟨A, (λ b hb x hx, by {apply (h x), rw hx, exact hb})⟩})}
 end
 
 def is_bound_at_inf (f : ℍ → ℂ) : Prop := asymptotics.is_O f (1 : ℍ → ℂ) at_I_inf
