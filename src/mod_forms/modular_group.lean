@@ -5,7 +5,7 @@ import linear_algebra.special_linear_group
 import linear_algebra.determinant
 import data.matrix.notation
 import group_theory.group_action.basic
-import algebra.group_action_hom
+import algebra.hom.group_action
 import linear_algebra.matrix
 import linear_algebra.general_linear_group
 import data.complex.basic
@@ -260,12 +260,11 @@ have:= mat_mul_expl  A.1 B.1,
 ext i j,
 fin_cases i; fin_cases j,
 have e1:= this.1,rw e1, rw h1, rw h3, simp,
-have Adet:= det_onne A, simp [valorsl] at Adet, ring_nf,
-have cg : A.1 1 0* A.1 0 1 =  A.1 0 1* A.1 1 0, by {ring,},
-simp at cg, rw ← cg, exact Adet, have e2:= this.2.1, rw e2, rw [h2,h4], ring,
+have Adet:= matrix.det_fin_two A, simp at Adet,
+apply Adet.symm, have e2:= this.2.1, rw e2, rw [h2,h4], ring,
 have e3:= this.2.2.1, rw e3, rw [h1,h3], ring, rw this.2.2.2, rw [h2,h4], simp,
-have Adet:= det_onne A, simp [valorsl] at Adet, rw add_comm,
-have cg : A.1 1 1* A.1 0 0 =  A.1 0 0* A.1 1 1, by {ring,}, simp at cg, rw cg, convert Adet,
+have Adet:= matrix.det_fin_two A, simp  at Adet,
+simp [Adet],ring,
 end
 
 lemma sl2_inv' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A * B= 1 :=
