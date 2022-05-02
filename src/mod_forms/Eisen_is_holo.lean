@@ -337,7 +337,7 @@ begin
 end
 
 lemma Eisenstein_is_bounded (k: ℕ) (hk : 3 ≤ k) :
-  (λ z : ℍ, Eisenstein_series_of_weight_ k z) ∈ modular_forms.is_bound_at_infinity  :=
+  modular_forms.is_bound_at_inf (Eisenstein_series_of_weight_ k) :=
 begin
 simp only [modular_forms.bound_mem, subtype.forall, upper_half_plane.coe_im],
 have h2: 0 < (2 : ℝ), by {linarith,},
@@ -388,8 +388,11 @@ lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
  transf := by {simp only, apply Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k, },
  infinity := by {intros A,
  have := (modular_forms.wmodular_mem k (⊤ : subgroup SL2Z)
- (λ z : ℍ, Eisenstein_series_of_weight_ k z)).1 (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) A,
+  (λ z : ℍ, Eisenstein_series_of_weight_ k z)).1
+  (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) ⟨A,_⟩,
+  dsimp at *,
  rw this,
- apply Eisenstein_is_bounded k hk,}}
+ apply Eisenstein_is_bounded k hk, tauto,}
+}
 
 end Eisenstein_series
