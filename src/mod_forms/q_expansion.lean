@@ -7,10 +7,12 @@ import mod_forms.upper_half_plane_manifold
 
 We show that if `f : ℂ → ℂ` satisfies `f(z + h) = f(z)`, for some nonzero real `h`, then
 there is a well-defined `F` such that `f(z) = F(exp(2 * π * I * z / h))` for all `z`;
-and if `f` is holomorphic at some `z`, then `F` is holomorphic at `exp(2 * π * I * z / h)`.
+and if `f` is holomorphic at some `z`, then `F` is holomorphic at `q = exp (2 * π * I * z / h)`.
 
-There is some code for functions on `ℍ`, currently commented out because of conflicts.
-
+We also show (using Riemann's removable singularity theorem) that if `f` is holomorphic and bounded
+for all sufficiently large `im z`, then `F` extends to a holomorphic function on a neighbourhood of
+`0`. As a consequence, if `f` tends to zero as `im z → ∞`, then in fact it decays *exponentially*
+to zero.
 -/
 
 open modular_forms complex filter asymptotics
@@ -95,16 +97,7 @@ end
 
 def at_I_inf' : filter ℂ := at_top.comap im
 
-lemma at_I_inf_mem' (S : set ℂ) : S ∈ at_I_inf' ↔ (∃ A : ℝ, ∀ z : ℂ, A ≤ im z → z ∈ S) :=
-begin
-  rw [at_I_inf', mem_comap', mem_at_top_sets],
-  simp, split,
-  { intro h, cases h with a h, use a,
-  intros z hz, specialize h (im z) hz, apply h, refl },
-  { intro h, cases h with A h, use A, intros b hb x hx, apply (h x), rw hx, exact hb, }
-end
-
-lemma at_I_inf_mem'' (S : set ℂ) : S ∈ at_I_inf' ↔ (∃ A : ℝ, ∀ z : ℂ, A < im z → z ∈ S) :=
+lemma at_I_inf'_mem (S : set ℂ) : S ∈ at_I_inf' ↔ (∃ A : ℝ, ∀ z : ℂ, A < im z → z ∈ S) :=
 begin
   rw [at_I_inf', mem_comap', mem_at_top_sets],
   simp, split,
@@ -117,7 +110,7 @@ end
 lemma Z_tendsto : tendsto (Z h) (𝓝[{0}ᶜ] 0) at_I_inf' :=
 begin
   rw [tendsto, map_le_iff_le_comap, comap],
-  intros S h, simp_rw at_I_inf_mem'' at h, obtain ⟨T, ⟨A, hA⟩, hT⟩ := h,
+  intros S h, simp_rw at_I_inf'_mem at h, obtain ⟨T, ⟨A, hA⟩, hT⟩ := h,
   simp_rw [metric.mem_nhds_within_iff, metric.ball, dist_eq, sub_zero],
   use real.exp(-2 * π * A / h), split, apply real.exp_pos,
   intro q, dsimp, rintro ⟨u1, u2⟩,
@@ -208,39 +201,31 @@ include hf
 lemma cusp_fcn_diff_at (z : ℂ) (hol_z : differentiable_at ℂ f z) :
   differentiable_at ℂ (cusp_fcn h f) (Q h z) :=
 begin
-  let QQ := (λ w, Q h w : ℂ → ℂ),
-  let q := QQ z,
-  let F := cusp_fcn h f,
-  have qdiff : has_strict_deriv_at QQ (q * (2 * π * I / h)) z,
+  let q := Q h z,
+  have qdiff : has_strict_deriv_at (Q h) (q * (2 * π * I / h)) z,
   { apply has_strict_deriv_at.cexp,
     apply has_strict_deriv_at.div_const,
     have : 2 * ↑π * I = (2 * ↑π * I) * 1 := by ring,
     conv begin congr, skip, rw this, end,
-    refine has_strict_deriv_at.const_mul _ (has_strict_deriv_at_id _) },
-  -- Now show that the q-map has a differentiable local inverse at z,
-  -- say L : ℂ → ℂ, with L(q) = z.
+    exact has_strict_deriv_at.const_mul _ (has_strict_deriv_at_id _) },
+  -- Now show that the q-map has a differentiable local inverse at z, say L : ℂ → ℂ, with L(q) = z.
   have diff_ne : (q * (2 * π * I / h)) ≠ 0,
   { apply mul_ne_zero, apply exp_ne_zero, apply div_ne_zero,
     exact two_pi_I_ne_zero, simpa using h.2.ne', },
-  let L := (qdiff.local_inverse QQ _ z) diff_ne,
-  have diff_L : differentiable_at ℂ L q :=
-    (qdiff.to_local_inverse diff_ne).differentiable_at,
-  have hL : (QQ ∘ L) =ᶠ[𝓝 q] (id : ℂ → ℂ),
+  let L := (qdiff.local_inverse (Q h) _ z) diff_ne,
+  have diff_L : differentiable_at ℂ L q := (qdiff.to_local_inverse diff_ne).differentiable_at,
+  have hL : (Q h) ∘ L =ᶠ[𝓝 q] (id : ℂ → ℂ),
   { exact (qdiff.has_strict_fderiv_at_equiv diff_ne).eventually_right_inverse },
   --Thus, if F = cusp_expansion f, we have F(q') = f(L(q')) for q' near q.
   --Since L is differentiable at q, and f is diffble at L(q) [ = z], we conclude
   --that F is differentiable at q.
-  have hF := eventually_eq.fun_comp hL F, dsimp at hF,
-  have : F ∘ QQ ∘ L = f ∘ L,
-  { ext1 z, dsimp [F],
-    --rw restrict_extend_eq_self',
-    exact (eq_cusp_fcn h f hf (L z)).symm, },
+  have hF := eventually_eq.fun_comp hL (cusp_fcn h f), dsimp at hF,
+  have : (cusp_fcn h f) ∘ (Q h) ∘ L = f ∘ L := by { ext1 z, exact (eq_cusp_fcn h f hf (L z)).symm },
   rw this at hF,
   have : z = L(q),
-  { have hL2 : (L ∘ QQ) =ᶠ[𝓝 z] (id : ℂ → ℂ),
+  { have hL2 : (L ∘ (Q h)) =ᶠ[𝓝 z] (id : ℂ → ℂ),
     { exact (qdiff.has_strict_fderiv_at_equiv diff_ne).eventually_left_inverse },
-    replace hL2 := eventually_eq.eq_of_nhds hL2, dsimp at hL2,
-    rw hL2, },
+    replace hL2 := eventually_eq.eq_of_nhds hL2, dsimp at hL2, rw hL2, },
   rw this at hol_z,
   exact (differentiable_at.comp q hol_z diff_L).congr_of_eventually_eq hF.symm,
 end
@@ -271,20 +256,33 @@ lemma F_diff_at_zero (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf')
   (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
   differentiable_at ℂ (cusp_fcn h f) 0 :=
 begin
-  have t1 := F_diff_near_zero h f hf h_hol,
-  obtain ⟨c, t2⟩ := (F_bound _ _ hf h_bd).bound,
-  have t := t1.and t2,
+  obtain ⟨c, t⟩ := (F_bound _ _ hf h_bd).bound,
+  replace t := (F_diff_near_zero h f hf h_hol).and t,
   simp only [norm_eq_abs, pi.one_apply, complex.abs_one, mul_one] at t,
   obtain ⟨S, hS1, hS2, hS3⟩ := eventually_nhds_iff.mp (eventually_nhds_within_iff.mp t),
-  have h_nhd := is_open.mem_nhds hS2 hS3,
   have h_diff : differentiable_on ℂ (cusp_fcn h f) (S \ {0}),
   { intros x hx, apply differentiable_at.differentiable_within_at,
     exact (hS1 x ((set.mem_diff _).mp hx).1  ((set.mem_diff _).mp hx).2).1, },
   have hF_bd : bdd_above (norm ∘ (cusp_fcn h f) '' (S \ {0})),
   { use c, rw mem_upper_bounds, simp, intros y q hq hq2 hy, rw ←hy, exact (hS1 q hq hq2).2 },
-  have := differentiable_on_update_lim_of_bdd_above h_nhd h_diff hF_bd,
+  have := differentiable_on_update_lim_of_bdd_above (is_open.mem_nhds hS2 hS3) h_diff hF_bd,
   rw ←update_twice at this,
-  exact this.differentiable_at h_nhd,
+  exact this.differentiable_at (is_open.mem_nhds hS2 hS3),
+end
+
+/-- If `f` is periodic, and holomorphic and bounded near `I∞`, then it tends to a limit at `I∞`,
+and this limit is the value of its cusp function at 0. -/
+theorem tendsto_at_I_inf (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf')
+  (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
+  tendsto f at_I_inf' (𝓝 $ cusp_fcn h f 0) :=
+begin
+  suffices : tendsto (cusp_fcn h f) (𝓝[≠] 0) (𝓝 $ cusp_fcn h f 0),
+  { have t2 : f = (cusp_fcn h f) ∘ (Q h) := by { ext1, apply eq_cusp_fcn h f hf },
+    conv begin congr, rw t2, end,
+    apply tendsto.comp, exact this,
+    apply tendsto_nhds_within_of_tendsto_nhds_of_eventually_within,
+    exact Q_tendsto h, apply eventually_of_forall, intro q, apply exp_ne_zero, },
+  exact tendsto_nhds_within_of_tendsto_nhds (F_diff_at_zero _ _ hf h_bd h_hol).continuous_at.tendsto
 end
 
 lemma cusp_fcn_zero_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
@@ -295,11 +293,10 @@ begin
   { exact tendsto.lim_eq this },
   have : is_o (cusp_fcn h f) 1 (𝓝[≠] 0),
   { refine is_o.congr' _ (by refl) (h_bd.comp_tendsto $ Z_tendsto h),
-    apply eventually_nhds_within_of_forall, intros q hq,
-    rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl, },
+    apply eventually_nhds_within_of_forall, intros q hq, rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl },
   have : is_o (cusp_fcn_0 h f) 1 (𝓝[≠] 0),
-  { refine is_o.congr' _ (by refl) this,
-    apply eventually_nhds_within_of_forall, apply cusp_fcn_eq_of_nonzero, },
+  { refine is_o.congr' _ (by refl) this, apply eventually_nhds_within_of_forall,
+    apply cusp_fcn_eq_of_nonzero, },
   simpa using this.tendsto_div_nhds_zero,
 end
 
@@ -310,10 +307,10 @@ theorem exp_decay_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
   is_O f (λ z:ℂ, real.exp (-2 * π * im z / h)) at_I_inf' :=
 begin
   have F0 := cusp_fcn_zero_of_zero_at_inf _ _ hf h_bd h_hol,
-  have Fdiff := F_diff_at_zero _ _ hf h_bd.is_O h_hol,
   have : f = λ z:ℂ, (cusp_fcn h f) (Q h z) := by { ext1 z, apply eq_cusp_fcn _ _ hf,},
   conv begin congr, rw this, skip, funext, rw [←(abs_Q_eq h), ←norm_eq_abs], end,
-  apply is_O.norm_right, exact (bound_holo_fcn _ Fdiff F0).comp_tendsto (Q_tendsto h),
+  apply is_O.norm_right,
+  exact (bound_holo_fcn _ (F_diff_at_zero _ _ hf h_bd.is_O h_hol) F0).comp_tendsto (Q_tendsto h),
 end
 
 end holo_at_inf_C
