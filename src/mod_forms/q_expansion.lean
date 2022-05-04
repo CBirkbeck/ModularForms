@@ -13,13 +13,20 @@ There is some code for functions on `ℍ`, currently commented out because of co
 
 -/
 
-open modular_forms
-open complex
+open modular_forms complex filter asymptotics
 open_locale real topological_space manifold filter
 
 noncomputable theory
 
 abbreviation ℝ_pos := {u : ℝ // 0 < u}
+
+/-- Function-theoretic lemma, maybe move this elsewhere? -/
+lemma bound_holo_fcn (g : ℂ → ℂ) (hg : differentiable_at ℂ g 0) (hg' : g 0 = 0):
+  is_O g id (𝓝 0) :=
+begin
+  replace hg := hg.has_deriv_at.is_O_sub, simp_rw [hg', sub_zero] at hg, exact hg,
+end
+
 
 section Q_and_Z
 
@@ -72,6 +79,66 @@ begin
   field_simp [two_pi_I_ne_zero], ring,
 end
 
+lemma abs_q_lt_iff (A : ℝ) (z : ℂ) : abs (Q h z) < real.exp(-2 * π * A / h) ↔ A < im z :=
+begin
+  rw [abs_Q_eq, real.exp_lt_exp],
+  split,
+  { intro hz, rw div_lt_div_right at hz, swap, exact h.2,
+    have : (-2) * π < 0 := by simpa using real.pi_pos,
+    rwa mul_lt_mul_left_of_neg this at hz, },
+  { intro hz, rw div_lt_div_right, swap, exact h.2,
+    have : (-2) * π < 0 := by simpa using real.pi_pos,
+    rwa mul_lt_mul_left_of_neg this, },
+end
+
+-- Filter stuff
+
+def at_I_inf' : filter ℂ := at_top.comap im
+
+lemma at_I_inf_mem' (S : set ℂ) : S ∈ at_I_inf' ↔ (∃ A : ℝ, ∀ z : ℂ, A ≤ im z → z ∈ S) :=
+begin
+  rw [at_I_inf', mem_comap', mem_at_top_sets],
+  simp, split,
+  { intro h, cases h with a h, use a,
+  intros z hz, specialize h (im z) hz, apply h, refl },
+  { intro h, cases h with A h, use A, intros b hb x hx, apply (h x), rw hx, exact hb, }
+end
+
+lemma at_I_inf_mem'' (S : set ℂ) : S ∈ at_I_inf' ↔ (∃ A : ℝ, ∀ z : ℂ, A < im z → z ∈ S) :=
+begin
+  rw [at_I_inf', mem_comap', mem_at_top_sets],
+  simp, split,
+  { intro h, cases h with a h, use a,
+    intros z hz, specialize h (im z) hz.le, apply h, refl },
+  { intro h, cases h with A h, use A + 1,
+    intros b hb x hx, apply (h x), rw hx, linarith, }
+end
+
+lemma Z_tendsto : tendsto (Z h) (𝓝[{0}ᶜ] 0) at_I_inf' :=
+begin
+  rw [tendsto, map_le_iff_le_comap, comap],
+  intros S h, simp_rw at_I_inf_mem'' at h, obtain ⟨T, ⟨A, hA⟩, hT⟩ := h,
+  simp_rw [metric.mem_nhds_within_iff, metric.ball, dist_eq, sub_zero],
+  use real.exp(-2 * π * A / h), split, apply real.exp_pos,
+  intro q, dsimp, rintro ⟨u1, u2⟩,
+  rw [←(QZ_eq_id h _ u2), abs_q_lt_iff] at u1, specialize hA (Z h q) u1,
+  apply hT, exact hA,
+end
+
+lemma Q_tendsto : tendsto (Q h) at_I_inf' (𝓝 0) :=
+begin
+  rw [tendsto_zero_iff_norm_tendsto_zero],
+  simp_rw [norm_eq_abs,abs_Q_eq],
+  have : set.range im ∈ at_top,
+  { suffices : set.range im = ⊤, { rw this, apply univ_mem, },
+    ext1, simp only [set.mem_range, set.top_eq_univ, set.mem_univ, iff_true],
+    use I * x, simp, },
+  have := (@tendsto_comap'_iff ℝ ℝ ℂ (λ y, real.exp ((-2) * π * y / ↑h)) at_top (𝓝 0) im this).mpr,
+  apply this, refine real.tendsto_exp_at_bot.comp _,
+  apply tendsto.at_bot_div_const h.2,
+  apply tendsto.neg_const_mul_at_top, { simpa using real.pi_pos }, exact tendsto_id,
+end
+
 end Q_and_Z
 
 section periodic_on_C
@@ -80,8 +147,27 @@ variables (h : ℝ_pos) (f : ℂ → ℂ) (hf : ∀ (w : ℂ), f(w + h) = f(w))
 
 def cusp_fcn_0 : ℂ → ℂ := λ q, f (Z h q)
 
-def cusp_fcn : ℂ → ℂ :=
-  function.update (cusp_fcn_0 h f) 0 (lim (𝓝[≠] (0:ℂ)) (cusp_fcn_0 h f))
+def cusp_fcn : ℂ → ℂ := function.update (cusp_fcn_0 h f) 0 (lim (𝓝[≠] (0:ℂ)) (cusp_fcn_0 h f))
+
+lemma cusp_fcn_eq_of_nonzero (q : ℂ) (hq : q ≠ 0) :
+  (cusp_fcn h f) q = (cusp_fcn_0 h f) q :=
+begin
+  rw [cusp_fcn, function.update], split_ifs,
+  { exfalso, exact hq h_1 },
+  { refl },
+end
+
+lemma update_twice :
+  cusp_fcn h f = function.update (cusp_fcn h f) 0 (lim (𝓝[≠] (0:ℂ)) (cusp_fcn h f)) :=
+begin
+  ext1 q, rw function.update, split_ifs,
+  { rw [cusp_fcn, function.update], split_ifs,
+    congr' 1, rw [lim, lim], congr' 1,
+    apply map_congr, apply eventually_eq_nhds_within_of_eq_on,
+    intros r hr, simp at hr,
+    rw function.update, split_ifs, refl,},
+  { refl, },
+end
 
 include hf
 
@@ -144,7 +230,7 @@ begin
   --Thus, if F = cusp_expansion f, we have F(q') = f(L(q')) for q' near q.
   --Since L is differentiable at q, and f is diffble at L(q) [ = z], we conclude
   --that F is differentiable at q.
-  have hF := filter.eventually_eq.fun_comp hL F, dsimp at hF,
+  have hF := eventually_eq.fun_comp hL F, dsimp at hF,
   have : F ∘ QQ ∘ L = f ∘ L,
   { ext1 z, dsimp [F],
     --rw restrict_extend_eq_self',
@@ -153,163 +239,82 @@ begin
   have : z = L(q),
   { have hL2 : (L ∘ QQ) =ᶠ[𝓝 z] (id : ℂ → ℂ),
     { exact (qdiff.has_strict_fderiv_at_equiv diff_ne).eventually_left_inverse },
-    replace hL2 := filter.eventually_eq.eq_of_nhds hL2, dsimp at hL2,
+    replace hL2 := eventually_eq.eq_of_nhds hL2, dsimp at hL2,
     rw hL2, },
   rw this at hol_z,
   exact (differentiable_at.comp q hol_z diff_L).congr_of_eventually_eq hF.symm,
 end
 
-lemma diff_on_region (A : ℝ) (hol_f : differentiable_on ℂ f { z:ℂ | A < im z }) :
-  differentiable_on ℂ (cusp_fcn h f) {q:ℂ | q ≠ 0 ∧ abs q < real.exp (-2 * π * A / h)} :=
+lemma F_diff_near_zero (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
+  ∀ᶠ (q : ℂ) in 𝓝[≠] 0, differentiable_at ℂ (cusp_fcn h f) q :=
 begin
-  intros q hq,
-  apply differentiable_at.differentiable_within_at,
-  let z := Z h q, have : Q h z = q := by apply QZ_eq_id _ _ hq.1, rw ←this,
-  have hz : A < im z,
-  { have hq_abs := hq.2,
-    have hh : (0:ℝ) < h := h.2,
-    rw [←this, abs_Q_eq, real.exp_lt_exp, div_lt_div_iff hh hh,
-      mul_lt_mul_right hh, mul_lt_mul_left_of_neg] at hq_abs,
-    exact hq_abs, simp [real.pi_pos], },
-  apply cusp_fcn_diff_at _ _ hf,
-  apply differentiable_within_at.differentiable_at (hol_f z hz),
-  exact is_open.mem_nhds (continuous.is_open_preimage continuous_im _ is_open_Ioi) hz,
+  refine ((Z_tendsto h).eventually h_hol).mp _,
+  apply eventually_nhds_within_of_forall, intros q hq h_diff,
+  rw ←(QZ_eq_id _ _ hq), exact cusp_fcn_diff_at _ _ hf _ h_diff,
 end
 
 end holo_on_C
 
 section holo_at_inf_C
 
-def at_I_inf : filter ℂ := filter.at_top.comap im
-
-variables (h : ℝ_pos) (f : ℂ → ℂ) (hf : ∀ (w : ℂ), f(w + h) = f(w)) (A : ℝ) (C : ℝ)
+variables (h : ℝ_pos) (f : ℂ → ℂ) (hf : ∀ (w : ℂ), f(w + h) = f(w))
 include hf
 
--- lemma F_bound' (h_bd : asymptotics.is_O f (1 : ℂ → ℂ) at_I_inf) : ∃ (R : ℝ_pos),
---   bdd_above (norm ∘ (cusp_fcn h f) '' ( { q : ℂ |  abs q < real.exp (-2 * π * R / h) } \ {0} )) :=
--- begin
---   rw bdd_above_def,
---   use C, intros y hy, cases hy with q hq,
---   simp only [set.mem_diff, set.mem_set_of_eq, set.mem_singleton_iff,
---     function.comp_app, norm_eq_abs] at hq,
---   rw ←hq.2, replace hq := hq.1,
---   let z := Z h q,
---   have hz : Q h z = q := by { apply QZ_eq_id , exact hq.2 },
---   have hz2 : A < im z,
---   { rw [←hz, abs_Q_eq, real.exp_lt_exp, div_lt_div_right] at hq,
---     swap, exact h.2,
---     rw mul_lt_mul_left_of_neg at hq, exact hq.1, simp [real.pi_pos], },
---   convert h_bd z hz2.le,
---   rw [←hz, eq_cusp_fcn h f hf z],
--- end
-
-
-lemma F_bound (h_bd : ∀ z:ℂ, A ≤ im z → abs (f z) ≤ C) :
-  bdd_above (norm ∘ (cusp_fcn h f) '' ( { q : ℂ |  abs q < real.exp (-2 * π * A / h) } \ {0} )) :=
+lemma F_bound (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf') : is_O (cusp_fcn h f) (1 : ℂ → ℂ) (𝓝[≠] 0) :=
 begin
-  rw bdd_above_def,
-  use C, intros y hy, cases hy with q hq,
-  simp only [set.mem_diff, set.mem_set_of_eq, set.mem_singleton_iff,
-    function.comp_app, norm_eq_abs] at hq,
-  rw ←hq.2, replace hq := hq.1,
-  let z := Z h q,
-  have hz : Q h z = q := by { apply QZ_eq_id , exact hq.2 },
-  have hz2 : A < im z,
-  { rw [←hz, abs_Q_eq, real.exp_lt_exp, div_lt_div_right] at hq,
-    swap, exact h.2,
-    rw mul_lt_mul_left_of_neg at hq, exact hq.1, simp [real.pi_pos], },
-  convert h_bd z hz2.le,
-  rw [←hz, eq_cusp_fcn h f hf z],
+  refine is_O.congr' _ (by refl) (h_bd.comp_tendsto $ Z_tendsto h),
+  apply eventually_nhds_within_of_forall, intros q hq,
+  rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl,
 end
 
-lemma F_hol_at_zero (h_bd : ∀ z:ℂ, A ≤ im z → abs (f z) ≤ C)
-(h_hol : differentiable_on ℂ f { z:ℂ | A < im z }) :
-  differentiable_on ℂ (cusp_fcn h f) {q:ℂ | abs q < real.exp (-2 * π * A / h)} :=
+lemma F_diff_at_zero (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf')
+  (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
+  differentiable_at ℂ (cusp_fcn h f) 0 :=
 begin
-  let S := {q:ℂ | abs q < real.exp (-2 * π * A / h)},
-  have h_nhd : S ∈ 𝓝 (0:ℂ),
-  { apply is_open.mem_nhds,
-    have : S = abs⁻¹' (set.Iio (real.exp (-2 * π * A / h))) := by {ext, simp},
-    rw this,
-    exact continuous.is_open_preimage complex.continuous_abs _ is_open_Iio,
-    rw [set.mem_set_of_eq, complex.abs_zero], apply real.exp_pos, },
-  have hF_bd := F_bound h f hf _ _ h_bd,
-  have hF_diff := diff_on_region h f hf _ h_hol,
-  have hF_diff' : differentiable_on ℂ (cusp_fcn h f) (S \ {(0:ℂ)}),
-  { convert hF_diff, ext q,
-    simp only [set.mem_diff, set.mem_set_of_eq, neg_mul, set.mem_singleton_iff, ne.def], tauto, },
-  have t := differentiable_on_update_lim_of_bdd_above h_nhd hF_diff' hF_bd,
-  convert t,
-  -- The rest is just checking that "function.update" doesn't break anything
-  ext1 q, rw function.update, split_ifs,
-  { rw [cusp_fcn, function.update], split_ifs,
-    congr' 1,
-    rw [lim,lim],
-    congr' 1,
-    apply filter.map_congr, apply eventually_eq_nhds_within_of_eq_on,
-    intros r hr, simp at hr,
-    rw function.update, split_ifs, refl,},
-  { refl, },
+  have t1 := F_diff_near_zero h f hf h_hol,
+  obtain ⟨c, t2⟩ := (F_bound _ _ hf h_bd).bound,
+  have t := t1.and t2,
+  simp only [norm_eq_abs, pi.one_apply, complex.abs_one, mul_one] at t,
+  obtain ⟨S, hS1, hS2, hS3⟩ := eventually_nhds_iff.mp (eventually_nhds_within_iff.mp t),
+  have h_nhd := is_open.mem_nhds hS2 hS3,
+  have h_diff : differentiable_on ℂ (cusp_fcn h f) (S \ {0}),
+  { intros x hx, apply differentiable_at.differentiable_within_at,
+    exact (hS1 x ((set.mem_diff _).mp hx).1  ((set.mem_diff _).mp hx).2).1, },
+  have hF_bd : bdd_above (norm ∘ (cusp_fcn h f) '' (S \ {0})),
+  { use c, rw mem_upper_bounds, simp, intros y q hq hq2 hy, rw ←hy, exact (hS1 q hq hq2).2 },
+  have := differentiable_on_update_lim_of_bdd_above h_nhd h_diff hF_bd,
+  rw ←update_twice at this,
+  exact this.differentiable_at h_nhd,
 end
 
-lemma cusp_fcn_zero_of_zero_at_inf (h_hol : differentiable_on ℂ f { z:ℂ | A < im z })
-  (h_zero : ∀ ε : ℝ, 0 < ε → ∃ B : ℝ, ∀ z : ℂ, B ≤ im z → abs (f z) ≤ ε) : cusp_fcn h f 0 = 0 :=
+lemma cusp_fcn_zero_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
+  (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) : cusp_fcn h f 0 = 0 :=
 begin
   rw [cusp_fcn, function.update], split_ifs, swap, tauto,
-  suffices : filter.tendsto (cusp_fcn_0 h f) (𝓝[{0}ᶜ] 0) (𝓝 (0:ℂ)),
-  { exact filter.tendsto.lim_eq this },
-  rw metric.tendsto_nhds_within_nhds,
-  simp_rw [dist_eq_norm, sub_zero],
-  intros ε hε,
-  specialize h_zero (ε/2) (by linarith),
-  cases h_zero with B h_zero,
-  use real.exp(-2 * π * B / h), split, apply real.exp_pos,
-  intros q hq hq2,
-  let z := Z h q,
-  have : B ≤ im z,
-  { rw [im_Z_eq h q hq, neg_div,neg_mul, le_neg,
-      div_mul_eq_mul_div, div_le_iff real.two_pi_pos],
-    ring_nf,
-    rw [norm_eq_abs] at hq2,
-    replace hq2 := (real.log_lt_log (complex.abs_pos.mpr hq) hq2).le,
-    rw real.log_exp at hq2,
-    rw le_div_iff' _ at hq2, swap, exact h.2, ring_nf at hq2,
-    have: 2 * π * B = 2 * B * π := by ring, rw this, exact hq2 },
-  replace h_zero := h_zero z this,
-  have : cusp_fcn_0 h f q = f z,
-  { rw eq_cusp_fcn h f hf,
-    rw QZ_eq_id h q hq,
-    rw [cusp_fcn, function.update], split_ifs,
-    { exfalso, exact hq h_2,},
-    { refl, } },
-  rw this,
-  refine lt_of_le_of_lt h_zero _,
-  linarith,
+  suffices : tendsto (cusp_fcn_0 h f) (𝓝[{0}ᶜ] 0) (𝓝 (0:ℂ)),
+  { exact tendsto.lim_eq this },
+  have : is_o (cusp_fcn h f) 1 (𝓝[≠] 0),
+  { refine is_o.congr' _ (by refl) (h_bd.comp_tendsto $ Z_tendsto h),
+    apply eventually_nhds_within_of_forall, intros q hq,
+    rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl, },
+  have : is_o (cusp_fcn_0 h f) 1 (𝓝[≠] 0),
+  { refine is_o.congr' _ (by refl) this,
+    apply eventually_nhds_within_of_forall, apply cusp_fcn_eq_of_nonzero, },
+  simpa using this.tendsto_div_nhds_zero,
 end
 
-lemma bound_holo_fcn (g : ℂ → ℂ) (hg : differentiable_at ℂ g 0) (hg' : g 0 = 0):
-  asymptotics.is_O g id (𝓝 0) :=
+/-- Main theorem of this file: if `f` is periodic, holomorphic near `I∞`, and tends to zero
+at `I∞`, then in fact it tends to zero exponentially fast. -/
+theorem exp_decay_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
+  (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
+  is_O f (λ z:ℂ, real.exp (-2 * π * im z / h)) at_I_inf' :=
 begin
-  replace hg := hg.has_deriv_at.is_O_sub,
-  simp_rw [hg', sub_zero, coe_coe] at *, exact hg,
+  have F0 := cusp_fcn_zero_of_zero_at_inf _ _ hf h_bd h_hol,
+  have Fdiff := F_diff_at_zero _ _ hf h_bd.is_O h_hol,
+  have : f = λ z:ℂ, (cusp_fcn h f) (Q h z) := by { ext1 z, apply eq_cusp_fcn _ _ hf,},
+  conv begin congr, rw this, skip, funext, rw [←(abs_Q_eq h), ←norm_eq_abs], end,
+  apply is_O.norm_right, exact (bound_holo_fcn _ Fdiff F0).comp_tendsto (Q_tendsto h),
 end
-
--- lemma exp_decay_of_zero_at_inf (h_hol : differentiable_on ℂ f { z:ℂ | A < im z })
---   (h_zero : ∀ ε : ℝ, 0 < ε → ∃ B : ℝ, ∀ z : ℂ, B ≤ im z  → abs (f z) ≤ ε) :
---   ∃ D E : ℝ, (0 < E) ∧ (∀ z : ℂ, D ≤ im z → abs (f z) ≤ E * real.exp (-2 * π * im z / h) ) :=
--- begin
---   --First show boundedness at inf
---   obtain ⟨A2, h_bd⟩ := h_zero (1 : ℝ) zero_lt_one,
---   let A' := max A A2,
---   have h_hol' : differentiable_on ℂ f { z:ℂ | A' < im z },
---   { apply differentiable_on.mono h_hol,
---     simp only [max_lt_iff, set.set_of_subset_set_of, and_imp], intro a, tauto },
---   have h_bd' : ∀ (z : ℂ), A' ≤ z.im → abs (f z) ≤ 1,
---   { intros z hz, apply h_bd, exact le_trans (le_max_right A A2) hz, },
---   have hF_hol := F_hol_at_zero h f hf _ _ h_bd' h_hol',
---   use (A' + 1),
---   sorry
--- end
 
 end holo_at_inf_C
 
