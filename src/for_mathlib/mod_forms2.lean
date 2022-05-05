@@ -93,6 +93,27 @@ begin
  simp,
 end
 
+/- FIXME FIXME -- this is hideous, I cannot find a way of deducing this from the above;
+lean refuses to identify the two 1's. -/
+lemma slash_k_mul_one_SL2 (k : ℤ) (f : ℍ → ℂ) : (f ∣[k] (1 : SL(2, ℤ))) = f :=
+begin
+  simp_rw slash_k,
+  simp only [coe_coe, matrix.special_linear_group.coe_GL_pos_coe_GL_coe_matrix,
+    matrix.special_linear_group.coe_matrix_coe, matrix.special_linear_group.coe_one,
+    int.coe_cast_ring_hom, matrix.map_one, int.cast_eq_zero, int.cast_one,
+    matrix.det_one, of_real_one, one_zpow₀, mul_one, matrix.one_apply_ne, ne.def,
+    fin.one_eq_zero_iff, nat.one_ne_zero, not_false_iff, of_real_zero, zero_mul,
+    matrix.one_apply_eq, zero_add, inv_one],
+  ext1, congr' 1, ext1,
+  rw [upper_half_plane.coe_smul],
+  simp only [upper_half_plane.num, upper_half_plane.denom, coe_coe,
+    matrix.special_linear_group.coe_GL_pos_coe_GL_coe_matrix,
+    matrix.special_linear_group.coe_matrix_coe, matrix.special_linear_group.coe_one,
+    int.coe_cast_ring_hom, matrix.map_one, int.cast_eq_zero, int.cast_one, matrix.one_apply_eq,
+    of_real_one, one_mul, matrix.one_apply_ne, ne.def, fin.zero_eq_one_iff, nat.one_ne_zero,
+    not_false_iff, of_real_zero, add_zero, fin.one_eq_zero_iff, zero_mul, zero_add, div_one],
+end
+
 lemma smul_slash_k (k : ℤ) (A : GL(2, ℝ)⁺) (f : ℍ → ℂ ) (c  : ℂ) : (c • f) ∣[k] A = c • (f ∣[k] A):=
 begin
   ext1,

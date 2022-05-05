@@ -2,6 +2,9 @@ import for_mathlib.mod_forms2
 import mod_forms.holomorphic_functions
 import analysis.complex.removable_singularity
 import mod_forms.upper_half_plane_manifold
+import group_theory.index
+import mod_forms.Eisen_is_holo
+
 /-!
 # q-expansions of periodic functions
 
@@ -21,6 +24,8 @@ open_locale real topological_space manifold filter
 noncomputable theory
 
 abbreviation ℝ_pos := {u : ℝ // 0 < u}
+
+instance : has_one ℝ_pos := by { use 1, exact zero_lt_one, }
 
 /-- Function-theoretic lemma, maybe move this elsewhere? -/
 lemma bound_holo_fcn (g : ℂ → ℂ) (hg : differentiable_at ℂ g 0) (hg' : g 0 = 0):
@@ -315,121 +320,146 @@ end
 
 end holo_at_inf_C
 
+/-! Now we prove corresponding results about modular forms. -/
 
-/-! Now we prove corresponding results about functions `ℍ → ℂ`. There is some tedious
-book-keeping involved here. -/
-section periodic_on_H
-
-local notation `ℍ` := (⟨upper_half_plane.upper_half_space,
-  upper_half_plane.upper_half_plane_is_open⟩ : open_subs)
-
-def punc_disc_sset := {z : ℂ | z.abs <  1 ∧ z ≠ 0}
-
-lemma punc_disc_is_open : is_open punc_disc_sset :=
-begin
-  have : punc_disc_sset = complex.abs⁻¹' (set.Ioo 0 1),
-  { ext, simp only [set.mem_preimage, set.mem_Iio],
-    split,
-    { intro hx, split, rw complex.abs_pos, exact hx.2, exact hx.1 },
-    { intro hx, split, exact hx.2, rw ←complex.abs_pos, exact hx.1 }, },
-  rw this, exact is_open.preimage complex.continuous_abs is_open_Ioo,
-end
-
---local notation `𝔻` := ( ⟨ unit_disc_sset, unit_disc_is_open ⟩ : open_subs)
-local notation `𝔻⋆`:= ( ⟨ punc_disc_sset, punc_disc_is_open ⟩ : open_subs)
+local notation `ℍ` := upper_half_plane
+local notation `SL(` n `, ` R `)`:= matrix.special_linear_group (fin n) R
 
 instance : has_vadd ℝ ℍ :=
 begin
-  split, intros h z, refine ⟨z.1 + h, _⟩, dsimp at *,
-  suffices : 0 < im (z.1 + h), { exact this },
-  rw [add_im, of_real_im, add_zero], exact z.2,
+  split, intros h z, refine ⟨z + h, _⟩, dsimp at *,
+  suffices : 0 < complex.im (z + h), { exact this },
+  rw [complex.add_im, complex.of_real_im, add_zero], exact z.2,
 end
 
-variables (h : ℝ_pos) (f : ℍ → ℂ) (hf : ∀ (w : ℍ), f(h.1 +ᵥ w) = f(w))
+/-! Tedious checks that notions of holomorphic, bounded, etc are compatible with extension-by-0--/
 
-lemma z_in_H (q : 𝔻⋆) : Z h ↑q ∈ ℍ.1 :=
+section modform_equivs
+
+variables {f : ℍ → ℂ} {k : ℤ}
+
+lemma modform_bound_aux (C : ℝ) (g : ℂ → ℂ) (hc : 0 ≤ C)
+  (h_bd : is_O_with C f (λ z:ℍ, g z) at_I_inf) : is_O_with C (extend_by_zero f) g at_I_inf' :=
 begin
-  dsimp only [upper_half_plane.upper_half_space],
-  simp only [set.mem_set_of_eq],
-  rw im_Z_eq h q q.2.2,
-  apply mul_pos_of_neg_of_neg,
-  { exact div_neg_of_neg_of_pos (neg_lt_zero.mpr h.2) real.two_pi_pos, },
-  rw real.log_neg_iff, exact q.2.1,
-  rw complex.abs_pos, exact q.2.2,
+  rw is_O_with_iff at h_bd ⊢,
+  apply eventually_of_mem,
+  show {z : ℂ | ∥extend_by_zero f z∥ ≤ C * ∥g z∥} ∈ at_I_inf',
+  { rw at_I_inf'_mem,
+    rw [at_I_inf, eventually_iff_exists_mem] at h_bd, obtain ⟨v, hv, h_bd⟩ := h_bd,
+    rw [mem_comap', mem_at_top_sets] at hv, cases hv with a hv, use a,
+   intros z hz, specialize hv (im z) (hz.le), dsimp at hv,
+   rw extend_by_zero, dsimp, split_ifs,
+   swap, { rw complex.abs_zero, refine mul_nonneg hc _, apply complex.abs_nonneg, },
+   specialize h_bd ⟨z, h⟩,
+   specialize h_bd (hv _), refl, exact h_bd },
+  { dsimp, intros x hx, linarith, },
 end
 
-include hf
+lemma modform_bounded (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+  is_O (extend_by_zero f) (1 : ℂ → ℂ) at_I_inf' :=
+begin
+  have bd := h_mod.infinity (1 : SL(2, ℤ)),
+  have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
+  rw [this, is_bound_at_inf] at bd,
+  obtain ⟨c, c_pos, bd⟩ := bd.exists_nonneg,
+  exact (modform_bound_aux c 1 c_pos bd).is_O,
+end
 
-lemma extend_periodic (w : ℂ) : (extend_by_zero f)(w + h) = (extend_by_zero f)(w) :=
+lemma cuspform_vanish_infty (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) :
+  is_o (extend_by_zero f) (1 : ℂ → ℂ) at_I_inf' :=
+begin
+  have bd := h_mod.infinity (1 : SL(2, ℤ)),
+  have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
+  rw [this, is_zero_at_inf] at bd,
+  have : is_o f (1 : ℍ → ℂ) at_I_inf := by { apply is_o_of_tendsto, simp, simpa using bd },
+  rw is_o at *, exact (λ c hc, modform_bound_aux c 1 hc.le (this hc)),
+end
+
+lemma modform_periodic (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) (w : ℂ) :
+  (extend_by_zero f)(w + 1) = (extend_by_zero f)(w) :=
 begin
   by_cases hw : 0 < im w,
   { rw (extend_by_zero_eq_of_mem f w hw),
-    have : 0 < im (w + ↑h), {rw [add_im, coe_coe, of_real_im, add_zero], exact hw },
-    rw (extend_by_zero_eq_of_mem f _ this), exact hf ⟨ w, hw ⟩, },
+    have : 0 < im (w + 1), {rw [add_im, one_im, add_zero], exact hw },
+    rw (extend_by_zero_eq_of_mem f _ this),
+    have t := Eisenstein_series.mod_form_periodic k f h_mod.transf ⟨ w, hw ⟩ 1,
+    rw Eisenstein_series.smul_expl at t, convert t, simp },
   { have : extend_by_zero f w = 0,
     { rw extend_by_zero, simp, intro bad, exfalso, exact hw bad },
     rw this,
-    have : extend_by_zero f (w + ↑h) = 0,
+    have : extend_by_zero f (w + 1) = 0,
     { rw extend_by_zero, simp, intro bad, exfalso,
-      have : 0 < im (w + h) := by tauto,
-      rw [add_im, coe_coe, of_real_im, add_zero] at this,
+      have : 0 < im (w + 1) := by tauto,
+      rw [add_im, one_im, add_zero] at this,
       exact hw this, },
     exact this }
 end
 
-def cusp_fcn_H : ℂ → ℂ := cusp_fcn h (extend_by_zero f)
-
-lemma eq_cusp_fcn_H (z : ℍ) : f z = (cusp_fcn_H h f hf) (Q h z) :=
+lemma modform_hol (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) (z : ℂ) (hz : 0 < im z):
+  differentiable_at ℂ (extend_by_zero f) z :=
 begin
-  have t := eq_cusp_fcn h (extend_by_zero f) (extend_periodic h f hf) z,
-  rw cusp_fcn_H, dsimp only, convert t,
+  have hf_hol := mdiff_to_holo (hol_extn f) h_mod.hol,
+  rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
+  exact (hf_hol z hz).differentiable_at ((is_open_iff_mem_nhds.mp upper_half_plane_is_open) z hz),
+end
+
+lemma modform_hol_infty (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+  ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ (extend_by_zero f) z :=
+begin
+  refine eventually_of_mem (_ : upper_half_space ∈ at_I_inf') _,
+  { rw at_I_inf'_mem, use 0, tauto, },
+  { intros x hx, exact modform_hol h_mod x hx },
+end
+
+end modform_equivs
+
+section modforms
+
+def unit_disc_sset := {z : ℂ | z.abs <  1}
+
+lemma unit_disc_is_open : is_open unit_disc_sset := is_open_Iio.preimage complex.continuous_abs
+
+local notation `𝔻` := ( ⟨ unit_disc_sset, unit_disc_is_open ⟩ : open_subs)
+
+variables (f : ℍ → ℂ) (k : ℤ)
+
+--lemma q_in_D (z : ℍ) : abs (Q 1 z) < 1 := by { convert (abs_q_lt_iff 1 0 z).mpr z.2, simp }
+
+lemma z_in_H (q : 𝔻) (hq : (q:ℂ) ≠ 0) : 0 < im (Z 1 q) :=
+begin
+  rw im_Z_eq 1 q hq,
+  apply mul_pos_of_neg_of_neg,
+  { exact div_neg_of_neg_of_pos (neg_lt_zero.mpr zero_lt_one) real.two_pi_pos },
+  rw real.log_neg_iff, exact q.2,
+  rw complex.abs_pos, exact hq,
+end
+
+def cusp_fcn_H : ℂ → ℂ := (cusp_fcn 1 $ extend_by_zero f)
+
+lemma eq_cusp_fcn_H (z : ℍ) (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+  f z = (cusp_fcn_H f) (Q 1 z):=
+begin
+  have t := eq_cusp_fcn 1 (extend_by_zero f) (modform_periodic h_mod) z,
+  rw cusp_fcn_H, convert t,
   rw extend_by_zero_eq_of_mem f _ _, { simp }, { cases z, tauto, },
 end
 
-lemma cusp_fcn_diff_at_H (hf_hol : is_holomorphic_on f) (q : 𝔻⋆) :
-  differentiable_at ℂ (cusp_fcn_H h f hf) q :=
+lemma cusp_fcn_diff (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f)
+  (q : 𝔻) : differentiable_at ℂ (cusp_fcn_H f) q :=
 begin
-  let z := Z h q,
-  have hz := z_in_H h q,
-  have : (Q h z : ℂ) = q := QZ_eq_id h q q.2.2,
-  rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
-  replace hf_hol := hf_hol z hz,
-  dsimp at hf_hol,
-  replace hf_hol := hf_hol.differentiable_at
-    ((is_open_iff_mem_nhds.mp ℍ.2) z hz),
-  have t := (cusp_fcn_diff_at h (extend_by_zero f) (extend_periodic h f hf)) z hf_hol,
-  rw this at t,
-  rw cusp_fcn_H, dsimp,
-  exact t,
+  by_cases hq : (q:ℂ) = 0,
+  { rw hq, exact F_diff_at_zero 1 (extend_by_zero f) (modform_periodic h_mod)
+    (modform_bounded h_mod) (modform_hol_infty h_mod) },
+  { have t := cusp_fcn_diff_at 1 (extend_by_zero f) (modform_periodic h_mod) _
+    (modform_hol h_mod _ $ z_in_H q hq),
+    rw (QZ_eq_id 1 q hq) at t, rw cusp_fcn_H, exact t },
 end
 
--- lemma cusp_fcn_bound_near_zero (hf_hol : is_holomorphic_on f) (hf_bd : is_bound_at_infinity f) :
---   differentiable_at ℂ (cusp_fcn_H h f hf) 0 :=
--- begin
---   obtain ⟨M, A, hMA⟩ := hf_bd,
---   let F := cusp_fcn_H h f hf,
---   let a := real.exp (- 2 * π * A ),
---   let s := { q : ℂ | (abs q < a) ∧ (abs q < 1) },
---   have s_nhd : s ∈ 𝓝 (0:ℂ),
---   { apply is_open.mem_nhds,
---     sorry, simp only [set.mem_set_of_eq, complex.abs_zero, zero_lt_one, and_true],
---     apply real.exp_pos },
---   have F_bd_1 : ∀ (q : ℂ), (q ∈ s) → abs( F(q) ) ≤ M,
---   {
---     sorry,
---   },
---   have F_diff : differentiable_on ℂ F (s \ {0}),
---   {
---     sorry,
---   },
---   have F_bd_2 : bdd_above (norm ∘ F '' (s \ {0})),
---   {
---     sorry,
---   },
---   have := differentiable_on_update_lim_of_bdd_above s_nhd F_diff F_bd_2,
---   convert this.differentiable_at s_nhd,
---   ext1 q, rw function.update, split_ifs,
---   rw cusp_fcn_H,
--- end
+lemma cusp_fcn_vanish (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) : cusp_fcn_H f 0 = 0 :=
+begin
+  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight ⊤ k f h_mod,
+  exact cusp_fcn_zero_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
+    (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod'),
+end
 
-end periodic_on_H
+end modforms
