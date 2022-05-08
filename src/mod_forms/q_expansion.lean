@@ -419,7 +419,7 @@ def unit_disc_sset := {z : ℂ | z.abs <  1}
 
 lemma unit_disc_is_open : is_open unit_disc_sset := is_open_Iio.preimage complex.continuous_abs
 
-local notation `𝔻` := ( ⟨ unit_disc_sset, unit_disc_is_open ⟩ : open_subs)
+local notation `𝔻` := ( ⟨unit_disc_sset, unit_disc_is_open⟩ : topological_space.opens ℂ)
 
 variables (f : ℍ → ℂ) (k : ℤ)
 
@@ -457,7 +457,7 @@ end
 
 lemma cusp_fcn_vanish (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) : cusp_fcn_H f 0 = 0 :=
 begin
-  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight ⊤ k f h_mod,
+  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight h_mod,
   exact cusp_fcn_zero_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod'),
 end
