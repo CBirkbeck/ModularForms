@@ -2,6 +2,7 @@ import for_mathlib.mod_forms2
 import mod_forms.holomorphic_functions
 import analysis.complex.removable_singularity
 import mod_forms.upper_half_plane_manifold
+import mod_forms.modular
 import group_theory.index
 import mod_forms.Eisen_is_holo
 
@@ -436,7 +437,7 @@ end
 
 def cusp_fcn_H : ℂ → ℂ := (cusp_fcn 1 $ extend_by_zero f)
 
-lemma eq_cusp_fcn_H (z : ℍ) (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+lemma eq_cusp_fcn_H {f k} (z : ℍ) (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
   f z = (cusp_fcn_H f) (Q 1 z):=
 begin
   have t := eq_cusp_fcn 1 (extend_by_zero f) (modform_periodic h_mod) z,
@@ -444,7 +445,7 @@ begin
   rw extend_by_zero_eq_of_mem f _ _, { simp }, { cases z, tauto, },
 end
 
-lemma cusp_fcn_diff (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f)
+lemma cusp_fcn_diff {f k} (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f)
   (q : 𝔻) : differentiable_at ℂ (cusp_fcn_H f) q :=
 begin
   by_cases hq : (q:ℂ) = 0,
@@ -455,11 +456,85 @@ begin
     rw (QZ_eq_id 1 q hq) at t, rw cusp_fcn_H, exact t },
 end
 
-lemma cusp_fcn_vanish (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) : cusp_fcn_H f 0 = 0 :=
+lemma cusp_fcn_vanish {f k} (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) : cusp_fcn_H f 0 = 0 :=
 begin
   have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight h_mod,
   exact cusp_fcn_zero_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod'),
 end
 
+lemma exp_decay_of_cuspform {f k} (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) :
+ is_O f (λ z:ℍ, real.exp (-2 * π * im z)) at_I_inf :=
+begin
+  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight h_mod,
+  obtain ⟨C, hC⟩ := (exp_decay_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
+    (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod')).is_O_with,
+  rw is_O, use C,
+  rw [is_O_with_iff, eventually_iff] at hC ⊢,
+  rw at_I_inf'_mem at hC, rw at_I_inf_mem,
+  obtain ⟨A, hC⟩ := hC, use A + 1, intros z hz, specialize hC z,
+  have : A < im z := by linarith, specialize hC this, dsimp at hC ⊢,
+  rw [extend_by_zero_eq_of_mem] at hC, swap, exact z.2,
+  have : ((1 : ℝ_pos) : ℝ) = (1 : ℝ) := by refl,
+  rw this at hC, simp only [subtype.coe_eta, div_one] at hC, exact hC,
+end
+
 end modforms
+
+section petersson
+open_locale modular_forms
+
+/- Bound on abs(f z) for large values of z -/
+lemma pet_bounded_large {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) :
+  ∃ (A C : ℝ), ∀ (z : ℍ), (A ≤ im z) → (pet_self f k) z ≤ C :=
+begin
+  -- first get bound for large values of im z
+  have h1 := exp_decay_of_cuspform hf,
+  have : is_O (λ (z : ℍ), real.exp ((-2) * π * z.im)) (λ (z : ℍ), 1 / (z.im) ^ ((k : ℝ) / 2)) at_I_inf,
+  {
+    apply is_o.is_O, apply is_o_of_tendsto,
+    { intros x hx, exfalso,
+      contrapose! hx, apply one_div_ne_zero,
+      refine (real.rpow_pos_of_pos x.2 _).ne', },
+    rw [at_I_inf],
+    let F := λ (y : ℝ), real.exp ((-2) * π * y) / (1 / y ^ ( (k:ℝ) / 2)),
+    apply (@tendsto_comap'_iff _ _ _ F _ _ _ _).mpr,
+    { have := tendsto_rpow_mul_exp_neg_mul_at_top_nhds_0 ((k : ℝ) / 2) (2 * π) real.two_pi_pos,
+      refine tendsto.congr' _ this, apply eventually_of_mem (Ioi_mem_at_top (0:ℝ)),
+      intros y hy, dsimp [F], rw [div_div_eq_mul_div, div_one, mul_comm], congr' 1,
+      simp only [neg_mul] },
+    { convert Ioi_mem_at_top (0:ℝ), ext1, rw set.mem_range,
+      split, { rintro ⟨y, hy⟩, rw ←hy, exact y.2 },
+      { intro h, use x * I,
+        { rw mul_I_im, exact h },
+        { rw upper_half_plane.im,
+          simp only [subtype.coe_mk, mul_im, of_real_re, I_im, mul_one,
+            I_re, mul_zero, add_zero]} } } },
+  obtain ⟨C1, h1'⟩ := (h1.trans this).bound,
+  rw [eventually_iff, at_I_inf_mem] at h1', cases h1' with A h1',
+  dsimp at h1', refine ⟨A, C1 ^ 2, _⟩,
+  intros z hz, specialize h1' z hz, rw pet_self, dsimp,
+  have : (im z) ^ k = ((im z) ^ ((k : ℝ) / 2)) ^ 2,
+  { rw [←real.rpow_int_cast, ←real.rpow_nat_cast, ←real.rpow_mul],
+    swap, exact z.2.le, congr' 1, simp, },
+  rw [←upper_half_plane.coe_im, this, ←mul_pow],
+  apply sq_le_sq,
+  have e : 0 < z.im ^ ((k : ℝ) / 2) := by { apply real.rpow_pos_of_pos, exact z.2, },
+  have : abs (f z) * (im z) ^ ((k : ℝ) / 2) ≤ C1,
+  { rw [div_eq_inv_mul, mul_one, norm_inv, mul_comm] at h1',
+    have h1'' := mul_le_mul_of_nonneg_right h1' _, refine le_trans h1'' _,
+    simp,
+    { rw real.norm_eq_abs, rw _root_.abs_of_nonneg,
+      swap, apply real.rpow_nonneg_of_nonneg, exact z.2.le,
+      conv begin to_lhs, congr, rw mul_comm, end, rw mul_assoc,
+      suffices : (z.im ^ ((k : ℝ) / 2))⁻¹ * z.im ^ ((k : ℝ) / 2) = 1,
+      { rw this, simp, },
+      apply inv_mul_cancel, exact e.ne' },
+    exact e.le, },
+  apply abs_le_abs, { exact this, },
+  have aux : -(abs (f z) * ↑z.im ^ ((k:ℝ) / 2)) ≤ abs (f z) * ↑z.im ^ ((k:ℝ) / 2),
+  { simp, apply mul_nonneg, apply complex.abs_nonneg, exact e.le },
+  exact le_trans aux this,
+end
+
+end petersson
