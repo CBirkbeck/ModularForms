@@ -3,7 +3,7 @@ import analysis.analytic.basic
 import analysis.calculus.fderiv
 import analysis.calculus.fderiv_analytic
 import analysis.complex.cauchy_integral
-import order.bounds
+import data.nat.enat
 noncomputable theory
 
 local attribute [instance] classical.prop_decidable
@@ -11,15 +11,17 @@ local attribute [instance] classical.prop_decidable
 def add_zeros (f:ℂ → ℂ) (x:ℂ) (k: ℕ) : ℂ → ℂ :=
 λz, f(z)*(z-x)^k
 
-def meromorphic_at_integer (f : ℂ → ℂ ) (x : ℂ) (k:ℕ) :=
+def meromorphic_at_integer (f : ℂ → ℂ ) (x : ℂ) (k:ℕ) : Prop :=
 analytic_at ℂ (add_zeros f x k) x
 
-def meromorphic_at (f : ℂ → ℂ ) (x : ℂ): Prop :=
+def meromorphic_at  (f : ℂ → ℂ ) (x : ℂ) : Prop :=
 ∃ (k : ℕ), meromorphic_at_integer f x k
 
-def pole_order_at (f: ℂ → ℂ) (x : ℂ) : ℕ :=
-if hk: ∃ k:ℕ, meromorphic_at_integer f x k ∧ ¬ meromorphic_at_integer f x (k-1)
-  then classical.some hk else 0
+
+
+def pole_order_at  (f:ℂ → ℂ) (x:ℂ) (hf: meromorphic_at f x): ℕ :=
+if hk:  ∃ (k : ℕ), k ≤ classical.some hf ∧   meromorphic_at_integer f x k ∧  ¬ meromorphic_at_integer f x (k-1)
+then classical.some hk else 0
 
 
 def meromorphic_around (f : ℂ → ℂ ) (x : ℂ) :=
@@ -36,10 +38,13 @@ begin
   sorry,
   have h2 : analytic_at ℂ (add_zeros g x K) x,
   sorry,
-  have h3 : analytic_at ℂ (add_zeros (f+g) x K) x,
-  sorry,
-  exact analytic_at.add ℂ h1 h2,
+  rw [meromorphic_at] ,
   use K,
+  rw meromorphic_at_integer,
+  convert analytic_at.add h1 h2,
+  simp_rw add_zeros,
+  simp,
+  ring_nf,
 end
 
 def recip (f:ℂ → ℂ) :=
