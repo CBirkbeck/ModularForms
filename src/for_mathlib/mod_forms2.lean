@@ -3,7 +3,7 @@ Copyright (c) 2022 Chris Birkbeck. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Chris Birkbeck
 -/
-import algebra.module.submodule
+import algebra.module.submodule.basic
 import mod_forms.upper_half_plane
 import linear_algebra.general_linear_group
 import linear_algebra.special_linear_group
@@ -65,7 +65,7 @@ begin
   rw [e1, e3],
   ring_nf,
   have aux1 : ∀ (a b c d e : ℂ), (e ^ k)⁻¹ * a ^ (k - 1) * (b ^ k)⁻¹ * c ^ (k - 1) * d =
-    ((b * e) ^ k)⁻¹ * (c * a) ^ (k - 1) * d := by { intros, simp_rw [mul_zpow₀, mul_inv₀], ring, },
+    ((b * e) ^ k)⁻¹ * (c * a) ^ (k - 1) * d := by { intros, simp_rw [mul_zpow₀, mul_inv], ring, },
   simp_rw aux1,
 end
 
@@ -132,7 +132,7 @@ begin
   have h2 : ((((↑ₘA 1 0 : ℝ) : ℂ) * (x : ℂ) + ((↑ₘA 1 1 : ℝ)))^(k1 + k2))⁻¹ =
   ((((↑ₘA 1 0 : ℝ) : ℂ) * (x : ℂ) + ((↑ₘA 1 1 : ℝ)))^k1)⁻¹ *
   ((((↑ₘA 1 0 : ℝ) : ℂ) * (x : ℂ) + ((↑ₘA 1 1 : ℝ)))^k2)⁻¹,
-  { simp_rw ← mul_inv₀,
+  { simp_rw ← mul_inv,
     simp only [coe_coe, inv_inj],
     apply zpow_add₀ (upper_half_plane.denom_ne_zero A x), },
   simp only [coe_coe] at h2,
@@ -424,7 +424,7 @@ begin
   apply_fun (coe : ℝ → ℂ) at this,
   convert this,
   simp only [upper_half_plane.coe_im, of_real_div],
-  rw [div_div_eq_div_mul, mul_conj],
+  rw [div_div, mul_conj],
 end
 
 lemma pet_self_eq (f : ℍ → ℂ) (k : ℤ) (z : ℍ): pet_self f k z = re (pet f f k z) :=

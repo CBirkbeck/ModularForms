@@ -6,17 +6,21 @@ import analysis.complex.cauchy_integral
 import order.bounds
 noncomputable theory
 
+local attribute [instance] classical.prop_decidable
+
 def add_zeros (f:ℂ → ℂ) (x:ℂ) (k: ℕ) : ℂ → ℂ :=
 λz, f(z)*(z-x)^k
 
 def meromorphic_at_integer (f : ℂ → ℂ ) (x : ℂ) (k:ℕ) :=
 analytic_at ℂ (add_zeros f x k) x
 
-def meromorphic_at (f : ℂ → ℂ ) (x : ℂ) :=
+def meromorphic_at (f : ℂ → ℂ ) (x : ℂ): Prop :=
 ∃ (k : ℕ), meromorphic_at_integer f x k
 
-def pole_order_at (f:ℂ → ℂ) (x:ℂ): ℕ :=
-if hk: ∃ k:ℕ, meromorphic_at_integer f x k ∧ ¬ meromorphic_at_integer f x (k-1) then k else 0
+def pole_order_at (f: ℂ → ℂ) (x : ℂ) : ℕ :=
+if hk: ∃ k:ℕ, meromorphic_at_integer f x k ∧ ¬ meromorphic_at_integer f x (k-1)
+  then classical.some hk else 0
+
 
 def meromorphic_around (f : ℂ → ℂ ) (x : ℂ) :=
 ∃ ε > 0,  ∀ z, ∥z-x∥<ε → meromorphic_at f z

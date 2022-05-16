@@ -74,13 +74,12 @@ end
 lemma calc_lem (k: ℤ) (a b c d i1 i2: ℂ) (z : ℍ) (h: c*z+d ≠ 0) :
 ((i1* ((a*z+b)/(c*z+d))+i2)^k)⁻¹=(c*z+d)^k* (((i1 * a + i2 * c) * z + (i1 * b + i2 * d))^k)⁻¹:=
 begin
-  have h1: i1*((a*z+b)/(c*z+d))+i2=(i1*(a*z+b)/(c*z+d)+i2), by {ring  }, rw h1,
-  have h2:  (i1*(a*z+b)/(c*z+d)+i2)=((i1*(a*z+b))/(c*z+d)+i2), by {ring}, rw h2,
-  have h3:=div_add' (i1*(a*z+b)) i2 (c*z+d) h, rw h3, simp [inv_pow], rw div_eq_inv_mul,
-  have h4 : (((c * ↑z + d) ^ k)⁻¹ * (i1 * (a * ↑z + b) + i2 * (c * ↑z + d)) ^ k)⁻¹ =
-  (c * ↑z + d) ^ k * ((i1 * (a * ↑z + b) + i2 * (c * ↑z + d)) ^ k)⁻¹,
-  by {rw ← div_eq_inv_mul, rw inv_div, rw div_eq_inv_mul, ring,},
-  rw h4,
+  have h1 : i1*((a*z+b)/(c*z+d))+i2=(i1*(a*z+b)/(c*z+d)+i2), by {ring  }, rw h1,
+  have h2 :  (i1*(a*z+b)/(c*z+d)+i2)=((i1*(a*z+b))/(c*z+d)+i2), by {ring}, rw h2,
+  have h3 := div_add' (i1*(a*z+b)) i2 (c*z+d) h,
+  rw h3,
+  simp only [div_zpow₀, inv_div],
+  rw [div_eq_inv_mul, mul_comm],
   have h5: (c*z+d)^k ≠ 0,
   by {apply zpow_ne_zero _ h,  },
   apply congr_arg (λ (b : ℂ), (c*z+d)^k * b⁻¹),
