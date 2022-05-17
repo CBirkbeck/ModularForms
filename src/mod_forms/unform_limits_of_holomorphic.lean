@@ -430,9 +430,11 @@ lemma circle_integral_function_sub  (R : ℝ) (f g : ℂ → ℂ) (z w : ℂ) : 
    complex.abs (circle_integral_function R z (f -g) w θ) :=
 begin
   intro θ,
-  simp [circle_integral_function],
+  simp only [circle_integral_function, mul_inv_rev, inv_I, neg_mul, deriv_circle_map,
+    algebra.id.smul_eq_mul, neg_sub_neg, pi.sub_apply, abs_neg, abs_mul, abs_I, abs_inv,
+    abs_of_real, abs_two, one_mul, abs_circle_map_zero, mul_one],
   ring_nf,
-  simp,
+  simp [abs_sub_comm, abs_inv, abs_two,← mul_sub],
 end
 
 lemma circle_integral_function_sub_bound  (R : ℝ) (hR: 0 < R)  (f : ℂ → ℂ) (z w : ℂ) (r : ℝ)

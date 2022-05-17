@@ -7,13 +7,19 @@ open nat
 noncomputable theory
 local attribute [instance] classical.prop_decidable
 
+local attribute [instance] classical.prop_decidable
+
 def add_zeros (f:ℂ → ℂ) (x:ℂ) (k: ℕ) : ℂ → ℂ :=
 λz, f(z)*(z-x)^k
 
 def meromorphic_at_integer (f : ℂ → ℂ ) (x : ℂ) (k:ℕ) : Prop :=
 analytic_at ℂ (add_zeros f x k) x
 
+<<<<<<< HEAD
 def meromorphic_at (f : ℂ → ℂ ) (x : ℂ) : Prop :=
+=======
+def meromorphic_at  (f : ℂ → ℂ ) (x : ℂ) : Prop :=
+>>>>>>> c58848d1df38467ef78b57c60dd5e891e54a2479
 ∃ (k : ℕ), meromorphic_at_integer f x k
 
 
@@ -44,7 +50,11 @@ begin
   sorry,
   have h2 : analytic_at ℂ (add_zeros g x K) x,
   sorry,
+<<<<<<< HEAD
   rw meromorphic_at,
+=======
+  rw [meromorphic_at] ,
+>>>>>>> c58848d1df38467ef78b57c60dd5e891e54a2479
   use K,
   rw meromorphic_at_integer,
   convert analytic_at.add h1 h2,

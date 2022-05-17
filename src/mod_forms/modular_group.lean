@@ -278,7 +278,7 @@ end
 
 lemma sl2_inv'' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A⁻¹= B :=
 begin
-have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_of_mul_eq_one H, simp_rw this, simp,
+have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_iff_mul_eq_one.2 H, simp_rw this, simp,
 end
 
 def ainv' (A: SL2Z): matrix (fin 2) (fin 2) ℤ:=![![A 1 1, -A 0 1], ![-A 1 0 , A  0 0]]
