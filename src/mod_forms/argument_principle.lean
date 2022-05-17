@@ -50,11 +50,7 @@ begin
   sorry,
   have h2 : analytic_at ℂ (add_zeros g x K) x,
   sorry,
-<<<<<<< HEAD
   rw meromorphic_at,
-=======
-  rw [meromorphic_at] ,
->>>>>>> c58848d1df38467ef78b57c60dd5e891e54a2479
   use K,
   rw meromorphic_at_integer,
   convert analytic_at.add h1 h2,
