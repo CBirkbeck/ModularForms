@@ -19,14 +19,12 @@ namespace Eisenstein_series
 lemma eisen_square_diff_on (k : ℤ)  (hkn : k ≠ 0) (n : ℕ) :
   is_holomorphic_on (λ (z : ℍ'), eisen_square k n z) :=
 begin
-  rw ←  is_holomorphic_on_iff_differentiable_on,
+  rw ← is_holomorphic_on_iff_differentiable_on,
   have h1 : extend_by_zero (λ (z : ℍ'), eisen_square k n z) =
-  λ x : ℂ,  ∑ y in (Square n), (extend_by_zero (λ z : ℍ', Eise k z y)) x,
-  by {simp_rw eisen_square,
-  funext z,
-  by_cases h : z ∈ ℍ'.1,
-  simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] at *,
-  simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] at *,},
+    λ x : ℂ, ∑ y in (Square n), (extend_by_zero (λ z : ℍ', Eise k z y)) x,
+  { simp_rw eisen_square,
+    funext z,
+    simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] },
   simp only [ne.def] at *,
   rw h1,
   apply differentiable_on.sum,
@@ -40,26 +38,23 @@ def eisen_square' (k : ℤ) (n: ℕ) : ℍ' → ℂ:=
 lemma eisen_square'_diff_on (k : ℤ)  (hkn : k ≠ 0) (n : ℕ) :
   is_holomorphic_on (eisen_square' k n ) :=
 begin
-  rw ←  is_holomorphic_on_iff_differentiable_on,
-  have h1 : extend_by_zero ( eisen_square' k n) =
-  λ x : ℂ,  ∑ y in (finset.range n), (extend_by_zero (λ z : ℍ', eisen_square k y z)) x,
-  by{simp_rw eisen_square',
-  funext z,
-  by_cases h : z ∈ ℍ'.1,
-  simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] at *,
-  simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] at *},
+  rw ← is_holomorphic_on_iff_differentiable_on,
+  have h1 : extend_by_zero (eisen_square' k n) =
+    λ x : ℂ, ∑ y in (finset.range n), (extend_by_zero (λ z : ℍ', eisen_square k y z)) x,
+  { simp_rw eisen_square',
+    simp only [extend_by_zero, finset.sum_dite_irrel, finset.sum_const_zero] },
   rw h1,
   apply differentiable_on.sum,
-  intros i hi,
-  have := eisen_square_diff_on k hkn i,
-  rw ←  is_holomorphic_on_iff_differentiable_on at this,
-  apply this,
+  exact λ i hi, (is_holomorphic_on_iff_differentiable_on _ _).mpr (eisen_square_diff_on k hkn i),
 end
+
+variables (A B : ℝ)
+
 
 lemma Eisen_partial_tends_to_uniformly_on_ball (k: ℕ) (h : 3 ≤ k) (z : ℍ') : ∃ (A B ε : ℝ),
   0 < ε ∧ metric.closed_ball z ε ⊆ (upper_half_space_slice A B)  ∧  0 < B ∧ ε < B ∧
   (tendsto_uniformly_on (eisen_square' k) (Eisenstein_series_of_weight_ k)
-  filter.at_top (metric.closed_ball z ε)   ) :=
+  filter.at_top (metric.closed_ball z ε)) :=
 begin
   have h1:= closed_ball_in_slice z,
   obtain ⟨A, B, ε, hε, hB, hball, hA, hεB⟩ := h1,
@@ -90,11 +85,9 @@ begin
   have hxx: x ∈ upper_half_space_slice A B,
   by {apply hball, simp only [hx, metric.mem_closed_ball],},
   have hxu := upper_half_plane.im_pos x,
-  have ha2:= ha b hb x hxu,
+  have ha2:= ha b hb x hxx,
   apply ha2,
   apply hx,
-  simp only [slice_mem],
-  apply hxx,
 end
 
 lemma Eisen_partial_tends_to_uniformly_on_ball' (k: ℕ) (h : 3 ≤ k) (z : ℍ') : ∃ (A B ε : ℝ),
@@ -156,7 +149,7 @@ begin
   simp_rw F,
   apply this.mono,
   apply hball2,},
-  apply unif_of_diff_is_diff F (extend_by_zero (Eisenstein_series_of_weight_ k)) x ε (2⁻¹*ε) hε _ _
+  apply uniform_of_diff_circle_int_is_diff F (extend_by_zero (Eisenstein_series_of_weight_ k)) x ε (2⁻¹*ε) hε _ _
   hdiff hunif,
   ring_nf,
   linarith,
@@ -210,7 +203,7 @@ def Tn (n : ℤ) : matrix  (fin 2) (fin 2 ) ℤ := ![![1, n], ![0, 1]]
 lemma Tndet (n : ℤ) : matrix.det (Tn(n)) = 1 :=
 begin
   simp_rw Tn,
-  rw modular_group.det_of_22,
+  rw matrix.det_fin_two,
   simp only [matrix.head_cons, mul_one, sub_zero, matrix.cons_val_one, mul_zero,
   matrix.cons_val_zero],
 end
@@ -218,66 +211,53 @@ end
 lemma coe_aux (γ : SL2Z) :
  ∀ i j, ((γ : matrix.GL_pos (fin 2) ℝ) i j : ℝ) = ((γ i j : ℤ) : ℝ) :=
 begin
+
   intros i j,
   have := modular_group.mat_vals  γ i j,
-  simp only [of_real_int_cast, subtype.val_eq_coe, matrix.general_linear_group.coe_fn_eq_coe, coe_coe] at *,
-  simp,
+  simp [of_real_int_cast, subtype.val_eq_coe, matrix.general_linear_group.coe_fn_eq_coe, coe_coe] at *,
+  rw ←this,
+  cases j, cases i, cases γ, dsimp at *, solve_by_elim,
+
 end
 
 def TN (n : ℤ) : SL2Z := ⟨Tn (n), Tndet n⟩
 
-lemma TN00 (n : ℤ) : ((TN n) : matrix.GL_pos (fin 2) ℝ) 0 0 = 1 :=
+lemma TN00 (n : ℤ) : (TN n)  0 0 = 1 :=
 begin
-  simp_rw TN,
-  simp_rw Tn,
-  simp_rw coe_aux,
-  dsimp at *,
-  simp only [int.cast_one] at *,
+refl,
 end
 
 
-lemma TN01 (n : ℤ) : ((TN n) : matrix.GL_pos (fin 2) ℝ) 0 1 = n :=
+lemma TN01 (n : ℤ) : (TN n)  0 1 = n :=
 begin
-  simp_rw TN,
-  simp_rw Tn,
-  simp_rw coe_aux,
-  dsimp at *,
-  simp only [matrix.head_cons, matrix.cons_val_one] at *,
+refl
 end
 
-lemma TN10 (n : ℤ) : ((TN n) : matrix.GL_pos (fin 2) ℝ) 1 0 = 0 :=
+lemma TN10 (n : ℤ) : (TN n) 1 0 = 0 :=
 begin
-  simp_rw TN,
-  simp_rw Tn,
-  simp_rw coe_aux,
-  dsimp at *,
-  simp only [int.cast_zero, matrix.cons_val_one, matrix.cons_val_zero, matrix.head_cons] at *,
+refl
 end
 
-lemma TN11 (n : ℤ) : ((TN n) : matrix.GL_pos (fin 2) ℝ) 1 1 = 1 :=
+lemma TN11 (n : ℤ) : (TN n) 1 1 = 1 :=
 begin
-  simp_rw TN,
-  simp_rw Tn,
-  simp_rw coe_aux,
-  dsimp at *,
-  simp only [matrix.head_cons, int.cast_one, matrix.cons_val_one] at *,
+  refl,
 end
 
 lemma mod_form_periodic (k : ℤ) (f : ℍ → ℂ)
-  (h: f ∈ (modular_forms.weakly_modular_submodule k (⊤ : subgroup SL2Z))) : ∀ (z : ℍ) (n : ℤ),
-  f( ((TN n) : matrix.GL_pos (fin 2) ℝ)  • z ) = f(z) :=
+  (h: f ∈ (modular_forms.weakly_modular_submodule k (⊤ : subgroup SL2Z))) :
+  ∀ (z : ℍ) (n : ℤ), f( ((TN n) : matrix.GL_pos (fin 2) ℝ)  • z ) = f(z) :=
 begin
   simp only [modular_forms.wmodular_mem', coe_coe] at h,
   intros z n,
   have htop : (TN n) ∈ (⊤ : subgroup SL2Z), by {simp,},
   have H:= h ⟨(TN n), htop⟩ z,
   simp only [subgroup.coe_mk] at H,
-  have hoo' : (⟨(TN n), htop⟩ : ( (⊤ : subgroup SL2Z)) )  1 0 = 0, by {refl,},
-  have h11' : (⟨(TN n), htop⟩ : ( (⊤ : subgroup SL2Z)) )  1 1 = 1, by {refl,},
+  have hoo' : (TN n)  1 0 = 0, by {refl,},
+  have h11' : (TN n)  1 1 = 1, by {refl,},
+  simp at *,
   simp_rw hoo' at H,
   simp_rw h11' at H,
   simp [int.cast_zero, one_mul, zero_mul, int.cast_one, zero_add, one_zpow₀] at H,
-  simp,
   apply H,
 end
 
@@ -290,16 +270,16 @@ begin
   have h3:= (TN10 n),
   have h4:= (TN11 n),
   ext,
-  simp only [upper_half_plane.num, upper_half_plane.denom, eq_self_iff_true, coe_coe,
+  simp  [upper_half_plane.num, upper_half_plane.denom, eq_self_iff_true, coe_coe,
   upper_half_plane.coe_smul, upper_half_plane.coe_re] at *,
   simp_rw [h1, h2, h3,h4],
-  simp only [int_cast_re, one_mul, of_real_zero, zero_mul, add_re, of_real_int_cast, zero_add,
+  simp  [int_cast_re, one_mul, of_real_zero, zero_mul, add_re, of_real_int_cast, zero_add,
   of_real_one, div_one, upper_half_plane.coe_re],
   convert (my_add_re n z).symm,
-  simp only [upper_half_plane.num, upper_half_plane.denom, eq_self_iff_true,
+  simp  [upper_half_plane.num, upper_half_plane.denom, eq_self_iff_true,
   upper_half_plane.coe_im, coe_coe, upper_half_plane.coe_smul] at *,
   simp_rw [h1, h2, h3,h4],
-  simp only [add_zero, one_mul, of_real_zero, int_cast_im, zero_mul, add_im, of_real_int_cast,
+  simp [add_zero, one_mul, of_real_zero, int_cast_im, zero_mul, add_im, of_real_int_cast,
   zero_add, upper_half_plane.coe_im, of_real_one, div_one],
   convert (my_add_im n z).symm,
 end
@@ -349,55 +329,41 @@ begin
 end
 
 lemma Eisenstein_is_bounded (k: ℕ) (hk : 3 ≤ k) :
-  (λ z : ℍ, Eisenstein_series_of_weight_ k z) ∈ modular_forms.is_bound_at_infinity  :=
+  modular_forms.is_bound_at_inf (Eisenstein_series_of_weight_ k) :=
 begin
-simp only [modular_forms.bound_mem, subtype.forall, upper_half_plane.coe_im],
-have h2: 0 < (2 : ℝ), by {linarith,},
-set M : ℝ :=(8/(rfunct (lbpoint 1 2 h2) )^k)*Riemann_zeta (k-1),
-use M,
-use 2,
-intros z hz hz2,
-have trans := upp_half_translation ⟨z,hz⟩,
-obtain ⟨n, hn⟩:= trans,
-have mod_period := mod_form_periodic k (λ z : ℍ, Eisenstein_series_of_weight_ k z)
-  (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) ⟨z, hz⟩ n,
-simp only [coe_coe] at mod_period,
-simp_rw ← mod_period,
-set Z : ℍ := (((TN n) : matrix.GL_pos (fin 2) ℝ)  • ⟨z,hz⟩),
-have H := eis_bound_by_real_eis k Z hk,
-simp_rw  Z at H,
-apply le_trans H,
-simp_rw M,
-have HR:=Real_Eisenstein_bound_unifomly_on_stip k hk 1 2 h2,
-have hZ : Z ∈ upper_half_space_slice 1 2,
-by {have:= smul_expl n ⟨z, hz⟩,
-simp_rw Z at *,
-rw this,
-rw this at hn,
-simp only [abs_of_real, ge_iff_le, slice_mem, upper_half_plane.coe_im, subtype.val_eq_coe,
-upper_half_plane.coe_re] at hn,
-simp only [abs_of_real, ge_iff_le, slice_mem, upper_half_plane.coe_im, subtype.val_eq_coe,
-upper_half_plane.coe_re],
-split,
-apply hn.1,
-have hadd: (n +ᵥ (⟨z,hz⟩ : ℍ) ).1.im = (my_vadd (n) ⟨z,hz⟩).im, by {refl,},
-simp only [upper_half_plane.coe_im, subtype.val_eq_coe] at hadd,
-simp_rw hadd,
-rw my_add_im n ⟨z, hz⟩,
-apply le_trans hz2,
-apply le_abs_self,},
-apply HR ⟨Z, hZ⟩,
+  simp only [modular_forms.bound_mem, subtype.forall, upper_half_plane.coe_im],
+  let M : ℝ := 8 / rfunct (lbpoint 1 2 $ by linarith) ^ k * Riemann_zeta (k - 1),
+  use [M, 2],
+  intros z hz,
+  obtain ⟨n, hn⟩ := upp_half_translation z,
+  simp_rw ← (mod_form_periodic k _ (Eisenstein_is_wmodular ⊤ k) z n),
+  let Z := (((TN n) : matrix.GL_pos (fin 2) ℝ) • z),
+  apply le_trans (eis_bound_by_real_eis k Z hk),
+  have hZ : Z ∈ upper_half_space_slice 1 2,
+  { simp_rw [Z, smul_expl n z] at *,
+    simp only [abs_of_real, slice_mem, upper_half_plane.coe_im, subtype.val_eq_coe,
+      upper_half_plane.coe_re] at hn ⊢,
+    refine ⟨hn.1, _⟩,
+    have hadd : (n +ᵥ z).im = (my_vadd n z).im := by { refl },
+    rw [hadd, my_add_im n z],
+    apply le_trans hz,
+    apply le_abs_self,},
+  apply Real_Eisenstein_bound_unifomly_on_stip k hk 1 2 (by linarith) ⟨Z, hZ⟩,
 end
 
 lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
- modular_forms.is_modular_form_of_lvl_and_weight (⊤ : subgroup SL2Z) k
+ modular_forms.is_modular_form_of_lvl_and_weight (⊤) k
  (λ z : ℍ, Eisenstein_series_of_weight_ k z) :=
- {hol:= by {simp_rw modular_forms.hol_extn, rw mdiff_iff_holo, apply Eisenstein_is_holomorphic k hk, },
- transf := by {simp only, apply Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k, },
- infinity := by {intros A,
- have := (modular_forms.wmodular_mem k (⊤ : subgroup SL2Z)
- (λ z : ℍ, Eisenstein_series_of_weight_ k z)).1 (Eisenstein_is_wmodular (⊤ : subgroup SL2Z) k) A,
- rw this,
- apply Eisenstein_is_bounded k hk,}}
+{ hol:= by
+  { simp_rw modular_forms.hol_extn,
+    rw mdiff_iff_holo,
+    apply Eisenstein_is_holomorphic k hk, },
+  transf := by { simp only, apply Eisenstein_is_wmodular ⊤ k, },
+  infinity := by
+  { intros A,
+    have := Eisenstein_is_wmodular ⊤ k ⟨A, by tauto⟩,
+    dsimp at *, rw this,
+    apply Eisenstein_is_bounded k hk, }
+}
 
 end Eisenstein_series

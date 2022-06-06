@@ -100,13 +100,14 @@ section has_neg
 
 variables  ( B : integral_matrices_with_determinant n m) [fact (even (fintype.card n))]
 
+
 instance : has_neg (integral_matrices_with_determinant n m) :=
 ⟨λ g,
   ⟨- g, by {
   have:= det_smul g (-1),
   simp at this,
   rw this,
-  simp [nat.neg_one_pow_of_even (fact.out (even (fintype.card n)))],
+  simp [even.neg_one_pow (fact.out (even (fintype.card n)))],
   have gdet:=g.property,
   simp at gdet,
   exact gdet,}⟩⟩

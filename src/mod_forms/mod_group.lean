@@ -5,7 +5,7 @@ import linear_algebra.special_linear_group
 import linear_algebra.determinant
 import data.matrix.notation
 import group_theory.group_action.basic
-import algebra.group_action_hom
+import algebra.hom.group_action
 import linear_algebra.matrix
 import linear_algebra.general_linear_group
 import data.complex.basic
@@ -34,20 +34,27 @@ local notation `SL2Z`:=special_linear_group (fin 2) ℤ
 
 variables  {R : Type*} [comm_ring R]
 
-
-lemma det_of_22  (M: matrix (fin 2) (fin 2) R): M.det= (M 0 0) * (M 1 1) - (M 0 1) * (M 1 0):=
-begin
-rw  matrix.det_succ_row_zero, simp [fin.sum_univ_succ],ring,
-end
-
 lemma det_m (M: integral_matrices_with_determinant (fin 2) m): (M 0 0 * M 1 1 - M 0 1 * M 1 0)=m:=
 begin
- have H:= modular_group.det_of_22 M.1,
+ have H:= matrix.det_fin_two M.1,
  simp at *,
  have m2:=M.2,
  rw ← H,
  simp_rw ← m2,
  simp,
+end
+
+lemma det_one  (M : SL2Z) : (M 0 0 * M 1 1 - M 0 1 * M 1 0) = 1 :=
+begin
+apply det_m,
+end
+
+lemma det_onne  (M : SL2Z) : (M 0 0 * M 1 1 - M 1 0 * M 0 1) = 1 :=
+begin
+have:= det_one M,
+have h1: M 1 0 * M 0 1 = M 0 1 * M 1 0, by {apply mul_comm},
+rw h1,
+apply this,
 end
 
 @[simp] lemma mat_mul_expl  (A B : matrix (fin 2) (fin 2) R) :
@@ -105,10 +112,10 @@ have:= mat_mul_expl  A.1 B.1,
 ext i j,
 fin_cases i; fin_cases j,
 have e1:= this.1,rw e1, rw h1, rw h3, simp,
-have Adet:= det_of_22 A, simp at Adet, ring_nf,
+have Adet:= matrix.det_fin_two A, simp at Adet,
 apply Adet.symm, have e2:= this.2.1, rw e2, rw [h2,h4], ring,
 have e3:= this.2.2.1, rw e3, rw [h1,h3], ring, rw this.2.2.2, rw [h2,h4], simp,
-have Adet:= det_of_22 A, simp  at Adet,
+have Adet:= matrix.det_fin_two A, simp  at Adet,
 simp [Adet],ring,
 end
 
@@ -127,7 +134,7 @@ lemma sl2_inv'' (A: SL2Z) (B: SL2Z)
 (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1)
 (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A⁻¹= B :=
 begin
-have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_of_mul_eq_one H, simp_rw this, simp,
+have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_iff_mul_eq_one.2 H, simp_rw this, simp,
 end
 
 def SL2Z_inv_explicit (A: SL2Z): matrix (fin 2) (fin 2) ℤ:=![![A 1 1, -A 0 1], ![-A 1 0 , A  0 0]]
@@ -136,7 +143,7 @@ lemma SL2Z_inv_det (A : SL2Z): (SL2Z_inv_explicit A).det=1:=
 begin
   rw SL2Z_inv_explicit,
   have adet:= A.2,
-  rw det_of_22 at *,
+  rw matrix.det_fin_two at *,
   simp at *,
   rw mul_comm,
   exact adet,
@@ -209,12 +216,7 @@ begin
 simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
-lemma det_onne (A: SL2Z) :  A 0 0 * A 1 1 - A 1 0 * A 0 1=1 :=
-begin
-rw ← A.2,
-rw det_of_22, 
-simp [mul_comm],
-end
+
 
 def mat_Z_to_R (A : matrix (fin 2) (fin 2) ℤ ) :matrix (fin 2) (fin 2) ℝ :=
 ![![A 0 0, A 0 1], ![A 1 0 , A 1 1]]
@@ -241,7 +243,8 @@ simp only [matrix.head_cons, matrix.cons_val_one],
 end
 
 instance SLZ_to_GLZ: has_coe SL2Z (matrix.special_linear_group (fin 2 ) ℝ):=
-⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw det_of_22, have:= det_of_22 A, simp at *,
+⟨λ A, ⟨mat_Z_to_R A.1, by {rw mat_Z_to_R, rw matrix.det_fin_two, have:= matrix.det_fin_two A,
+  simp at *,
  norm_cast, exact this.symm,}, ⟩⟩
 
 variable (C : GL_pos (fin 2) ℤ)
@@ -260,6 +263,7 @@ end
 begin
 have:=A.2, rw this, simp, rw ← coe_coe, rw ← coe_coe, simp,
 end
+
 
 end modular_group
 

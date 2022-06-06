@@ -8,8 +8,6 @@ open nat
 noncomputable theory
 local attribute [instance] classical.prop_decidable
 
-local attribute [instance] classical.prop_decidable
-
 def add_zeros (f:ℂ → ℂ) (x:ℂ) (k: ℕ) : ℂ → ℂ :=
 λz, f(z)*(z-x)^k
 
@@ -64,7 +62,6 @@ meromorphic_at (recip f) x :=
 begin
   sorry
 end
-
 
 def residue_at_simple_pole (f:ℂ → ℂ) (x: ℂ) (hs: meromorphic_at_integer f x 1) :=
 (add_zeros f x 1)(x)

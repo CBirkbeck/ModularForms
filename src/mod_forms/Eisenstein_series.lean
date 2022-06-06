@@ -1,5 +1,5 @@
 import mod_forms.Eisenstein_series_index_lemmas
-
+import mod_forms.upper_half_plane_manifold
 
 universes u v w
 
@@ -74,13 +74,12 @@ end
 lemma calc_lem (k: ℤ) (a b c d i1 i2: ℂ) (z : ℍ) (h: c*z+d ≠ 0) :
 ((i1* ((a*z+b)/(c*z+d))+i2)^k)⁻¹=(c*z+d)^k* (((i1 * a + i2 * c) * z + (i1 * b + i2 * d))^k)⁻¹:=
 begin
-  have h1: i1*((a*z+b)/(c*z+d))+i2=(i1*(a*z+b)/(c*z+d)+i2), by {ring  }, rw h1,
-  have h2:  (i1*(a*z+b)/(c*z+d)+i2)=((i1*(a*z+b))/(c*z+d)+i2), by {ring}, rw h2,
-  have h3:=div_add' (i1*(a*z+b)) i2 (c*z+d) h, rw h3, simp [inv_pow], rw div_eq_inv_mul,
-  have h4 : (((c * ↑z + d) ^ k)⁻¹ * (i1 * (a * ↑z + b) + i2 * (c * ↑z + d)) ^ k)⁻¹ =
-  (c * ↑z + d) ^ k * ((i1 * (a * ↑z + b) + i2 * (c * ↑z + d)) ^ k)⁻¹,
-  by {rw ← div_eq_inv_mul, rw inv_div, rw div_eq_inv_mul, ring,},
-  rw h4,
+  have h1 : i1*((a*z+b)/(c*z+d))+i2=(i1*(a*z+b)/(c*z+d)+i2), by {ring  }, rw h1,
+  have h2 :  (i1*(a*z+b)/(c*z+d)+i2)=((i1*(a*z+b))/(c*z+d)+i2), by {ring}, rw h2,
+  have h3 := div_add' (i1*(a*z+b)) i2 (c*z+d) h,
+  rw h3,
+  simp only [div_zpow₀, inv_div],
+  rw [div_eq_inv_mul, mul_comm],
   have h5: (c*z+d)^k ≠ 0,
   by {apply zpow_ne_zero _ h,  },
   apply congr_arg (λ (b : ℂ), (c*z+d)^k * b⁻¹),
@@ -94,19 +93,8 @@ begin
   rw ← coe_coe,
   fin_cases i;
   fin_cases j,
-  simp only [coe_coe],
-  work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
-  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *,
-  simp only [int_cast_im] at *},
-  work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
-  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *,
-  simp only [int_cast_im] at *},
-  work_on_goal 0 { cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
-  work_on_goal 0 { dsimp at *, simp only [int_cast_re] at *, refl }, dsimp at *,
-  simp only [int_cast_im] at *},
-  cases A, dsimp at *, tactic.ext1 [] {new_goals := tactic.new_goals.all},
-  work_on_goal 0 { dsimp at *,simp only [int_cast_re] at *, refl }, dsimp at *,
-  simp only [int_cast_im] at *,
+  all_goals {simp [coe_coe],
+  norm_cast},
 end
 
 
@@ -119,20 +107,12 @@ begin
   rw Eise,
   simp [coe_fn_coe_base'],
   dsimp,
-  rw ← coe_coe,
-  rw ← coe_coe,
   rw calc_lem,
   have h1:= coe_chain A,
   simp only [subtype.val_eq_coe] at h1,
   rw h1,
   rw h1,
-  rw h1,
-  rw h1,
   rw ← coe_coe,
-  simp,
-  rw ← coe_coe,
-  simp only [forall_const, mul_eq_mul_left_iff, true_or, eq_self_iff_true, inv_inj₀, h1,
-  coe_coe] at *,
   apply upper_half_plane.denom_ne_zero A,
 end
 
@@ -150,7 +130,7 @@ simp only [subtype.val_eq_coe],
 have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k z),
 rw tsum_mul_left,
 rw h3,
-refl,
+simp,
 end
 
 lemma Eise_on_square_is_bounded ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):
@@ -336,7 +316,7 @@ by_cases h0: n=0,
 have Hn: 1 ≤ n,
 by {have:=nat.pos_of_ne_zero,
 simp at this,
-work_on_goal 0 { cases z, solve_by_elim },},
+work_on_goal 1 { cases z, solve_by_elim },},
 intros x hx,
 apply Eise_on_square_is_bounded k z n x hx Hn,
 end
@@ -535,7 +515,7 @@ def Eisen_partial_sums (k: ℤ) (n : ℕ): ℍ → ℂ:=
 λ z, ∑ x in (finset.range n), (eisen_square k x z)
 
 def upper_half_space_slice (A B : ℝ) :=
-  {z : ℍ | complex.abs(z.1.1) ≤ A ∧ complex.abs(z.1.2) ≥ B  }
+  {z : ℍ' | complex.abs(z.1.1) ≤ A ∧ complex.abs(z.1.2) ≥ B  }
 
 instance upper_half_space_slice_to_uhs (A B : ℝ) :
   has_coe (upper_half_space_slice A B) ℍ := ⟨λ z, z.1⟩
@@ -546,24 +526,14 @@ instance upper_half_space_slice_to_uhs (A B : ℝ) :
 lemma slice_in_upper_half (A B : ℝ) (x : (upper_half_space_slice A B) ) :
   x.1.1 ∈ ℍ'.1:=
 begin
-have hx : 0 < (x.1).im, by {apply upper_half_plane.im_pos,},
+have hx : 0 < x.1.1.im, by {apply upper_half_plane.im_pos,},
 simp at hx,
 simp,
 apply hx,
 end
 
-lemma ball_coe (z w : ℍ) (ε : ℝ) (hε : 0 < ε) :
-  w ∈ metric.closed_ball z ε ↔ w.1 ∈ metric.closed_ball z.1 ε :=
-begin
-simp,
-split,
-intro hzw,
-exact hzw,
-intro hzw,
-exact hzw,
-end
 
-lemma ball_in_upper_half (z : ℍ) (A B ε : ℝ)(hB : 0 < B) ( hε : 0 < ε) (hBε : ε < B)
+lemma ball_in_upper_half (z : ℍ') (A B ε : ℝ)(hB : 0 < B) ( hε : 0 < ε) (hBε : ε < B)
   (h : metric.closed_ball z ε ⊆ upper_half_space_slice A B) :
     metric.closed_ball z.1 ε ⊆ ℍ'.1 :=
 begin
@@ -581,24 +551,25 @@ have hg : 0 < (x.2), by {
     have h4:= _root_.abs_sub_le z.1.2 x.2 0,
     rw sub_im at h3,
     rw _root_.abs_sub_comm at h3,
-    have h33: -ε ≤ - |z.im - x.im|, by {simp, apply h3, },
+    have h33: -ε ≤ - |z.1.im - x.im|, by {simp, apply h3, },
     simp at h4,
-    have h5 : |z.im| - |z.im - x.im| ≤ |x.im|, by {linarith,},
+    have h5 : |z.1.im| - |z.1.im - x.im| ≤ |x.im|, by {simp,linarith,},
     simp at hzB,
-    have h6 : B - ε ≤ |z.im| - |z.im - x.im|, by {linarith, },
+    have h6 : B - ε ≤ |z.1.im| - |z.1.im - x.im|, by {simp at *, linarith, },
     by_contradiction hc,
     simp at hc,
     have hcc: 0 ≤ -x.im, by {linarith, },
-    have hzc :|z.im - x.im| = z.im - x.im, by {apply _root_.abs_of_nonneg, apply add_nonneg,
-    apply z.2.le, apply hcc,},
-    have hzp : |z.im| = z.im, by {apply _root_.abs_of_nonneg z.2.le,},
+    have hzc :|z.1.im - x.im| = z.1.im - x.im, by {apply _root_.abs_of_nonneg, apply add_nonneg,
+    have := upper_half_plane.im_pos z,
+    apply this.le, apply hcc,},
+    have hzp : |z.1.im| = z.1.im, by {apply _root_.abs_of_nonneg (upper_half_plane.im_pos z).le,},
     simp_rw [hzc, hzp] at h6,
     simp only [sub_sub_cancel] at h6,
     linarith,},
 apply hg,
 end
 
-lemma closed_ball_in_slice (z : ℍ) : ∃ (A B ε : ℝ), 0 < ε ∧ 0 < B ∧
+lemma closed_ball_in_slice (z : ℍ') : ∃ (A B ε : ℝ), 0 < ε ∧ 0 < B ∧
   metric.closed_ball z ε ⊆ upper_half_space_slice A B ∧  0 ≤ A ∧ ε < B:=
 begin
   let e := 3⁻¹ * complex.abs(z.1.2),
@@ -646,7 +617,7 @@ begin
   simp_rw e,
   rw upper_half_plane.im,
   simp only [abs_of_real, upper_half_plane.coe_im, subtype.val_eq_coe],
-  have hxim : 0 ≤ |z.im|, by {apply _root_.abs_nonneg,},
+  have hxim : 0 ≤ |upper_half_plane.im z|, by {apply _root_.abs_nonneg,},
   ring_nf,
   linarith,
   have ineq1:= _root_.abs_sub_le z.1.2 x.1.2 0,
@@ -717,6 +688,7 @@ begin
   simp_rw lbpoint,
   simp only [ min_le_iff, le_min_iff,subtype.val_eq_coe],
   cases z,
+  have zpos:= upper_half_plane.im_pos z_val,
   cases z_property,
   cases z_val,
   dsimp at *,
@@ -737,17 +709,20 @@ begin
   simp,
   rw inv_le_inv,
   simp,
+  simp_rw [hcoe] at z_val_property,
+  simp at z_val_property,
   have i1: (((z_val_val.im)^2)⁻¹ : ℝ)≤ ((B^2)⁻¹ : ℝ) ,
     by {rw inv_le_inv,
     have h' : 0 ≤ B , by {linarith,},
-    have z_prop' : 0 ≤ z_val_val.im, by {linarith,},
+    have z_prop' : 0 ≤ z_val_val.im, by {apply zpos.le, },
     apply aux6 _ _ h' z_prop',
     have : z_val_val.im = complex.abs (z_val_val.im),
-    by  {norm_cast, have:= abs_of_pos z_val_property, exact this.symm,},
+    by  {norm_cast, have:= abs_of_pos zpos, exact this.symm,},
     norm_cast at this,
     rw this,
     exact z_property_right,
     apply pow_two_pos_of_ne_zero,
+     have z_prop2 : 0 < z_val_val.im, by {apply zpos, },
     linarith,
     apply pow_two_pos_of_ne_zero, linarith,},
   have i2: ((z_val_val.re)^2 : ℝ )≤ (A^2 : ℝ),
@@ -1016,19 +991,17 @@ begin
   let fx:=(-k*((y.1:ℂ)*z.1+y.2)^(-k-1)*(y.1) : ℂ),
   use fx,
   rw has_deriv_within_at_iff_tendsto at *,
-  simp only [neg_mul_eq_neg_mul_symm, zpow_neg₀, algebra.id.smul_eq_mul, eq_self_iff_true,
-  mul_neg_eq_neg_mul_symm, ne.def, int.cast_neg, subtype.val_eq_coe, norm_eq_abs,
+  simp  [ zpow_neg₀, algebra.id.smul_eq_mul, eq_self_iff_true,
+   ne.def, int.cast_neg, subtype.val_eq_coe, norm_eq_abs,
   sub_neg_eq_add] at *,
   rw metric.tendsto_nhds_within_nhds at *,
   intros ε hε,
   have HH:= H ε hε,
   use classical.some HH,
   have:= classical.some_spec HH,
-  simp only [exists_prop, gt_iff_lt, normed_field.norm_mul, dist_zero_right,
-  normed_field.norm_inv] at this,
+  simp  [exists_prop, gt_iff_lt,  dist_zero_right] at this,
   have hg:= this.1,
-  simp only [hg, true_and, exists_prop, gt_iff_lt, normed_field.norm_mul, dist_zero_right,
-  normed_field.norm_inv] at *,
+  simp  [hg, true_and, exists_prop, gt_iff_lt,  dist_zero_right] at *,
   intros x hx hd,
   dsimp at *,
   simp_rw extend_by_zero,

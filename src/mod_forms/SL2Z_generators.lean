@@ -180,7 +180,7 @@ end
 lemma fixlem (m : ℤ) (A : Mat m) :
   A 0 0 + -(A 0 0/ A 1 0)*( A 1 0)= A 0 0 % A 1 0:=
 begin
-  simp only [neg_mul_eq_neg_mul_symm],
+  simp ,
   rw  ← sub_eq_add_neg,
   rw mul_comm,
   rw  ← int.mod_def,
@@ -284,25 +284,25 @@ by rw [reduce.equations._eqn_1 _ _, if_neg h]
 
 theorem reduce_spec (m : ℤ) : ∀A : Mat m, ∃ (R: gengrp), R • A = reduce m A :=
 begin
-  refine reduce_rec m _ _, 
+  refine reduce_rec m _ _,
   { intros A hc,
-    by_cases ha : 0 < (A 0 0), 
+    by_cases ha : 0 < (A 0 0),
     {have:= reduce_eq1 m, simp at *, have h1:=this hc ha, simp only at h1,
-    simp  [*, int.nat_abs_eq_zero, h1 , exists_apply_eq_apply], 
-     let gg:= (T ^ (A 0 1 / A 1 1))⁻¹, 
-     refine ⟨⟨gg, _⟩, _⟩, 
+    simp  [*, int.nat_abs_eq_zero, h1 , exists_apply_eq_apply],
+     let gg:= (T ^ (A 0 1 / A 1 1))⁻¹,
+     refine ⟨⟨gg, _⟩, _⟩,
      simp only [subgroup.inv_mem_iff],
      apply Tpows,
-     simp_rw gg, refl, },  
+     simp_rw gg, refl, },
     {simp only [*, int.div_neg, int.nat_abs_eq_zero, not_false_iff, neg_neg, reduce_eq2],
     erw [← mul_smul], rw [← mul_smul],
     let g:= (T ^ (-A 0 1 / A 1 1))*S*S,
-    refine ⟨⟨g,_⟩, _ ⟩, 
+    refine ⟨⟨g,_⟩, _ ⟩,
     apply TSS,
-    simp_rw g,refl,} },  
+    simp_rw g,refl,} },
   { rintros A hc ⟨U, eq⟩, rw reduce_eq3 m hc, rw ← eq, rw reduce_step, simp only [zpow_neg],
     simp only [int.nat_abs_eq_zero, ne.def] at *,
-    refine ⟨⟨ (U : SL2Z) * S *(T ^ (A 0 0 / A 1 0))⁻¹,_⟩,_⟩, 
+    refine ⟨⟨ (U : SL2Z) * S *(T ^ (A 0 0 / A 1 0))⁻¹,_⟩,_⟩,
     have Umem:= set_like.coe_mem U,
     apply UST _ U Umem,
     have j: ∀ (x y z : SL2Z) (M: Mat m), x • y • z • M = (x * y*z)• M , by {simp_rw ← mul_smul, intros x y z A,
@@ -332,7 +332,7 @@ begin
             ⟨ha, int.mod_nonneg _ hd,
               int.nat_abs_lt_nat_abs _ _ (int.mod_nonneg _ hd) (int.mod_lt _ hd)⟩,
     by_cases ha : 0 < A 0 0,
-    {simpa only [reduce_eq1, reps, c_eq, ha, eq, neg_mul_eq_neg_mul_symm, true_and,
+    {simpa only [reduce_eq1, reps, c_eq, ha, eq, neg_mul, true_and,
      T_pow_c, modular_group.SL2Z_inv_d, T_pow_a, add_zero, one_mul,modular_group.SLnZ_M_c,
      modular_group.SLnZ_M_b, zero_mul, int.nat_abs_eq_zero, eq_self_iff_true,
      modular_group.SLnZ_M_a, zero_add, modular_group.SLnZ_M_d,
@@ -346,7 +346,7 @@ begin
        simp only [reduce_eq2, reps, c_eq, ha, eq, true_and, T_pow_c, T_pow_a, add_zero,
         int.div_neg, one_mul,  modular_group.SLnZ_M_c,  modular_group.SLnZ_M_b,
         S_mul_c, right.neg_pos_iff, zero_mul, int.nat_abs_neg, int.nat_abs_eq_zero, eq_self_iff_true,
-        S_mul_a, mul_neg_eq_neg_mul_symm,  modular_group.SLnZ_M_a, zero_add, not_false_iff,
+        S_mul_a, mul_neg,  modular_group.SLnZ_M_a, zero_add, not_false_iff,
         modular_group.SLnZ_M_d, neg_neg, int.nat_abs, set.mem_set_of_eq,
         reduce_eq2, mul_zero, S_mul_d, T_pow_d, neg_zero, S_mul_b, T_pow_b],
       rw S_a,
@@ -432,7 +432,7 @@ begin
   have ht: f = f+b*h , {rw ←  hn2, rw hn,    },
   simp only [self_eq_add_right, mul_eq_zero] at ht,
   rw lt_iff_le_not_le at h4,
-  cases h4, cases ht, work_on_goal 0 { assumption },
+  cases h4, cases ht, work_on_goal 1 { assumption },
   dsimp at *,
   simp at *,
   solve_by_elim,
@@ -449,11 +449,11 @@ lemma one_time' (a b : ℤ) (h1 : 0 <  a ) (h2 : (a = 1 ∧ b=1) ∨ (a=-1 ∧ b
 begin
   by_contra h,
   cases h2,
-  work_on_goal 0 { cases h2, simp at *, solve_by_elim },
+  work_on_goal 1 { cases h2, simp at *, solve_by_elim },
   cases h2,
   simp at *,
   rw h2_left at h1, have h4 : 0 < (-1: ℤ) ↔ false, simp only [neg_nonpos, not_lt, iff_false],
-  work_on_goal 0 { exact dec_trivial },
+  work_on_goal 1 { exact dec_trivial },
   cases h4,
   simp at *,
   solve_by_elim,
@@ -483,7 +483,7 @@ begin
     rw h at e_pos,
     exact (irrefl _ e_pos).elim, },
   have d1: (M 0 0)*(M 1 1)=1,
-    by {have:= modular_group.det_of_22 M, simp at *, rw ht at this, simp at this,
+    by {have:= matrix.det_fin_two M, simp at *, rw ht at this, simp at this,
       have hm:= gengroup_det M, rw hm at this, apply this.symm, },
   have mg0: (M  0 0) > 0, by
     {rw g_eq at B_eq, simp only [add_zero, mul_zero] at B_eq,
@@ -529,7 +529,7 @@ def  matrix_makr(a b c d : ℤ ): matrix  (fin 2) (fin 2 ) ℤ:= ![![a, b], ![c,
 lemma dm  (a b c d : ℤ ) : (matrix_makr a b c d).det = a*d-b*c:=
 begin
   rw matrix_makr,
-  apply modular_group.det_of_22 (matrix_makr a b c d),
+  apply matrix.det_fin_two (matrix_makr a b c d),
 end
 
 
@@ -546,7 +546,7 @@ end
 lemma en_pos (m : ℕ+) (A: matrix (fin 2) (fin 2) ℤ)
 (h1: A.det= ↑ m) (h2: 0 < A 0 0) (h3: A 1 0 =0) : 0 ≤ A 1 1:=
 begin
-  rw modular_group.det_of_22 at h1,
+  rw matrix.det_fin_two at h1,
   rw h3 at h1,
   simp only [sub_zero, mul_zero, coe_coe] at h1,
   by_contradiction h,
@@ -597,7 +597,7 @@ inv_fun := λ A, ⟨ (
         have ao: (A.1).val 1 0 = 0, by { apply A.2.1},
         have := A.1.2,
         simp at *,
-        rw modular_group.det_of_22 at this,
+        rw matrix.det_fin_two at this,
         rw ao at this,
         simp at this,
         rw [← int.nat_abs_mul],
@@ -608,7 +608,7 @@ inv_fun := λ A, ⟨ (
         have ao: (A.1).val 1 0 = 0, by { apply A.2.1},
         have := A.1.2,
         simp at *,
-        rw modular_group.det_of_22 at this,
+        rw matrix.det_fin_two at this,
         rw ao at this,
         simp at this,
         rw mul_comm at this,
@@ -620,7 +620,7 @@ inv_fun := λ A, ⟨ (
         have ao: (A.1).val 1 0 = 0, by { apply A.2.1},
         have := A.1.2,
         simp at *,
-        rw modular_group.det_of_22 at this,
+        rw matrix.det_fin_two at this,
         rw ao at this,
         simp at this,
         rw mul_comm at this,
@@ -631,7 +631,7 @@ inv_fun := λ A, ⟨ (
         have ao: (A.1).val 1 0 = 0, by { apply A.2.1},
         have := A.1.2,
         simp at *,
-        rw modular_group.det_of_22 at this,
+        rw matrix.det_fin_two at this,
         rw ao at this,
         simp at this,
         rw [← int.nat_abs_mul],
@@ -690,7 +690,7 @@ def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)
       have := A.1.2,
       simp only [subtype.val_eq_coe, coe_coe] at this,
       simp only [pnat.mk_coe, int.coe_nat_succ] at this,
-      rw modular_group.det_of_22 at *,
+      rw matrix.det_fin_two at *,
       simp,
       simp only [subtype.val_eq_coe] at ao,
       rw ao at *,
@@ -705,7 +705,7 @@ def reps.fintype : Π m : ℤ, m ≠ 0 → fintype (reps m)
     by  {
       have := A.1.2,
       simp only [subtype.val_eq_coe, coe_coe] at this,
-      rw modular_group.det_of_22 at *,
+      rw matrix.det_fin_two at *,
       simp,
       simp only [subtype.val_eq_coe] at ao,
       rw ao at *,
@@ -780,8 +780,8 @@ by letI := (orbit_rel''' m ); from
   left_inv := λ x, by {
     simp only [subtype.val_eq_coe],
     induction x,
-    work_on_goal 0 { cases x, dsimp at *, simp at * },
-    work_on_goal 1 { refl },
+    work_on_goal 1 { cases x, dsimp at *, simp at * },
+    work_on_goal 2 { refl },
     apply quotient.sound,
     apply reduce_spec m ⟨ x_val, x_property⟩},
   right_inv := λ A, subtype.eq $
@@ -809,7 +809,7 @@ begin
   split,
   intro hx,
   simp at *,
-  have detsl:= modular_group.det_of_22 x.1,
+  have detsl:= matrix.det_fin_two x.1,
   simp at detsl,
   rw hx.1 at detsl,
   simp at detsl,
@@ -855,22 +855,22 @@ split,
 intro hr,
 rw setoid.eq_top_iff at *,
 intros x y,
-have hr3:= (rh2 x 1).1 (hr x 1), 
-have hr3':= (rh2 1 y).1 (hr 1 y), 
+have hr3:= (rh2 x 1).1 (hr x 1),
+have hr3':= (rh2 1 y).1 (hr 1 y),
 have : r1 x y, by {rw rh1, simp at *, apply subgroup.mul_mem H ((subgroup.inv_mem_iff H).symm.1 hr3)  hr3',},
 convert this,
 intro hr,
 rw setoid.eq_top_iff at *,
 intros x y,
-have hr3:= (rh1 x 1).1 (hr x 1), 
-have hr3':= (rh1 1 y).1 (hr 1 y), 
+have hr3:= (rh1 x 1).1 (hr x 1),
+have hr3':= (rh1 1 y).1 (hr 1 y),
 have : r2 x y, by {rw rh2, simp at *, apply subgroup.mul_mem H  hr3' ((subgroup.inv_mem_iff H).symm.1 hr3) ,},
 convert this,
-end  
+end
 
 
 
-lemma ring_quot_subsingleton_iff_left_quot_subsingleton (H : subgroup G) : 
+lemma ring_quot_subsingleton_iff_left_quot_subsingleton (H : subgroup G) :
   subsingleton (quotient (quotient_group.right_rel H)) ↔ subsingleton (G ⧸ H) :=
 begin
 have : (G ⧸ H) = quotient (quotient_group.left_rel H), by {refl,},
@@ -882,7 +882,7 @@ apply (left_rel_to_right_rel_top H).1 hr,
 intro hr,
 rw quotient.subsingleton_iff at *,
 apply (left_rel_to_right_rel_top H).2 hr,
-end  
+end
 
 lemma sl2z_gens: gengrp = (⊤ : subgroup SL2Z) :=
 begin
@@ -894,7 +894,7 @@ begin
   have htt: subsingleton (quotient (orbit_rel''' 1)), by {rw (equiv.subsingleton_congr h1), rw h2, simp, },
   have ht: quotient (orbit_rel''' 1) ≃ (quotient (quotient_group.right_rel gengrp)), by {
   let r1:= ( (orbit_rel''' 1)).r,
-  let r2:= (quotient_group.right_rel gengrp).r, 
+  let r2:= (quotient_group.right_rel gengrp).r,
   apply quot.congr_right,
   simp at htt,
   rw htt,
@@ -910,7 +910,7 @@ split,
 intro ha,
 have haa:= (subgroup.inv_mem_iff gengrp).2 ha,
 simp at haa,
-refine ⟨⟨(a*b⁻¹ : SL2Z), haa⟩, _⟩, 
+refine ⟨⟨(a*b⁻¹ : SL2Z), haa⟩, _⟩,
 have:= smul_is_mul_1 (a * b⁻¹) b,
 convert this,
 have hbb: (a *b⁻¹*b :SL2Z) = (a : SL2Z), by {simp, },

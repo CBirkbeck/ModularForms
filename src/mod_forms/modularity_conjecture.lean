@@ -13,7 +13,7 @@ noncomputable theory
 def map_to_upper (x : ℝ) : ℍ := ⟨(x + I),
   by {simp only [complex.add_im, complex.of_real_im, complex.I_im, zero_add, zero_lt_one],} ⟩
 
-def modular_form_an (N  n : ℕ) (k : ℤ) (f : space_of_mod_forms_of_level_and_weight (Gamma0_N N) k)
+def modular_form_an (N  n : ℕ) (k : ℤ) (f : space_of_mod_forms_of_weight_and_level (Gamma0_N N) k)
 : ℂ := ∫ (x : ℝ) in 0..1, ( exp (-2 * π * I * n *(x + I))) * f.1 (map_to_upper x)
 
 def rat_red (q : ℚ) ( p : ℕ) : (zmod p) := (q.num : zmod p) * (q.denom : zmod p)⁻¹
@@ -26,7 +26,7 @@ def EllipticCurve.ap (E : EllipticCurve ℚ) (p : ℕ) : ℕ :=
   p-(cardinal.mk (set_of_points_mod_n E p)).to_nat
 
 theorem modularity_conjecture (E : EllipticCurve ℚ) : ∃ (N : ℕ)
-  (f : space_of_mod_forms_of_level_and_weight (Gamma0_N N) 2),
+  (f : space_of_mod_forms_of_weight_and_level (Gamma0_N N) 2),
    ∀ (p : ℕ) (hp : p.prime ) (hN : (N : zmod p ) ≠ 0 ),
    modular_form_an N p 2 f = E.ap p :=
 begin
