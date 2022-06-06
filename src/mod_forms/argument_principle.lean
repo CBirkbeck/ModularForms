@@ -15,19 +15,16 @@ def add_zeros (f:ℂ → ℂ) (x:ℂ) (k: ℕ) : ℂ → ℂ :=
 def meromorphic_at_integer (f : ℂ → ℂ ) (x : ℂ) (k:ℕ) : Prop :=
 analytic_at ℂ (add_zeros f x k) x
 
-<<<<<<< HEAD
 def meromorphic_at (f : ℂ → ℂ ) (x : ℂ) : Prop :=
-=======
-def meromorphic_at  (f : ℂ → ℂ ) (x : ℂ) : Prop :=
->>>>>>> c58848d1df38467ef78b57c60dd5e891e54a2479
 ∃ (k : ℕ), meromorphic_at_integer f x k
-
 
 
 def pole_order_at  (f:ℂ → ℂ) (x:ℂ): ℕ :=
 if hk:  ∃ (k : ℕ), meromorphic_at_integer f x k ∧  ¬ meromorphic_at_integer f x (k-1)
 then classical.some hk else 0
 
+
+--looks like the right statement can be extracted from prev definition
 lemma pole_order_analytic_at (f:ℂ → ℂ ) (x:ℂ)(hf: meromorphic_at f x) :
 meromorphic_at_integer f x (pole_order_at f x):=
 begin
@@ -39,7 +36,7 @@ sorry
 end
 
 
-
+--need to use the power series definition here and shift power series
 lemma meromorphic_at.add (f:ℂ → ℂ) (g: ℂ → ℂ) (x: ℂ) (hf: meromorphic_at f x)
 (hg: meromorphic_at g x) : meromorphic_at (f+g) x :=
 begin
@@ -67,20 +64,18 @@ meromorphic_at (recip f) x :=
 begin
   sorry
 end
-
-
+--not sure yet if this is the right thing to prove, seems like a good idea
 
 def residue_at_simple_pole (f:ℂ → ℂ) (x: ℂ) (hs: meromorphic_at_integer f x 1) :=
 (add_zeros f x 1)(x)
 
-
-
+--Not sure if this works or what the error is, needed for residue formula
 def iterated_deriv (f:ℂ → ℂ) : ℕ → (ℂ → ℂ)
 |0 := f
 |n := fderiv ℂ iterated_deriv (n-1)
 
 
-
+-- Is there some way to test that this works for certain functions? e.g. f(z)=1/z
 def residue_at (f:ℂ → ℂ) (x: ℂ) (hf: meromorphic_at f x): ℂ :=
 begin
 rw meromorphic_at at hf,
@@ -107,6 +102,13 @@ def isolated_poles (f: ℂ → ℂ) (x:ℂ) :=
 def meromorphic_function (f:ℂ → ℂ) :=
 ∀x:ℂ, (meromorphic_at f x) ∧ (f x = 0 → isolated_zeros f x ) ∧ (pole_at f x → isolated_poles f x)
 
-
+--maybe use a junk value for non-meromorphic functions to avoid hf
 def order_of_vanishing_at (f:ℂ → ℂ) (x:ℂ) (hf: meromorphic_at f x): ℕ :=
 sorry
+
+
+--To do list:
+--fix recursive definition of iterated_deriv
+--define order of vanishing in reasonable way, maybe using residue
+--complete lemmas above
+--find a way to test things with examples
