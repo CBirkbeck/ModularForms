@@ -19,18 +19,17 @@ def meromorphic_at (f : ℂ → ℂ ) (x : ℂ) : Prop :=
 
 
 def pole_order_at  (f:ℂ → ℂ) (x:ℂ): ℕ :=
-if hk:  ∃ (k : ℕ), meromorphic_at_integer f x k ∧  ¬ meromorphic_at_integer f x (k-1)
-then classical.some hk else 0
+if hk:  ∃ (k : ℕ), meromorphic_at_integer f x k
+then nat.find hk else 0
 
 --how to extract the lemma from this definition
-lemma pole_order_analytic_at (f:ℂ → ℂ ) (x:ℂ)(hf: meromorphic_at f x) :
+lemma pole_order_analytic_at (f:ℂ → ℂ ) (x:ℂ)(hf : meromorphic_at f x) :
 meromorphic_at_integer f x (pole_order_at f x):=
 begin
-let k:= pole_order_at f x,
-unfold pole_order_at,
-
-sorry
-
+have := nat.find_spec hf,
+convert this,
+rw pole_order_at,
+apply dif_pos hf,
 end
 
 
@@ -69,17 +68,11 @@ def residue_at_simple_pole (f:ℂ → ℂ) (x: ℂ) (hs: meromorphic_at_integer 
 
 
 --add junk value 0 here for non-meromorphic (also analytic) functions
-def residue_at (f:ℂ → ℂ) (x: ℂ) (hf: meromorphic_at f x): ℂ :=
-begin
-rw meromorphic_at at hf,
-simp_rw meromorphic_at_integer at hf,
-let k:= pole_order_at f x,
-have h1: differentiable_at ℂ (add_zeros f x k) x,
-apply analytic_at.differentiable_at,
-exact pole_order_analytic_at f x hf,
-let g:= iterated_deriv (k-1) (add_zeros f x k) x,
-let z:= g/(factorial (k-1)),
-end
+def residue_at (f:ℂ → ℂ) (x: ℂ) : ℂ :=
+if hf : (meromorphic_at f x) then
+  (iterated_deriv (max 0 ((pole_order_at f x)-1)) (add_zeros f x (pole_order_at f x))x)/
+    (factorial (max 0 ((pole_order_at f x)-1))) else 0
+
 
 
 def isolated_zeros (f: ℂ → ℂ) (x:ℂ):=
@@ -105,7 +98,7 @@ begin
 sorry
 end
 
-def order_of_vanishing_at (f:ℂ → ℂ) (x:ℂ) (hf: meromorphic_at f x): ℕ :=
+def order_of_vanishing_at (f:ℂ → ℂ) (x:ℂ) : ℕ :=
 begin
 let k₁ := pole_order_at f x,
 let k₂ := pole_order_at (recip f) x,
@@ -113,7 +106,7 @@ use k₂ - k₁
 end
 
 lemma vanishing_res (f:ℂ → ℂ) (x:ℂ) (hf: meromorphic_at f x) :
-residue_at (deriv_over f) x (deriv_over_meromorphic f x (hf)) = order_of_vanishing_at f x hf :=
+residue_at (deriv_over f) x  = order_of_vanishing_at f x :=
 begin
   sorry
 end
