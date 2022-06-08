@@ -89,11 +89,11 @@ def isolated_poles (f: ℂ → ℂ) (x:ℂ) :=
 def meromorphic_function (f:ℂ → ℂ) :=
 ∀x:ℂ, (meromorphic_at f x) ∧ (f x = 0 → isolated_zeros f x ) ∧ (pole_at f x → isolated_poles f x)
 
-def deriv_over (f:ℂ → ℂ) :=
+def deriv_over (f: ℂ → ℂ) :=
 λx, (deriv f x)/(f x)
 
-lemma deriv_over_meromorphic (f:ℂ → ℂ) (x:ℂ) :
-meromorphic_at f x → meromorphic_at (deriv_over f) x :=
+lemma deriv_over_meromorphic (f:ℂ → ℂ) (x:ℂ) (hf : meromorphic_at f x) :
+  meromorphic_at (deriv_over f) x :=
 begin
 sorry
 end
@@ -108,5 +108,6 @@ end
 lemma vanishing_res (f:ℂ → ℂ) (x:ℂ) (hf: meromorphic_at f x) :
 residue_at (deriv_over f) x  = order_of_vanishing_at f x :=
 begin
+
   sorry
 end
