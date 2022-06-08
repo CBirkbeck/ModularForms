@@ -122,7 +122,7 @@ end
 
 
 lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
-  is_holomorphic_on (modular_forms.hol_extn (Eisenstein_series_of_weight_ k)):=
+  is_holomorphic_on (upper_half_plane.hol_extn (Eisenstein_series_of_weight_ k)):=
 begin
   rw ←  is_holomorphic_on_iff_differentiable_on,
   apply diff_on_diff,
@@ -257,7 +257,7 @@ begin
   simp at *,
   simp_rw hoo' at H,
   simp_rw h11' at H,
-  simp [int.cast_zero, one_mul, zero_mul, int.cast_one, zero_add, one_zpow₀] at H,
+  simp [int.cast_zero, one_mul, zero_mul, int.cast_one, zero_add, one_zpow] at H,
   apply H,
 end
 
@@ -352,10 +352,10 @@ begin
 end
 
 lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
- modular_forms.is_modular_form_of_lvl_and_weight (⊤) k
+ modular_forms.is_modular_form_of_weight_and_level  k ⊤
  (λ z : ℍ, Eisenstein_series_of_weight_ k z) :=
 { hol:= by
-  { simp_rw modular_forms.hol_extn,
+  { simp_rw upper_half_plane.hol_extn,
     rw mdiff_iff_holo,
     apply Eisenstein_is_holomorphic k hk, },
   transf := by { simp only, apply Eisenstein_is_wmodular ⊤ k, },

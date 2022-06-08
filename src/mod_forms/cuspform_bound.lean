@@ -24,7 +24,7 @@ lemma pet_cts {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) : continuous (p
 begin
   apply continuous.mul,
   { continuity,
-    exact (is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight hf).hol.continuous },
+    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level hf).hol.continuous },
   { continuity, exact or.inl a.2.ne',}
 end
 
@@ -51,7 +51,7 @@ begin
       rw this at t, simp only [mul_zero, add_zero] at t,
       rw ←abs_mul_self at t, rw ←pow_two at t, rw _root_.abs_pow at t,
       have tt : |re z| ^ 2 ≤ (1 / 2) ^ 2,
-      { apply sq_le_sq, rw _root_.abs_abs,
+      { rw sq_le_sq, rw _root_.abs_abs,
         have : 0 < (1/2 : ℝ) := by simp,
         conv begin to_rhs, rw abs_of_pos this, end,
         exact hz2, },
@@ -80,9 +80,9 @@ begin
     rw norm_eq_abs, rw complex.abs, apply real.le_sqrt_of_sq_le,
     rw real.sq_sqrt (norm_sq_nonneg _),
     rw norm_sq, dsimp, rw add_comm, apply add_le_add,
-    { rw ←pow_two, apply sq_le_sq, apply abs_le_abs,
+    { rw ←pow_two, rw sq_le_sq, apply abs_le_abs,
       { exact hx.2.2.2 }, { exact le_trans (by linarith) (le_trans hx.1 hx.2.2.2), } },
-    { rw ←pow_two, apply sq_le_sq, apply abs_le_abs,
+    { rw ←pow_two, rw sq_le_sq, apply abs_le_abs,
       { exact le_trans (le_abs_self (re x)) hx.2.1 },
       { exact le_trans (neg_le_abs_self (re x)) hx.2.1 } } }
 end
@@ -112,6 +112,7 @@ begin
   replace HC := HC (g • z) hg,
   have : pet_self f k (g • z) = pet_self f k z,
   { apply pet_self_is_invariant,
-    exact (is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight hf).transf, tauto, },
+    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level hf).transf,
+      tauto, },
   rwa this at HC
 end

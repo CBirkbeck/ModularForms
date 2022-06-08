@@ -30,7 +30,7 @@ instance : has_one ℝ_pos := by { use 1, exact zero_lt_one, }
 
 /-- Function-theoretic lemma, maybe move this elsewhere? -/
 lemma bound_holo_fcn (g : ℂ → ℂ) (hg : differentiable_at ℂ g 0) (hg' : g 0 = 0):
-  is_O g id (𝓝 0) :=
+  is_O (𝓝 0) g id  :=
 begin
   replace hg := hg.has_deriv_at.is_O_sub, simp_rw [hg', sub_zero] at hg, exact hg,
 end
@@ -251,14 +251,14 @@ section holo_at_inf_C
 variables (h : ℝ_pos) (f : ℂ → ℂ) (hf : ∀ (w : ℂ), f(w + h) = f(w))
 include hf
 
-lemma F_bound (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf') : is_O (cusp_fcn h f) (1 : ℂ → ℂ) (𝓝[≠] 0) :=
+lemma F_bound (h_bd : is_O at_I_inf' f (1 : ℂ → ℂ) ) : is_O (𝓝[≠] (0 : ℂ)) (cusp_fcn h f) (1 : ℂ → ℂ)  :=
 begin
-  refine is_O.congr' _ (by refl) (h_bd.comp_tendsto $ Z_tendsto h),
+  refine is_O.congr' (h_bd.comp_tendsto $ Z_tendsto h) _ (by refl) ,
   apply eventually_nhds_within_of_forall, intros q hq,
   rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl,
 end
 
-lemma F_diff_at_zero (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf')
+lemma F_diff_at_zero (h_bd : is_O at_I_inf' f (1 : ℂ → ℂ) )
   (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
   differentiable_at ℂ (cusp_fcn h f) 0 :=
 begin
@@ -278,7 +278,7 @@ end
 
 /-- If `f` is periodic, and holomorphic and bounded near `I∞`, then it tends to a limit at `I∞`,
 and this limit is the value of its cusp function at 0. -/
-theorem tendsto_at_I_inf (h_bd : is_O f (1 : ℂ → ℂ) at_I_inf')
+theorem tendsto_at_I_inf (h_bd : is_O at_I_inf' f (1 : ℂ → ℂ) )
   (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
   tendsto f at_I_inf' (𝓝 $ cusp_fcn h f 0) :=
 begin
@@ -291,30 +291,30 @@ begin
   exact tendsto_nhds_within_of_tendsto_nhds (F_diff_at_zero _ _ hf h_bd h_hol).continuous_at.tendsto
 end
 
-lemma cusp_fcn_zero_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
+lemma cusp_fcn_zero_of_zero_at_inf (h_bd : is_o at_I_inf' f (1 : ℂ → ℂ) )
   (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) : cusp_fcn h f 0 = 0 :=
 begin
   rw [cusp_fcn, function.update], split_ifs, swap, tauto,
   suffices : tendsto (cusp_fcn_0 h f) (𝓝[{0}ᶜ] 0) (𝓝 (0:ℂ)),
   { exact tendsto.lim_eq this },
-  have : is_o (cusp_fcn h f) 1 (𝓝[≠] 0),
-  { refine is_o.congr' _ (by refl) (h_bd.comp_tendsto $ Z_tendsto h),
+  have : is_o (𝓝[≠] (0 : ℂ)) (cusp_fcn h f) 1 ,
+  { refine is_o.congr' (h_bd.comp_tendsto $ Z_tendsto h) _ (by refl) ,
     apply eventually_nhds_within_of_forall, intros q hq, rw cusp_fcn_eq_of_nonzero _ _ _ hq, refl },
-  have : is_o (cusp_fcn_0 h f) 1 (𝓝[≠] 0),
-  { refine is_o.congr' _ (by refl) this, apply eventually_nhds_within_of_forall,
+  have : is_o (𝓝[≠] (0 : ℂ)) (cusp_fcn_0 h f) 1,
+  { refine is_o.congr' this _ (by refl), apply eventually_nhds_within_of_forall,
     apply cusp_fcn_eq_of_nonzero, },
   simpa using this.tendsto_div_nhds_zero,
 end
 
 /-- Main theorem of this file: if `f` is periodic, holomorphic near `I∞`, and tends to zero
 at `I∞`, then in fact it tends to zero exponentially fast. -/
-theorem exp_decay_of_zero_at_inf (h_bd : is_o f (1 : ℂ → ℂ) at_I_inf')
+theorem exp_decay_of_zero_at_inf (h_bd : is_o at_I_inf' f (1 : ℂ → ℂ) )
   (h_hol : ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ f z) :
-  is_O f (λ z:ℂ, real.exp (-2 * π * im z / h)) at_I_inf' :=
+  is_O at_I_inf' f (λ z:ℂ, real.exp (-2 * π * im z / h))  :=
 begin
   have F0 := cusp_fcn_zero_of_zero_at_inf _ _ hf h_bd h_hol,
   have : f = λ z:ℂ, (cusp_fcn h f) (Q h z) := by { ext1 z, apply eq_cusp_fcn _ _ hf,},
-  conv begin congr, rw this, skip, funext, rw [←(abs_Q_eq h), ←norm_eq_abs], end,
+  conv begin congr, skip, rw this, skip, funext, rw [←(abs_Q_eq h), ←norm_eq_abs], end,
   apply is_O.norm_right,
   exact (bound_holo_fcn _ (F_diff_at_zero _ _ hf h_bd.is_O h_hol) F0).comp_tendsto (Q_tendsto h),
 end
@@ -340,7 +340,7 @@ section modform_equivs
 variables {f : ℍ → ℂ} {k : ℤ}
 
 lemma modform_bound_aux (C : ℝ) (g : ℂ → ℂ) (hc : 0 ≤ C)
-  (h_bd : is_O_with C f (λ z:ℍ, g z) at_I_inf) : is_O_with C (extend_by_zero f) g at_I_inf' :=
+  (h_bd : is_O_with C  at_I_inf f (λ z:ℍ, g z)) : is_O_with C at_I_inf' (extend_by_zero f) g  :=
 begin
   rw is_O_with_iff at h_bd ⊢,
   apply eventually_of_mem,
@@ -356,8 +356,8 @@ begin
   { dsimp, intros x hx, linarith, },
 end
 
-lemma modform_bounded (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
-  is_O (extend_by_zero f) (1 : ℂ → ℂ) at_I_inf' :=
+lemma modform_bounded (h_mod : is_modular_form_of_weight_and_level k ⊤ f) :
+  is_O at_I_inf' (extend_by_zero f) (1 : ℂ → ℂ)  :=
 begin
   have bd := h_mod.infinity (1 : SL(2, ℤ)),
   have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
@@ -366,17 +366,17 @@ begin
   exact (modform_bound_aux c 1 c_pos bd).is_O,
 end
 
-lemma cuspform_vanish_infty (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) :
-  is_o (extend_by_zero f) (1 : ℂ → ℂ) at_I_inf' :=
+lemma cuspform_vanish_infty (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) :
+  is_o at_I_inf' (extend_by_zero f) (1 : ℂ → ℂ)  :=
 begin
   have bd := h_mod.infinity (1 : SL(2, ℤ)),
   have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
   rw [this, is_zero_at_inf] at bd,
-  have : is_o f (1 : ℍ → ℂ) at_I_inf := by { apply is_o_of_tendsto, simp, simpa using bd },
+  have : is_o at_I_inf f (1 : ℍ → ℂ)  := by { apply is_o_of_tendsto, simp, simpa using bd },
   rw is_o at *, exact (λ c hc, modform_bound_aux c 1 hc.le (this hc)),
 end
 
-lemma modform_periodic (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) (w : ℂ) :
+lemma modform_periodic (h_mod : is_modular_form_of_weight_and_level k ⊤ f) (w : ℂ) :
   (extend_by_zero f)(w + 1) = (extend_by_zero f)(w) :=
 begin
   by_cases hw : 0 < im w,
@@ -396,15 +396,15 @@ begin
     exact this }
 end
 
-lemma modform_hol (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) (z : ℂ) (hz : 0 < im z):
+lemma modform_hol (h_mod : is_modular_form_of_weight_and_level k ⊤ f) (z : ℂ) (hz : 0 < im z):
   differentiable_at ℂ (extend_by_zero f) z :=
 begin
-  have hf_hol := mdiff_to_holo (hol_extn f) h_mod.hol,
+  have hf_hol := mdiff_to_holo (upper_half_plane.hol_extn f) h_mod.hol,
   rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
   exact (hf_hol z hz).differentiable_at ((is_open_iff_mem_nhds.mp upper_half_plane_is_open) z hz),
 end
 
-lemma modform_hol_infty (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+lemma modform_hol_infty (h_mod : is_modular_form_of_weight_and_level k ⊤ f) :
   ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ (extend_by_zero f) z :=
 begin
   refine eventually_of_mem (_ : upper_half_space ∈ at_I_inf') _,
@@ -437,7 +437,7 @@ end
 
 def cusp_fcn_H : ℂ → ℂ := (cusp_fcn 1 $ extend_by_zero f)
 
-lemma eq_cusp_fcn_H {f k} (z : ℍ) (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f) :
+lemma eq_cusp_fcn_H {f k} (z : ℍ) (h_mod : is_modular_form_of_weight_and_level k ⊤ f) :
   f z = (cusp_fcn_H f) (Q 1 z):=
 begin
   have t := eq_cusp_fcn 1 (extend_by_zero f) (modform_periodic h_mod) z,
@@ -445,7 +445,7 @@ begin
   rw extend_by_zero_eq_of_mem f _ _, { simp }, { cases z, tauto, },
 end
 
-lemma cusp_fcn_diff {f k} (h_mod : is_modular_form_of_lvl_and_weight ⊤ k f)
+lemma cusp_fcn_diff {f k} (h_mod : is_modular_form_of_weight_and_level k ⊤ f)
   (q : 𝔻) : differentiable_at ℂ (cusp_fcn_H f) q :=
 begin
   by_cases hq : (q:ℂ) = 0,
@@ -456,17 +456,17 @@ begin
     rw (QZ_eq_id 1 q hq) at t, rw cusp_fcn_H, exact t },
 end
 
-lemma cusp_fcn_vanish {f k} (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) : cusp_fcn_H f 0 = 0 :=
+lemma cusp_fcn_vanish {f k} (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) : cusp_fcn_H f 0 = 0 :=
 begin
-  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight h_mod,
+  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level h_mod,
   exact cusp_fcn_zero_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod'),
 end
 
-lemma exp_decay_of_cuspform {f k} (h_mod : is_cusp_form_of_lvl_and_weight ⊤ k f) :
- is_O f (λ z:ℍ, real.exp (-2 * π * im z)) at_I_inf :=
+lemma exp_decay_of_cuspform {f k} (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) :
+ is_O at_I_inf f (λ z:ℍ, real.exp (-2 * π * im z))  :=
 begin
-  have h_mod' := is_modular_form_of_lvl_and_weight_of_is_cusp_form_of_lvl_and_weight h_mod,
+  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level h_mod,
   obtain ⟨C, hC⟩ := (exp_decay_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod')).is_O_with,
   rw is_O, use C,
@@ -490,7 +490,7 @@ lemma pet_bounded_large {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) :
 begin
   -- first get bound for large values of im z
   have h1 := exp_decay_of_cuspform hf,
-  have : is_O (λ (z : ℍ), real.exp ((-2) * π * z.im)) (λ (z : ℍ), 1 / (z.im) ^ ((k : ℝ) / 2)) at_I_inf,
+  have : is_O at_I_inf (λ (z : ℍ), real.exp ((-2) * π * z.im)) (λ (z : ℍ), 1 / (z.im) ^ ((k : ℝ) / 2)) ,
   {
     apply is_o.is_O, apply is_o_of_tendsto,
     { intros x hx, exfalso,
@@ -518,7 +518,7 @@ begin
   { rw [←real.rpow_int_cast, ←real.rpow_nat_cast, ←real.rpow_mul],
     swap, exact z.2.le, congr' 1, simp, },
   rw [←upper_half_plane.coe_im, this, ←mul_pow],
-  apply sq_le_sq,
+  rw sq_le_sq,
   have e : 0 < z.im ^ ((k : ℝ) / 2) := by { apply real.rpow_pos_of_pos, exact z.2, },
   have : abs (f z) * (im z) ^ ((k : ℝ) / 2) ≤ C1,
   { rw [div_eq_inv_mul, mul_one, norm_inv, mul_comm] at h1',

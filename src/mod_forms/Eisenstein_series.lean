@@ -78,7 +78,7 @@ begin
   have h2 :  (i1*(a*z+b)/(c*z+d)+i2)=((i1*(a*z+b))/(c*z+d)+i2), by {ring}, rw h2,
   have h3 := div_add' (i1*(a*z+b)) i2 (c*z+d) h,
   rw h3,
-  simp only [div_zpow₀, inv_div],
+  simp only [div_zpow, inv_div],
   rw [div_eq_inv_mul, mul_comm],
   have h5: (c*z+d)^k ≠ 0,
   by {apply zpow_ne_zero _ h,  },
@@ -325,7 +325,7 @@ lemma natpowsinv (x : ℝ) (n : ℤ)  (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x
 begin
 have:=zpow_sub_one₀ h2 n,
 rw this,
-have h3:=mul_zpow₀ (x^n) (x⁻¹) (-1),
+have h3:=mul_zpow (x^n) (x⁻¹) (-1),
 simp at *,
 exact h3,
 end
@@ -364,7 +364,7 @@ begin
   by {have dis: ((rfunct z * ↑n) ^ k)⁻¹ = ((rfunct z)^k)⁻¹* (↑n^k)⁻¹,
   by {rw mul_pow,
   simp_rw [← zpow_neg_one],
-  simp_rw [← mul_zpow₀], },
+  simp_rw [← mul_zpow], },
   simp [dis],
   rw natpowsinv,
   ring,
@@ -950,7 +950,7 @@ end
 
 lemma aux8 (a b k: ℤ ) (x : ℂ): (((a : ℂ)*x+b)^k)⁻¹ =  ((a : ℂ)*x+b)^-k:=
 begin
-refine (zpow_neg₀ _ k).symm,
+refine (zpow_neg _ k).symm,
 end
 
 lemma dd2 (a b k: ℤ) (x : ℂ) (h : (a: ℂ)*x+b ≠ 0) :
@@ -991,7 +991,7 @@ begin
   let fx:=(-k*((y.1:ℂ)*z.1+y.2)^(-k-1)*(y.1) : ℂ),
   use fx,
   rw has_deriv_within_at_iff_tendsto at *,
-  simp  [ zpow_neg₀, algebra.id.smul_eq_mul, eq_self_iff_true,
+  simp  [ zpow_neg, algebra.id.smul_eq_mul, eq_self_iff_true,
    ne.def, int.cast_neg, subtype.val_eq_coe, norm_eq_abs,
   sub_neg_eq_add] at *,
   rw metric.tendsto_nhds_within_nhds at *,
