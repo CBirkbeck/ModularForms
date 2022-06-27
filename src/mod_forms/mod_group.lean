@@ -29,12 +29,12 @@ variables (n : Type* )  [decidable_eq n] [fintype n] (m : ℤ)
 
 namespace modular_group
 
-
+ local attribute [-instance] matrix.special_linear_group.has_coe_to_fun
 local notation `SL2Z`:=special_linear_group (fin 2) ℤ
 
 variables  {R : Type*} [comm_ring R]
 
-lemma det_m (M: integral_matrices_with_determinant (fin 2) m): (M 0 0 * M 1 1 - M 0 1 * M 1 0)=m:=
+lemma det_m (M: integral_matrices_with_determinant (fin 2) m): (M 0 0 * M 1 1 - M 0 1 * M 1 0)= m :=
 begin
  have H:= matrix.det_fin_two M.1,
  simp at *,
@@ -62,8 +62,9 @@ end
   (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧
   (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧
   (A * B) 1 1  = A 1 0 * B 0 1 + A 1 1  * B 1 1 :=
-  begin
-  split,  simp,
+begin
+  split, work_on_goal 2 {split}, work_on_goal 3 {split},
+  all_goals {simp only [mul_eq_mul],
   rw  matrix.mul_apply,
   rw finset.sum_fin_eq_sum_range,
   rw finset.sum_range_succ,
@@ -71,34 +72,7 @@ end
   simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero,
   forall_false_left, if_true, finset.sum_empty, not_le,
     finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-    ite_eq_left_iff],
-    split,  simp ,
-  rw  matrix.mul_apply,
-  rw finset.sum_fin_eq_sum_range,
-  rw finset.sum_range_succ,
-  rw finset.sum_range_succ,
-  simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero,
-  forall_false_left, if_true, finset.sum_empty, not_le,
-    finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-    ite_eq_left_iff],
-    split, simp ,
-  rw  matrix.mul_apply,
-  rw finset.sum_fin_eq_sum_range,
-  rw finset.sum_range_succ,
-  rw finset.sum_range_succ,
-  simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero,
-   forall_false_left, if_true, finset.sum_empty, not_le,
-    finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-    ite_eq_left_iff],
-  simp,
-  rw  matrix.mul_apply,
-  rw finset.sum_fin_eq_sum_range,
-  rw finset.sum_range_succ,
-  rw finset.sum_range_succ,
-  simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero,
-  forall_false_left, if_true, finset.sum_empty, not_le,
-    finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-    ite_eq_left_iff],
+    ite_eq_left_iff]},
 end
 
 
@@ -149,14 +123,22 @@ begin
   exact adet,
 end
 
+lemma SL2_inv_expl (A : SL2Z) : A⁻¹ = ⟨![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1  0 0]],
+  by { rw matrix.det_fin_two, simp, have := A.2, rw matrix.det_fin_two at this, rw mul_comm,
+    convert this, }⟩ :=
+begin
+ext,
+rw special_linear_group.coe_inv,
+have := adjugate_fin_two A,
+simp at this,
+rw this,
+refl,
+end
+
 lemma explicit_inv_is_inv (A: SL2Z): A⁻¹ = ⟨ SL2Z_inv_explicit A,  SL2Z_inv_det A⟩:=
 begin
   rw sl2_inv'' A  ⟨ SL2Z_inv_explicit A,  SL2Z_inv_det A⟩,
-  simp  at *,
-  simp_rw SL2Z_inv_explicit, refl,
-  simp_rw SL2Z_inv_explicit, refl,
-  simp_rw SL2Z_inv_explicit, refl,
-  simp_rw SL2Z_inv_explicit, refl,
+  all_goals { simp_rw SL2Z_inv_explicit, refl},
 end
 
 @[simp] lemma SL2Z_inv_a (A : SL2Z) : (A⁻¹) 0 0 = A 1 1 :=

@@ -23,8 +23,9 @@ open modular_group
 open integral_matrices_with_determinant
 open_locale big_operators nnreal classical filter matrix upper_half_plane
 
-
+local attribute [-instance] matrix.special_linear_group.has_coe_to_fun
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
+local prefix `↑ₘ`:1024 := @coe _ (matrix (fin 2) (fin 2) _) _
 noncomputable theory
 
 namespace Eisenstein_series

@@ -98,7 +98,7 @@ end
 lemma slash_k_mul_one_SL2 (k : ℤ) (f : ℍ → ℂ) : (f ∣[k] (1 : SL(2, ℤ))) = f :=
 begin
 have : ((1 : SL(2, ℤ)) :  GL(2, ℝ)⁺) = (1 : GL(2, ℝ)⁺),
-  by {ext, fin_cases i; fin_cases j, all_goals {simp,}, },
+  by {ext, simp, },
 rw this,
 apply slash_k_mul_one,
 end
