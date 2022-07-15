@@ -1,6 +1,7 @@
 import mod_forms.Eisenstein_series
-import mod_forms.unform_limits_of_holomorphic
+import for_mathlib.unform_limits_of_holomorphic
 import for_mathlib.mod_forms2
+import geometry.manifold.mfderiv
 
 universes u v w
 
@@ -10,7 +11,7 @@ open_locale big_operators nnreal classical filter
 
 local notation `ℍ` := upper_half_plane
 
-local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
+local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
 
@@ -122,23 +123,22 @@ end
 
 
 lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
-  is_holomorphic_on (upper_half_plane.hol_extn (Eisenstein_series_of_weight_ k)):=
+  is_holomorphic_on (hol_extn (Eisenstein_series_of_weight_ k)):=
 begin
   rw ←  is_holomorphic_on_iff_differentiable_on,
   apply diff_on_diff,
   intro x,
   have H:= Eisen_partial_tends_to_uniformly_on_ball' k hk x,
   obtain ⟨A, B, ε, hε, hball, hB, hεB, hunif⟩ :=H,
-  use 2⁻¹*ε,
+  use ε,
   have hball2: metric.closed_ball ↑x ε ⊆ ℍ'.1,
   by {apply ball_in_upper_half x A B ε hB hε hεB hball,},
   split,
-  ring_nf,
-  nlinarith,
+  apply hε,
   split,
   intros w hw,
   have hwa : w ∈ ℍ'.1,
-  by { apply hball2, simp, simp at hw, apply le_trans hw.le, field_simp, linarith,},
+  by { apply hball2, simp, simp at hw, apply le_trans hw.le, field_simp, },
   apply hwa,
   have hkn : (k : ℤ) ≠ 0, by {norm_cast, linarith,},
   let F: ℕ → ℂ → ℂ := λ n, extend_by_zero ( eisen_square' k n),
@@ -149,11 +149,8 @@ begin
   simp_rw F,
   apply this.mono,
   apply hball2,},
-  apply uniform_of_diff_circle_int_is_diff F (extend_by_zero (Eisenstein_series_of_weight_ k)) x ε (2⁻¹*ε) hε _ _
+  apply uniform_of_diff_circle_int_is_diff F (extend_by_zero (Eisenstein_series_of_weight_ k)) x hε
   hdiff hunif,
-  ring_nf,
-  linarith,
-  simp [hε.le],
 end
 
 def my_vadd : ℤ → ℍ → ℍ :=
@@ -329,9 +326,9 @@ begin
 end
 
 lemma Eisenstein_is_bounded (k: ℕ) (hk : 3 ≤ k) :
-  modular_forms.is_bound_at_inf (Eisenstein_series_of_weight_ k) :=
+  upper_half_plane.is_bound_at_infty (Eisenstein_series_of_weight_ k) :=
 begin
-  simp only [modular_forms.bound_mem, subtype.forall, upper_half_plane.coe_im],
+  simp only [upper_half_plane.bound_mem, subtype.forall, upper_half_plane.coe_im],
   let M : ℝ := 8 / rfunct (lbpoint 1 2 $ by linarith) ^ k * Riemann_zeta (k - 1),
   use [M, 2],
   intros z hz,
@@ -348,21 +345,120 @@ begin
     rw [hadd, my_add_im n z],
     apply le_trans hz,
     apply le_abs_self,},
-  apply Real_Eisenstein_bound_unifomly_on_stip k hk 1 2 (by linarith) ⟨Z, hZ⟩,
+  convert Real_Eisenstein_bound_unifomly_on_stip k hk 1 2 (by linarith) ⟨Z, hZ⟩,
 end
+
+
+variable (f : ℍ' → ℂ)
+
+open_locale classical topological_space manifold
+
+instance : inhabited ℍ' :=
+begin
+let  x := (⟨complex.I, by {simp,} ⟩ : ℍ),
+apply inhabited.mk x,
+end
+
+lemma ext_chart (z : ℍ') : (extend_by_zero f) z = (f ∘ ⇑((chart_at ℂ z).symm)) z :=
+begin
+simp_rw chart_at,
+simp_rw extend_by_zero,
+simp,
+have :=  (local_homeomorph.subtype_restr_coe  (local_homeomorph.refl ℂ) ℍ').symm,
+congr,
+simp_rw local_homeomorph.subtype_restr,
+simp,
+have hf:= topological_space.opens.local_homeomorph_subtype_coe_coe ℍ',
+simp_rw ← hf,
+apply symm,
+apply local_homeomorph.left_inv,
+simp only [topological_space.opens.local_homeomorph_subtype_coe_source],
+end
+
+lemma holo_to_mdiff (f : ℍ' → ℂ) (hf : is_holomorphic_on f ) : mdifferentiable 𝓘(ℂ) 𝓘(ℂ) f :=
+begin
+rw ← is_holomorphic_on_iff_differentiable_on at hf,
+simp_rw mdifferentiable,
+ simp only [mdifferentiable_at, differentiable_within_at_univ] with mfld_simps,
+intro x,
+split,
+have hc:= hf.continuous_on,
+simp at hc,
+rw continuous_on_iff_continuous_restrict at hc,
+have hcc:= hc.continuous_at,
+convert hcc,
+funext y,
+simp_rw extend_by_zero,
+simp_rw set.restrict,
+simp [y.2],
+rw ← dite_eq_ite,
+rw dif_pos,
+apply y.2,
+have hfx := hf x x.2,
+have hH: ℍ'.1 ∈ 𝓝 (((chart_at ℂ x) x)), by {simp_rw metric.mem_nhds_iff, simp,
+simp_rw chart_at, simp, have:= upper_half_plane_is_open, rw metric.is_open_iff at this,
+have ht:= this x.1 x.2, simp at ht, exact ht,},
+apply differentiable_on.differentiable_at _ hH,
+apply differentiable_on.congr hf,
+intros y hy,
+have HH:= ext_chart f (⟨y,hy⟩ : ℍ'),
+simp at HH,
+simp only [function.comp_app],
+simp_rw HH,
+congr,
+end
+
+lemma mdiff_to_holo (f : ℍ' → ℂ) (hf :  (mdifferentiable 𝓘(ℂ) 𝓘(ℂ) f) ) : is_holomorphic_on f :=
+begin
+rw ← is_holomorphic_on_iff_differentiable_on,
+simp_rw mdifferentiable at hf,
+simp only [mdifferentiable_at, differentiable_within_at_univ] with mfld_simps at hf,
+simp_rw differentiable_on,
+intros x hx,
+have hff:= (hf ⟨x, hx⟩).2,
+apply differentiable_at.differentiable_within_at,
+simp_rw differentiable_at at *,
+obtain ⟨g, hg⟩:= hff,
+use g,
+apply has_fderiv_at.congr_of_eventually_eq hg,
+simp_rw filter.eventually_eq_iff_exists_mem,
+use ℍ',
+split,
+simp_rw metric.mem_nhds_iff, simp,
+simp_rw chart_at, simp,
+have:= upper_half_plane_is_open,
+rw metric.is_open_iff at this,
+have ht:= this x hx,
+simp at ht,
+exact ht,
+simp_rw set.eq_on,
+intros y hy,
+apply ext_chart f (⟨y,hy⟩ : ℍ'),
+end
+
+lemma mdiff_iff_holo (f : ℍ' → ℂ) : (mdifferentiable 𝓘(ℂ) 𝓘(ℂ) f) ↔ is_holomorphic_on f :=
+begin
+split,
+apply mdiff_to_holo f,
+apply holo_to_mdiff f,
+end
+
+
+
 
 lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
  modular_forms.is_modular_form_of_weight_and_level  k ⊤
  (λ z : ℍ, Eisenstein_series_of_weight_ k z) :=
 { hol:= by
-  { simp_rw upper_half_plane.hol_extn,
+  { simp_rw hol_extn,
     rw mdiff_iff_holo,
     apply Eisenstein_is_holomorphic k hk, },
   transf := by { simp only, apply Eisenstein_is_wmodular ⊤ k, },
   infinity := by
   { intros A,
     have := Eisenstein_is_wmodular ⊤ k ⟨A, by tauto⟩,
-    dsimp at *, rw this,
+    simp only [modular_forms.slash_action_eq_slash', coe_coe, modular_forms.slash_action_eq_slash,
+  subtype.coe_mk] at *, rw this,
     apply Eisenstein_is_bounded k hk, }
 }
 

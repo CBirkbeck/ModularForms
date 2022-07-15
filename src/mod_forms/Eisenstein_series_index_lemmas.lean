@@ -10,10 +10,11 @@ import mod_forms.Riemann_zeta_fin
 import mod_forms.holomorphic_functions
 import order.filter.archimedean
 import mod_forms.Weierstrass_M_test
-import mod_forms.upper_half_plane
+import analysis.complex.upper_half_plane.basic
+import analysis.complex.upper_half_plane.topology
 import topology.compact_open
 import analysis.calculus.deriv
-import mod_forms.modular
+import number_theory.modular
 import mod_forms.mat_m
 
 universes u v w
@@ -42,39 +43,48 @@ ring_nf, rw h, rw one_mul,
 end
 
 /- This is the permutation of the summation index coming from the moebius action-/
-def Ind_perm (A : SL2Z ): ℤ × ℤ →  ℤ × ℤ:=
-λ z, (z.1* (A.1 0 0) +z.2* (A.1 1 0), z.1*(A.1 0 1)+z.2* (A.1 1 1))
+def Ind_perm (A : SL2Z ): ℤ × ℤ → ℤ × ℤ:=
+λ z, (z.1 * (A.1 0 0) + z.2 * (A.1 1 0), z.1 * (A.1 0 1) + z.2 * (A.1 1 1))
 
-def Ind_equiv (A : SL2Z): ℤ × ℤ ≃ ℤ × ℤ:={
-  to_fun:=Ind_perm A,
+lemma det_sl_one  (M : SL2Z) : (M.1 0 0 * M.1 1 1 + -(M.1 0 1 * M.1 1 0)) = 1 :=
+begin
+apply det_m,
+end
+
+def Ind_equiv (A : SL2Z): ℤ × ℤ ≃ ℤ × ℤ  :=
+{ to_fun:=Ind_perm A,
   inv_fun:=Ind_perm A⁻¹,
-  left_inv:=λ z, by {rw Ind_perm, rw Ind_perm,
-  have ha:= SL2Z_inv_a A, simp only [mat_m_vals] at ha,
-  have hb:= SL2Z_inv_b A, simp only [mat_m_vals] at hb,
-  have hc:= SL2Z_inv_c A, simp only [mat_m_vals] at hc,
-  have hd:= SL2Z_inv_d A, simp only [mat_m_vals] at hd,
-  have hdet:=det_onne A, simp only [mat_m_vals] at hdet,
-  simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf, rw mul_comm at hdet,
-  have ht: A.val 1 1 * A.val 1 0 - A.val 1 0 * A.val 1 1=0, by {ring, }, simp only [ht],
-  have ht2: -(A.val 0 1 * A.val 0 0) + A.val 0 0 * A.val 0 1=0, by {ring,}, simp only [ht2],
-  have ht3: -(A.val 0 1 * A.val 1 0) + A.val 0 0 * A.val 1 1 =1, by {rw add_comm,
-  rw mul_comm at hdet, simp,
-  simp at *,
-  ring_nf,
-  rw mul_comm,
-  apply hdet },
-  simp only [ht3],
-  ring_nf, rw hdet, simp  [prod.mk.eta, add_zero, zero_mul, zero_add],   },
-  right_inv:= λ z, by { rw Ind_perm, rw Ind_perm,
-  have ha:= SL2Z_inv_a A, simp only [mat_m_vals] at ha,
-  have hb:= SL2Z_inv_b A, simp only [mat_m_vals] at hb,
-  have hc:= SL2Z_inv_c A, simp only [mat_m_vals] at hc,
-  have hd:= SL2Z_inv_d A, simp only [mat_m_vals] at hd,
-  have hdet:=det_onne A, simp only [mat_m_vals] at hdet,
-  simp only, ring_nf, simp only [ha, hb, hc, hd], ring_nf,
-  have hz1:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.fst hdet, simp only [hz1],
-  have hz2:= ridic2 (A.val 0 0) (A.val 1 0) (A.val 0 1) (A.val 1 1) z.snd hdet,
-  simp only [hz2], simp only [prod.mk.eta],} ,}
+  left_inv:= λ z,  by {
+    simp_rw Ind_perm,
+    ring_nf,
+    have hdet := det_sl_one A,
+    simp only [subtype.val_eq_coe,SL2Z_inv_a, SL2Z_inv_c, neg_mul, SL2Z_inv_b, SL2Z_inv_d] at *,
+    nth_rewrite 1 mul_comm,
+    nth_rewrite 2 mul_comm,
+    ext,
+    simp,
+    simp_rw hdet,
+    ring,
+    simp,
+    nth_rewrite 2 add_comm,
+    simp_rw [hdet],
+    ring,},
+  right_inv :=  λ z, by
+  { simp_rw Ind_perm,
+    ring_nf,
+    have hdet := det_sl_one A,
+    simp only [subtype.val_eq_coe,SL2Z_inv_a, SL2Z_inv_c, neg_mul, SL2Z_inv_b, SL2Z_inv_d] at *,
+    ext,
+    simp,
+    nth_rewrite 2 mul_comm,
+    simp_rw hdet,
+    ring,
+    simp,
+    nth_rewrite 2 add_comm,
+    nth_rewrite 4 mul_comm,
+    simp_rw [hdet],
+    ring,}}
+
 
 @[simp]lemma ind_simp (A: SL2Z) (z : ℤ × ℤ):
   Ind_equiv A z = (z.1* (A.1 0 0) +z.2* (A.1 1 0), z.1*(A.1 0 1)+z.2* (A.1 1 1)) :=
@@ -613,7 +623,7 @@ begin
   have h5: ∀ (x : ℕ), finset ((coef (In x))), by {intro x, rw coef, exact finset.univ,},
   have hg:∀ (x : ℕ), (coef (In x))={y : ℤ × ℤ | y ∈ In x}, by {intros x, refl,},
   have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)), by {intros a b hab, simp_rw coef,
-  rw ← finset.disjoint_iff_disjoint_coe, apply hdis', exact hab,},
+  rw finset.disjoint_coe, apply hdis', exact hab,},
   have h3:=summable_disjoint_union_of_nonneg  hdis h22 ,
   have h4: summable f ↔ summable (f ∘ h2), by {have:= equiv.summable_iff h2 , rw this, },
   rw h4,
@@ -644,7 +654,7 @@ begin
   have hg:∀ (x : ℕ), (coef (In x))={y : ℤ × ℤ | y ∈ In x}, by {intros x, refl,},
   have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)),
     by {intros a b hab, simp_rw coef,
-    rw ← finset.disjoint_iff_disjoint_coe, apply hdis', exact hab,},
+    rw finset.disjoint_coe, apply hdis', exact hab,},
   have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in  (In x), f y,
    by {  simp only, intro x, apply finset.tsum_subtype', },
   simp_rw h6,
@@ -668,7 +678,7 @@ begin
   have hdis:∀ (a b : ℕ) , a ≠ b →  disjoint (coef (In a)) (coef (In b)),
     by {intros a b hab,
     simp_rw coef,
-    rw ← finset.disjoint_iff_disjoint_coe,
+    rw finset.disjoint_coe,
     apply hdis',
     exact hab,},
   have h6: ∀ (x : ℕ), ∑' (y : ↥(coef (In x))), f (h2 ⟨y,_⟩) = ∑ y in  (In x), f y,

@@ -1,5 +1,7 @@
 import mod_forms.Eisenstein_series_index_lemmas
-import mod_forms.upper_half_plane_manifold
+import analysis.complex.upper_half_plane.basic
+import analysis.complex.upper_half_plane.topology
+import tactic
 
 universes u v w
 
@@ -9,7 +11,7 @@ open_locale big_operators nnreal classical filter
 
 local notation `ℍ` := upper_half_plane
 
-local notation `ℍ'`:=(⟨upper_half_space, upper_half_plane_is_open⟩: open_subs)
+local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
 
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
@@ -294,7 +296,7 @@ intros x hx,
 apply Eise_on_square_is_bounded k z n x hx hn,
 end
 
-lemma Eise_on_zero_Square (k : ℕ) (z : ℍ) (h: 1 ≤ k) :∀ (x: ℤ × ℤ),
+lemma Eise_on_zero_Square (k : ℕ) (z : ℍ) (h: 1 ≤ k) : ∀ (x : ℤ × ℤ),
 x ∈ (Square 0) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* 0^k))⁻¹ :=
 begin
   intros x hx,
@@ -311,14 +313,13 @@ end
 lemma Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ k): ∀ (x: ℤ × ℤ),
 x ∈ (Square n) →  (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
 begin
-by_cases h0: n=0,
-{rw h0, apply Eise_on_zero_Square k z hn, },
-have Hn: 1 ≤ n,
-by {have:=nat.pos_of_ne_zero,
-simp at this,
-work_on_goal 1 { cases z, solve_by_elim },},
-intros x hx,
-apply Eise_on_square_is_bounded k z n x hx Hn,
+  by_cases h0: n=0,
+  {rw h0,have:= Eise_on_zero_Square k z hn, simp at *, apply this, },
+  have Hn: 1 ≤ n,
+  by { have:= nat.pos_of_ne_zero h0,
+  linarith },
+  intros x hx,
+  apply Eise_on_square_is_bounded k z n x hx Hn,
 end
 
 lemma natpowsinv (x : ℝ) (n : ℤ)  (h2: x ≠ 0): (x^(n-1))⁻¹=(x^n)⁻¹*x:=
@@ -680,6 +681,11 @@ begin
   nlinarith,
 end
 
+lemma hcoe : upper_half_plane.upper_half_space = coe '' (set.univ : set upper_half_plane) :=
+begin
+simp, refl,
+end
+
 lemma rfunct_lower_bound_on_slice (A B : ℝ) (h: 0 < B) (z : upper_half_space_slice A B) :
 rfunct (lbpoint A B h) ≤  rfunct(z.1) :=
 begin
@@ -736,7 +742,7 @@ begin
     have v1: 0 ≤ A, by {apply le_trans v2 z_property_left,},
     apply aux6 _ _ v2 v1,
     exact z_property_left,},
-  ring_nf, simp at *,
+  ring_nf,
   have i3:= mul_le_mul i1 i2,
   have i4: 0 ≤ (z_val_val.re)^2, by {nlinarith,},
   have i5: 0 ≤ (B ^ 2)⁻¹ , by { simp, nlinarith,},
@@ -970,7 +976,7 @@ begin
   exact this,
 end
 
-lemma H_member (z : ℂ) : z ∈ upper_half_space ↔ 0 < z.im:=iff.rfl
+lemma H_member (z : ℂ) : z ∈ upper_half_plane.upper_half_space ↔ 0 < z.im:=iff.rfl
 
 lemma Eise'_has_deriv_within_at (k : ℤ) (y: ℤ × ℤ) (hkn: k ≠ 0) :
   is_holomorphic_on (λ (z : ℍ'), Eise k z y):=
@@ -986,7 +992,7 @@ begin
   rw ein at hdd,
   have H' := has_deriv_at.has_deriv_within_at hdd,
   have H : has_deriv_within_at (λ (x : ℂ), (↑(y.fst) * x + ↑(y.snd)) ^ -k)
-  (↑-k * (↑(y.fst) * ↑z + ↑(y.snd)) ^ (-k - 1) * ↑(y.fst)) upper_half_space ↑z, by {apply H'},
+  (↑-k * (↑(y.fst) * ↑z + ↑(y.snd)) ^ (-k - 1) * ↑(y.fst)) upper_half_plane.upper_half_space ↑z, by {apply H'},
   simp at H,
   let fx:=(-k*((y.1:ℂ)*z.1+y.2)^(-k-1)*(y.1) : ℂ),
   use fx,

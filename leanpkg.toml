@@ -1,8 +1,8 @@
 [package]
 name = "ModularForms"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.43.0"
+lean_version = "leanprover-community/lean:3.45.0"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "8c836ac9dfa53d6acac4f2a693f2c718f013fe51"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "2123bc38c871c6a75108cda29c765e4e8d46e9e8"}

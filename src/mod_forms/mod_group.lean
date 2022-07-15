@@ -69,96 +69,47 @@ begin
   rw finset.sum_fin_eq_sum_range,
   rw finset.sum_range_succ,
   rw finset.sum_range_succ,
-  simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero,
-  forall_false_left, if_true, finset.sum_empty, not_le,
+  simp [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, if_true, finset.sum_empty, not_le,
     finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
     ite_eq_left_iff]},
 end
 
-
-
-lemma sl2_inv (A: SL2Z) (B: SL2Z)
-(h1: B.1 0 0 = A.1 1 1) (h2: B.1 0 1= - A.1 0 1)
-(h3: B.1 1 0 = - A.1 1 0) (h4: B.1 1 1 = A.1 0 0) :
-A.1 * B.1= (1: SL2Z).1 :=
+lemma SL2_inv_det_expl (A : SL2Z) : det ![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1 0 0]] = 1 :=
 begin
-have:= mat_mul_expl  A.1 B.1,
-ext i j,
-fin_cases i; fin_cases j,
-have e1:= this.1,rw e1, rw h1, rw h3, simp,
-have Adet:= matrix.det_fin_two A, simp at Adet,
-apply Adet.symm, have e2:= this.2.1, rw e2, rw [h2,h4], ring,
-have e3:= this.2.2.1, rw e3, rw [h1,h3], ring, rw this.2.2.2, rw [h2,h4], simp,
-have Adet:= matrix.det_fin_two A, simp  at Adet,
-simp [Adet],ring,
+  rw [matrix.det_fin_two, mul_comm],
+  simp only [subtype.val_eq_coe, cons_val_zero, cons_val_one, head_cons, mul_neg, neg_mul, neg_neg],
+  have := A.2,
+  rw matrix.det_fin_two at this,
+  convert this,
 end
 
-lemma sl2_inv' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1)
-(h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A * B= 1 :=
+lemma SL2_inv_expl (A : SL2Z) : A⁻¹ = ⟨![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1 0 0]],
+    SL2_inv_det_expl A⟩ :=
 begin
-have H :=sl2_inv A B h1 h2 h3 h4,
-simp at H,
- rw ← matrix.mul_eq_mul at H,
- norm_cast at H,
-ext1, cases j,
-cases i, simp at *,solve_by_elim,
+  ext,
+  have := matrix.adjugate_fin_two A.1,
+  simp only [subtype.val_eq_coe, special_linear_group.coe_inv, special_linear_group.coe_mk] at *,
+  rw [ this],
 end
 
-lemma sl2_inv'' (A: SL2Z) (B: SL2Z)
-(h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1)
-(h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A⁻¹= B :=
+@[simp] lemma SL2Z_inv_a (A : SL2Z) : (A⁻¹).1 0 0 = A.1 1 1 :=
 begin
-have H :=sl2_inv' A B h1 h2 h3 h4, have:=eq_inv_iff_mul_eq_one.2 H, simp_rw this, simp,
+rw SL2_inv_expl, simp,
 end
 
-def SL2Z_inv_explicit (A: SL2Z): matrix (fin 2) (fin 2) ℤ:=![![A 1 1, -A 0 1], ![-A 1 0 , A  0 0]]
-
-lemma SL2Z_inv_det (A : SL2Z): (SL2Z_inv_explicit A).det=1:=
+@[simp] lemma SL2Z_inv_b (A : SL2Z) : (A⁻¹).1 0 1 = -A.1 0 1 :=
 begin
-  rw SL2Z_inv_explicit,
-  have adet:= A.2,
-  rw matrix.det_fin_two at *,
-  simp at *,
-  rw mul_comm,
-  exact adet,
+rw SL2_inv_expl, simp,
 end
 
-lemma SL2_inv_expl (A : SL2Z) : A⁻¹ = ⟨![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1  0 0]],
-  by { rw matrix.det_fin_two, simp, have := A.2, rw matrix.det_fin_two at this, rw mul_comm,
-    convert this, }⟩ :=
+@[simp] lemma SL2Z_inv_c (A : SL2Z) : (A⁻¹).1 1 0  = -A.1 1 0 :=
 begin
-ext,
-rw special_linear_group.coe_inv,
-have := adjugate_fin_two A,
-simp at this,
-rw this,
-refl,
+rw SL2_inv_expl, simp,
 end
 
-lemma explicit_inv_is_inv (A: SL2Z): A⁻¹ = ⟨ SL2Z_inv_explicit A,  SL2Z_inv_det A⟩:=
+@[simp] lemma SL2Z_inv_d (A : SL2Z) : (A⁻¹).1 1 1 = A.1 0 0 :=
 begin
-  rw sl2_inv'' A  ⟨ SL2Z_inv_explicit A,  SL2Z_inv_det A⟩,
-  all_goals { simp_rw SL2Z_inv_explicit, refl},
-end
-
-@[simp] lemma SL2Z_inv_a (A : SL2Z) : (A⁻¹) 0 0 = A 1 1 :=
-begin
-rw explicit_inv_is_inv, simp_rw SL2Z_inv_explicit, simp,
-end
-
-@[simp] lemma SL2Z_inv_b (A : SL2Z) : (A⁻¹) 0 1 = -A 0 1 :=
-begin
-rw explicit_inv_is_inv, simp_rw SL2Z_inv_explicit, simp,
-end
-
-@[simp] lemma SL2Z_inv_c (A : SL2Z) : (A⁻¹) 1 0  = -A 1 0 :=
-begin
-rw explicit_inv_is_inv, simp_rw SL2Z_inv_explicit, simp,
-end
-
-@[simp] lemma SL2Z_inv_d (A : SL2Z) : (A⁻¹) 1 1 = A 0 0 :=
-begin
-rw explicit_inv_is_inv, simp_rw SL2Z_inv_explicit, simp,
+rw SL2_inv_expl, simp,
 end
 
 lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_determinant (fin 2) m):

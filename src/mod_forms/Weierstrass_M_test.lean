@@ -84,7 +84,7 @@ begin
      simp only [dist_zero_right, norm_norm] at HC,
      simp_rw metric.tendsto_nhds at HC,
      simp only [filter.eventually_at_top, gt_iff_lt, ge_iff_le, dist_zero_right, norm_norm] at HC,
-     exact HC ε hε,},
+     simpa using (HC ε hε),},
   have c1 : ∀ (a : α) (n : ℕ), 0 ≤ (complex.abs (F n a)),
   by {intros a n, apply complex.abs_nonneg (F n a),},
   have H1 : ∀ (a : α) (n : ℕ), complex.abs (F n a) ≤ (M n), by {simp [h1]},

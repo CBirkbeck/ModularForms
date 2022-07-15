@@ -1,7 +1,7 @@
 import for_mathlib.mod_forms2
-import mod_forms.congruence_subgroups
+import for_mathlib.congruence_subgroups
 import algebraic_geometry.EllipticCurve
-import mod_forms.unform_limits_of_holomorphic
+import for_mathlib.unform_limits_of_holomorphic
 
 open modular_forms complex
 open_locale interval real

@@ -1,4 +1,5 @@
-import mod_forms.upper_half_plane
+import analysis.complex.upper_half_plane.basic
+import analysis.complex.upper_half_plane.topology
 import geometry.manifold.mfderiv
 import mod_forms.holomorphic_functions
 

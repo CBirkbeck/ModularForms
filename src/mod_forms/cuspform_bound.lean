@@ -1,5 +1,5 @@
 import for_mathlib.mod_forms2
-import mod_forms.modular
+import number_theory.modular
 import mod_forms.q_expansion
 
 /-! **Bounds for the integrand of the Petersson product**
@@ -20,12 +20,12 @@ local notation `ℍ` := upper_half_plane
 local notation `SL(` n `, ` R `)`:= matrix.special_linear_group (fin n) R
 
 /-- The Petersson function of a cuspform is continuous. -/
-lemma pet_cts {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) : continuous (pet_self f k) :=
+lemma pet_cts {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) : continuous (pet_self f k) :=
 begin
   apply continuous.mul,
   { continuity,
-    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level hf).hol.continuous },
-  { continuity, exact or.inl a.2.ne',}
+    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ hf).hol.continuous },
+  { simp_rw upper_half_plane.im, continuity, exact or.inl a.2.ne',}
 end
 
 /-- The image of a trunction of the fundamental domain, under the inclusion `ℍ → ℂ`, defined by `≤`
@@ -35,13 +35,12 @@ lemma image_fd (A : ℝ) : ( coe '' { x : ℍ | x ∈ modular_group.fd ∧ x.im 
 begin
   ext1 z, rw modular_group.fd, dsimp,
   split,
-  { intro hz, simp only [set.mem_image] at hz,
+  { intro hz,
     obtain ⟨x, ⟨⟨hx1, hx2⟩, hx3⟩, hzx⟩ := hz,
     rw ←hzx,
     refine ⟨x.2.le, hx2, _, hx3⟩,
     rw [←one_le_sq_iff, ←norm_sq_eq_abs], exact hx1, apply complex.abs_nonneg, },
   { intro hz, obtain ⟨hz1, hz2, hz3, hz4⟩ := hz,
-    rw [set.mem_image],
     rcases le_or_lt (im z) 0,
     -- This is a clumsy way of showing that im z = 0 leads to a contradiction.
     -- Todo: improve this by comparison with three_lt_four_mul_im_sq_of_mem_fdo in modular.lean.
@@ -88,7 +87,7 @@ begin
 end
 
 /-- The Petersson function is bounded on the standard fundamental domain. -/
-lemma pet_bound_on_fd {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) :
+lemma pet_bound_on_fd {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) :
   ∃ (C : ℝ), ∀ (z : ℍ), (z ∈ modular_group.fd) → |pet_self f k z| ≤ C :=
 begin
   obtain ⟨A, C1, H1⟩ := pet_bounded_large hf,
@@ -104,7 +103,7 @@ begin
 end
 
 /-- The Petersson function is bounded everywhere. -/
-theorem pet_bound {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) :
+theorem pet_bound {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) :
   ∃ (C : ℝ), ∀ (z : ℍ), |pet_self f k z| ≤ C :=
 begin
   obtain ⟨C, HC⟩ := pet_bound_on_fd hf, use C, intro z,
@@ -112,7 +111,7 @@ begin
   replace HC := HC (g • z) hg,
   have : pet_self f k (g • z) = pet_self f k z,
   { apply pet_self_is_invariant,
-    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level hf).transf,
+    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ hf).transf,
       tauto, },
   rwa this at HC
 end

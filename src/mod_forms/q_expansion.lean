@@ -1,8 +1,9 @@
 import for_mathlib.mod_forms2
 import mod_forms.holomorphic_functions
 import analysis.complex.removable_singularity
-import mod_forms.upper_half_plane_manifold
-import mod_forms.modular
+import analysis.complex.upper_half_plane.basic
+import analysis.complex.upper_half_plane.topology
+import number_theory.modular
 import group_theory.index
 import mod_forms.Eisen_is_holo
 
@@ -182,7 +183,7 @@ begin
   cases m, { exact is_periodic_aux h f hf z m },
   simp only [neg_add_rev, int.cast_neg_succ_of_nat],
   convert (is_periodic_aux h f hf (z - (m+1) * h) (m+1)).symm,
-  { ring }, { simp },
+  { simp, ring }, { simp },
 end
 
 lemma eq_cusp_fcn (z : ℂ) : f z = (cusp_fcn h f) (Q h z) :=
@@ -340,13 +341,13 @@ section modform_equivs
 variables {f : ℍ → ℂ} {k : ℤ}
 
 lemma modform_bound_aux (C : ℝ) (g : ℂ → ℂ) (hc : 0 ≤ C)
-  (h_bd : is_O_with C  at_I_inf f (λ z:ℍ, g z)) : is_O_with C at_I_inf' (extend_by_zero f) g  :=
+  (h_bd : is_O_with C  upper_half_plane.at_I_infty f (λ z:ℍ, g z)) : is_O_with C at_I_inf' (extend_by_zero f) g  :=
 begin
   rw is_O_with_iff at h_bd ⊢,
   apply eventually_of_mem,
   show {z : ℂ | ∥extend_by_zero f z∥ ≤ C * ∥g z∥} ∈ at_I_inf',
   { rw at_I_inf'_mem,
-    rw [at_I_inf, eventually_iff_exists_mem] at h_bd, obtain ⟨v, hv, h_bd⟩ := h_bd,
+    rw [upper_half_plane.at_I_infty, eventually_iff_exists_mem] at h_bd, obtain ⟨v, hv, h_bd⟩ := h_bd,
     rw [mem_comap', mem_at_top_sets] at hv, cases hv with a hv, use a,
    intros z hz, specialize hv (im z) (hz.le), dsimp at hv,
    rw extend_by_zero, dsimp, split_ifs,
@@ -356,12 +357,14 @@ begin
   { dsimp, intros x hx, linarith, },
 end
 
+local notation f `∣[`:73 k:0, A `]`  :72 := slash_action.map ℂ k A f
+
 lemma modform_bounded (h_mod : is_modular_form_of_weight_and_level k ⊤ f) :
   is_O at_I_inf' (extend_by_zero f) (1 : ℂ → ℂ)  :=
 begin
   have bd := h_mod.infinity (1 : SL(2, ℤ)),
-  have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
-  rw [this, is_bound_at_inf] at bd,
+  have : f ∣[k, (1 : SL(2, ℤ))] = f, by {apply slash_action.one_mul},
+  rw [this, upper_half_plane.is_bound_at_infty] at bd,
   obtain ⟨c, c_pos, bd⟩ := bd.exists_nonneg,
   exact (modform_bound_aux c 1 c_pos bd).is_O,
 end
@@ -370,9 +373,9 @@ lemma cuspform_vanish_infty (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) :
   is_o at_I_inf' (extend_by_zero f) (1 : ℂ → ℂ)  :=
 begin
   have bd := h_mod.infinity (1 : SL(2, ℤ)),
-  have : slash_k k (1 : SL(2, ℤ)) f = f := by apply slash_k_mul_one_SL2,
-  rw [this, is_zero_at_inf] at bd,
-  have : is_o at_I_inf f (1 : ℍ → ℂ)  := by { apply is_o_of_tendsto, simp, simpa using bd },
+  have : f ∣[k, (1 : SL(2, ℤ))] = f, by {apply slash_action.one_mul},
+  rw [this, upper_half_plane.is_zero_at_infty] at bd,
+  have : is_o upper_half_plane.at_I_infty f (1 : ℍ → ℂ)  := by { apply is_o_of_tendsto, simp, simpa using bd },
   rw is_o at *, exact (λ c hc, modform_bound_aux c 1 hc.le (this hc)),
 end
 
@@ -399,7 +402,7 @@ end
 lemma modform_hol (h_mod : is_modular_form_of_weight_and_level k ⊤ f) (z : ℂ) (hz : 0 < im z):
   differentiable_at ℂ (extend_by_zero f) z :=
 begin
-  have hf_hol := mdiff_to_holo (upper_half_plane.hol_extn f) h_mod.hol,
+  have hf_hol := Eisenstein_series.mdiff_to_holo (hol_extn f) h_mod.hol,
   rw ←is_holomorphic_on_iff_differentiable_on at hf_hol,
   exact (hf_hol z hz).differentiable_at ((is_open_iff_mem_nhds.mp upper_half_plane_is_open) z hz),
 end
@@ -407,7 +410,7 @@ end
 lemma modform_hol_infty (h_mod : is_modular_form_of_weight_and_level k ⊤ f) :
   ∀ᶠ (z : ℂ) in at_I_inf', differentiable_at ℂ (extend_by_zero f) z :=
 begin
-  refine eventually_of_mem (_ : upper_half_space ∈ at_I_inf') _,
+  refine eventually_of_mem (_ : upper_half_plane.upper_half_space ∈ at_I_inf') _,
   { rw at_I_inf'_mem, use 0, tauto, },
   { intros x hx, exact modform_hol h_mod x hx },
 end
@@ -458,22 +461,22 @@ end
 
 lemma cusp_fcn_vanish {f k} (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) : cusp_fcn_H f 0 = 0 :=
 begin
-  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level h_mod,
+  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ h_mod,
   exact cusp_fcn_zero_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod'),
 end
 
 lemma exp_decay_of_cuspform {f k} (h_mod : is_cusp_form_of_weight_and_level k ⊤ f) :
- is_O at_I_inf f (λ z:ℍ, real.exp (-2 * π * im z))  :=
+ is_O upper_half_plane.at_I_infty f (λ z:ℍ, real.exp (-2 * π * im z))  :=
 begin
-  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level h_mod,
+  have h_mod' := is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ h_mod,
   obtain ⟨C, hC⟩ := (exp_decay_of_zero_at_inf 1 (extend_by_zero f) (modform_periodic h_mod')
     (cuspform_vanish_infty h_mod) (modform_hol_infty h_mod')).is_O_with,
   rw is_O, use C,
   rw [is_O_with_iff, eventually_iff] at hC ⊢,
-  rw at_I_inf'_mem at hC, rw at_I_inf_mem,
+  rw at_I_inf'_mem at hC, rw upper_half_plane.at_I_infty_mem,
   obtain ⟨A, hC⟩ := hC, use A + 1, intros z hz, specialize hC z,
-  have : A < im z := by linarith, specialize hC this, dsimp at hC ⊢,
+  have : A < im z, by {simp, linarith}, specialize hC this, dsimp at hC ⊢,
   rw [extend_by_zero_eq_of_mem] at hC, swap, exact z.2,
   have : ((1 : ℝ_pos) : ℝ) = (1 : ℝ) := by refl,
   rw this at hC, simp only [subtype.coe_eta, div_one] at hC, exact hC,
@@ -485,18 +488,18 @@ section petersson
 open_locale modular_forms
 
 /- Bound on abs(f z) for large values of z -/
-lemma pet_bounded_large {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S(k, ⊤)) :
+lemma pet_bounded_large {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) :
   ∃ (A C : ℝ), ∀ (z : ℍ), (A ≤ im z) → (pet_self f k) z ≤ C :=
 begin
   -- first get bound for large values of im z
   have h1 := exp_decay_of_cuspform hf,
-  have : is_O at_I_inf (λ (z : ℍ), real.exp ((-2) * π * z.im)) (λ (z : ℍ), 1 / (z.im) ^ ((k : ℝ) / 2)) ,
+  have : is_O upper_half_plane.at_I_infty (λ (z : ℍ), real.exp ((-2) * π * z.im)) (λ (z : ℍ), 1 / (z.im) ^ ((k : ℝ) / 2)) ,
   {
     apply is_o.is_O, apply is_o_of_tendsto,
     { intros x hx, exfalso,
       contrapose! hx, apply one_div_ne_zero,
       refine (real.rpow_pos_of_pos x.2 _).ne', },
-    rw [at_I_inf],
+    rw [upper_half_plane.at_I_infty],
     let F := λ (y : ℝ), real.exp ((-2) * π * y) / (1 / y ^ ( (k:ℝ) / 2)),
     apply (@tendsto_comap'_iff _ _ _ F _ _ _ _).mpr,
     { have := tendsto_rpow_mul_exp_neg_mul_at_top_nhds_0 ((k : ℝ) / 2) (2 * π) real.two_pi_pos,
@@ -511,7 +514,7 @@ begin
           simp only [subtype.coe_mk, mul_im, of_real_re, I_im, mul_one,
             I_re, mul_zero, add_zero]} } } },
   obtain ⟨C1, h1'⟩ := (h1.trans this).bound,
-  rw [eventually_iff, at_I_inf_mem] at h1', cases h1' with A h1',
+  rw [eventually_iff, upper_half_plane.at_I_infty_mem] at h1', cases h1' with A h1',
   dsimp at h1', refine ⟨A, C1 ^ 2, _⟩,
   intros z hz, specialize h1' z hz, rw pet_self, dsimp,
   have : (im z) ^ k = ((im z) ^ ((k : ℝ) / 2)) ^ 2,
@@ -521,10 +524,10 @@ begin
   rw sq_le_sq,
   have e : 0 < z.im ^ ((k : ℝ) / 2) := by { apply real.rpow_pos_of_pos, exact z.2, },
   have : abs (f z) * (im z) ^ ((k : ℝ) / 2) ≤ C1,
-  { rw [div_eq_inv_mul, mul_one, norm_inv, mul_comm] at h1',
+  { rw [div_eq_inv_mul, mul_one, _root_.abs_inv, mul_comm] at h1',
     have h1'' := mul_le_mul_of_nonneg_right h1' _, refine le_trans h1'' _,
     simp,
-    { rw real.norm_eq_abs, rw _root_.abs_of_nonneg,
+    { rw _root_.abs_of_nonneg,
       swap, apply real.rpow_nonneg_of_nonneg, exact z.2.le,
       conv begin to_lhs, congr, rw mul_comm, end, rw mul_assoc,
       suffices : (z.im ^ ((k : ℝ) / 2))⁻¹ * z.im ^ ((k : ℝ) / 2) = 1,
