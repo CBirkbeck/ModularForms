@@ -7,6 +7,8 @@ import .mod_group
 
 /-  This is an attemmatrix_makrto update the kbb birthday repo, so most is not orginal to me-/
 
+
+
 @[simp] lemma not_one_lt_zero {α : Type*} [linear_ordered_semiring α] : ¬ (1:α) < 0 :=
 not_lt_of_gt zero_lt_one
 
@@ -96,6 +98,7 @@ begin
 apply (modular_group.mat_mul_expl A B).2.2.2,
 end
 
+
 lemma T_pow_aux' (n : ℕ ) : (T^n) 0 0 = 1 ∧ (T^n) 0 1 = n ∧ (T^n) 1 0 = 0 ∧ (T^n) 1 1 = 1 :=
 begin
 induction n with d hd,
@@ -111,19 +114,24 @@ induction n with d hd,
   simp only [eq_self_iff_true, and_self],
 end
 
+lemma T_pow_aux'' (n : ℕ ) : (T^n) 0 0 = 1 ∧ (T^n) 0 1 = n ∧ (T^n) 1 0 = 0 ∧ (T^n) 1 1 = 1 :=
+begin
+ apply T_pow_aux',
+end
+
+@[simp]
 lemma T_pow_aux (n : ℤ  ) : (T^n) 0 0 = 1 ∧ (T^n) 0 1 = n ∧ (T^n) 1 0 = 0 ∧ (T^n) 1 1 = 1 :=
 begin
-  induction n with d hd,
+  induction n ,
   simp only [int.of_nat_eq_coe, zpow_coe_nat],
   apply T_pow_aux',
-  simp only [modular_group.SL2Z_inv_d, modular_group.SL2Z_inv_c, modular_group.SL2Z_inv_b,
-  zpow_neg_succ_of_nat, modular_group.SL2Z_inv_a, neg_eq_zero],
-  simp only [pow_succ, T_d, one_mul, zero_mul, T_a,
-    T_c, T_b, neg_add_rev, zero_add, SL2Z_mul_d, SL2Z_mul_c, SL2Z_mul_a,
-  SL2Z_mul_b],
-  rw [(T_pow_aux' hd).2.2.1, (T_pow_aux' hd).2.2.2, (T_pow_aux' hd).1,  (T_pow_aux' hd).2.1],
-  simp only [true_and, add_zero, and_true, eq_self_iff_true],
-  rw int.neg_succ_of_nat_eq', ring,
+  simp,
+  simp_rw int.neg_succ_of_nat_eq',
+  have := (T_pow_aux'' (n+1)),
+  simp at this,
+  rw [this.2.2.1, this.2.2.2, this.1, this.2.1],
+  simp,
+  ring,
 end
 
 @[simp] lemma T_pow_a (n : ℤ) : (T^n) 0 0 = 1 := (T_pow_aux n).1
@@ -178,11 +186,9 @@ end
 
 
 lemma fixlem (m : ℤ) (A : Mat m) :
-  A 0 0 + -(A 0 0/ A 1 0)*( A 1 0)= A 0 0 % A 1 0:=
+  A 0 0 -( A 1 0)*(A 0 0/ A 1 0)= A 0 0 % A 1 0:=
 begin
   simp ,
-  rw  ← sub_eq_add_neg,
-  rw mul_comm,
   rw  ← int.mod_def,
 end
 
@@ -231,11 +237,20 @@ theorem reduce_aux (m : ℤ) (A : Mat m) (H : int.nat_abs (A 1 0) ≠ 0) :
   int.nat_abs (( S • ( (T^(-((A 0 0) / (A 1 0)))) • A)) 1 0) < int.nat_abs (A 1 0) :=
 begin
   have H2 : A 1 0 ≠ 0, from mt (λ H2, show int.nat_abs (A 1 0) = 0, by rw H2; refl) H,
-  simp [one_mul, zero_mul, add_zero],
-  have:= fixlem m A, simp at this, rw this,
+  simp only [zero_mul, add_zero, integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe,
+  zpow_neg,
+  modular_group.SLnZ_M_c, S_c, modular_group.SLnZ_M_a, modular_group.SL2Z_inv_a,
+  modular_group.SL2Z_inv_b, neg_mul,
+  one_mul, S_d, matrix.special_linear_group.coe_inv],
+  have:= fixlem m A,
+  have tpb := T_pow_b (A.1 0 0 / A.1 1 0),
+    have tpb2 := T_pow_d (A.1 0 0 / A.1 1 0),
+  simp only [integral_matrices_with_determinant.mat_m_vals,subtype.val_eq_coe] at *,
+  ring_nf,
+  rw [tpb, tpb2],
+  have hs:=  int.nat_abs_of_nonneg ( int.mod_nonneg (A 0 0) H2),
+   simp at *, rw this,
   rw  [← int.coe_nat_lt],
-  have hs:=  int.nat_abs_of_nonneg ( int.mod_nonneg _ H2),
-  simp at hs,
   rw hs,
   rw [← int.abs_eq_nat_abs],
   exact int.mod_lt _ H2,
@@ -442,7 +457,7 @@ lemma one_time (a b c : ℤ) (h1 : 0 < a ) (h2 : 0 < c ) (h3: a = b*c) : 0 < b :
 begin
 have h4: b*c >0 ,{ rw h3 at h1, exact h1},
 replace h2:= le_of_lt h2,
-apply pos_of_mul_pos_right  h4 h2,
+apply pos_of_mul_pos_left  h4 h2,
 end
 
 lemma one_time' (a b : ℤ) (h1 : 0 <  a ) (h2 : (a = 1 ∧ b=1) ∨ (a=-1 ∧ b=-1)) : (a=1 ∧ b=1) :=
@@ -558,7 +573,6 @@ begin
     dsimp at *,
     rw ← int.coe_nat_lt at m_property,
     rw ←  not_le at h5,
-    dsimp at *,
     simp at *,
     assumption,
 end
@@ -849,8 +863,8 @@ lemma left_rel_to_right_rel_top  (H : subgroup G)  :  (quotient_group.right_rel 
 begin
 let r1:= (quotient_group.left_rel H).r,
 let r2:= (quotient_group.right_rel H).r,
-have rh1: ∀ x y, r1 x y ↔   x⁻¹ * y ∈ H, by {intros x y, refl,},
-have rh2: ∀ x y, r2 x y ↔  y * x⁻¹ ∈ H, by {intros x y, refl,},
+have rh1: ∀ x y, r1 x y ↔   x⁻¹ * y ∈ H, by {intros x y, exact quotient_group.left_rel_apply,},
+have rh2: ∀ x y, r2 x y ↔  y * x⁻¹ ∈ H, by {intros x y, exact quotient_group.right_rel_apply,},
 split,
 intro hr,
 rw setoid.eq_top_iff at *,
@@ -900,7 +914,7 @@ begin
   rw htt,
   intros a b,
   have rh1: ∀ x y : SL2Z, r1 x y ↔ x ∈ mul_action.orbit gengrp y, by {intros x y, refl,   },
-  have rh2: ∀ x y : SL2Z, r2 x y ↔  y * x⁻¹ ∈ gengrp, by {intros x y, refl,},
+  have rh2: ∀ x y : SL2Z, r2 x y ↔  y * x⁻¹ ∈ gengrp, by {intros x y, exact quotient_group.right_rel_apply,},
   have goal: r2 a b ↔ r1 a b, by {
 rw rh1,
 rw rh2,
