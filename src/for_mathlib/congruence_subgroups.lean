@@ -1,297 +1,289 @@
+/-
+Copyright (c) 2022 Chris Birkbeck. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Chris Birkbeck
+-/
 import linear_algebra.special_linear_group
 import data.zmod.basic
-import mod_forms.mod_group
+import group_theory.subgroup.pointwise
+import group_theory.group_action.conj_act
+/-!
+# Congruence subgroups
+
+This defines congruence subgroups of `SL(2,ℤ)` such as `Γ(N)`, `Γ₀(N)` and `Γ₁(N)` for `N` a
+natural number.
+
+It also contains basic results about congruence subgroups.
+
+-/
 
 local notation `SL(` n `, ` R `)`:= matrix.special_linear_group (fin n) R
 
-open matrix.special_linear_group
+local attribute [-instance] matrix.special_linear_group.has_coe_to_fun
 
-def red_map (N : ℕ) : ℤ →+* (zmod N) := int.cast_ring_hom _
+local prefix `↑ₘ`:1024 := @coe _ (matrix (fin 2) (fin 2) _) _
 
-def mat_mod_map (N : ℕ) : matrix (fin 2) (fin 2) ℤ →+* matrix (fin 2) (fin 2) (zmod N) :=
-ring_hom.map_matrix (red_map N)
+open matrix.special_linear_group matrix
 
+variable (N : ℕ)
 
-def SL_mod_map' (N : ℕ) : SL(2, ℤ) → SL(2, zmod N):=
-λ M, ⟨mat_mod_map (N : ℕ) M.1 , by {rw mat_mod_map, rw ring_hom.map_matrix, rw red_map, simp,
-    have:= matrix.special_linear_group.det_coe M, rw matrix.det_fin_two at *,
-    simp at *, norm_cast, rw this, simp,} ⟩
+local notation `SLMOD(`N`)`  := @matrix.special_linear_group.map (fin 2) _ _ _ _ _ _
+  (int.cast_ring_hom (zmod N))
 
-def SL_mod_map (N : ℕ) : SL(2, ℤ)  →* SL(2, zmod N):={
- to_fun :=  SL_mod_map' (N : ℕ),
- map_one' := by {rw SL_mod_map', simp, refl,},
- map_mul' := by {intros A B, rw SL_mod_map',
- have := (mat_mod_map N).map_mul' A B,  simp_rw mat_mod_map at *,
- simp_rw red_map at *, simp at *,simp_rw [this], refl,} ,
-}
+variables {n : Type*} [decidable_eq n] [fintype n] {R : Type*} [comm_ring R]
 
-@[simp]
-lemma sl_map_val (N : ℕ) (γ : SL(2, ℤ)) : ∀ i j, (SL_mod_map N γ) i j = ((γ i j) : zmod N) :=
+lemma SL2_inv_expl_det (A : SL(2,R)) : det ![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1 0 0]] = 1 :=
 begin
-intros i j,
-refl,
+  rw [matrix.det_fin_two, mul_comm],
+  simp only [subtype.val_eq_coe, cons_val_zero, cons_val_one, head_cons, mul_neg, neg_mul, neg_neg],
+  have := A.2,
+  rw matrix.det_fin_two at this,
+  convert this,
 end
 
-def Gamma_N (N : ℕ) : subgroup SL(2, ℤ) := (SL_mod_map N).ker
-
-lemma Gamma_N_mem' (N : ℕ) (γ : SL(2, ℤ)) :γ ∈ (Gamma_N N) ↔ (SL_mod_map N γ)=1:=iff.rfl
-
-@[simp]
-lemma Gamma_N_mem (N : ℕ) (γ : SL(2, ℤ)) : γ ∈ (Gamma_N N) ↔ ((γ 0 0) : zmod N) = 1 ∧ ((γ 0 1) : zmod N) = 0 ∧
-  ((γ 1 0) : zmod N) = 0 ∧ ((γ 1 1) : zmod N) = 1 :=
- begin
-split,
-intro hg,
-simp [Gamma_N_mem', SL_mod_map,  SL_mod_map', mat_mod_map,red_map ] at *,
-have h1 : ∀ i j, (SL_mod_map N γ) i j = (1 : matrix.special_linear_group (fin 2) (zmod N)) i j, by {
-  simp, have ht:=  matrix.special_linear_group.ext_iff (SL_mod_map N γ) 1,
-  simp [Gamma_N_mem', SL_mod_map,  SL_mod_map', mat_mod_map,red_map ] at *, apply ht.1 hg,},
-simp [Gamma_N_mem', SL_mod_map,  SL_mod_map', mat_mod_map,red_map ] at *,
-simp_rw [h1], split, refl, split, refl, split, refl,refl,
-
-intro H,
-simp [Gamma_N_mem', SL_mod_map,  SL_mod_map', mat_mod_map,red_map ] at *,
-ext,
-simp,
-fin_cases i; fin_cases j,
-simp_rw H.1, refl,
-simp_rw H.2.1, refl,
-simp_rw H.2.2.1, refl,
-simp_rw H.2.2.2, refl,
- end
-
-lemma Gamma_N_normal (N : ℕ) : subgroup.normal (Gamma_N N) :=
+lemma SL2_inv_expl (A : SL(2, R)) : A⁻¹ = ⟨![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 , A.1 0 0]],
+    SL2_inv_expl_det A⟩ :=
 begin
-rw Gamma_N,
-exact (SL_mod_map N).normal_ker,
+  ext,
+  have := matrix.adjugate_fin_two A.1,
+  simp only [subtype.val_eq_coe] at this,
+  rw [coe_inv, this],
+  refl,
 end
 
-
-def is_congruence_subgroup (Γ : subgroup SL(2, ℤ)) : Prop :=
-∃ (N : ℕ),  (Gamma_N N) ≤ Γ
-
-lemma is_congruence_subgroup_trans (H K : subgroup SL(2, ℤ)) (h: H ≤ K) (h2 : is_congruence_subgroup H) :
-is_congruence_subgroup K :=
+lemma two_mul_expl {R : Type*} [comm_ring R] (A B : matrix (fin 2) (fin 2) R) :
+  (A * B) 0 0 = A 0 0 * B 0 0 + A 0 1 * B 1 0 ∧
+  (A * B) 0 1 = A 0 0 * B 0 1 + A 0 1 * B 1 1 ∧
+  (A * B) 1 0 = A 1 0 * B 0 0 + A 1 1 * B 1 0 ∧
+  (A * B) 1 1 = A 1 0 * B 0 1 + A 1 1 * B 1 1 :=
 begin
-  simp_rw is_congruence_subgroup at *,
-  let N := classical.some_spec h2,
-  have := le_trans N h,
-  use classical.some h2,
-  simp  [N,this],
+  split, work_on_goal 2 {split}, work_on_goal 3 {split},
+  all_goals {simp only [matrix.mul_eq_mul],
+  rw [matrix.mul_apply, finset.sum_fin_eq_sum_range, finset.sum_range_succ, finset.sum_range_succ],
+  simp},
 end
 
-lemma Gamma_N_is_cong_sub (N : ℕ)  : is_congruence_subgroup (Gamma_N N):=
+open_locale pointwise
+
+lemma normal.conj_act {G : Type*} [group G] {H : subgroup G} (hH : H.normal ) (g : conj_act G) :
+  g • H = H :=
 begin
-rw is_congruence_subgroup,
-use N,
-simp only [le_refl],
-end
-
-def Gamma0_N (N : ℕ) : subgroup SL(2, ℤ) :={
-carrier := { g : SL(2, ℤ) | (g 1 0 : zmod N) = 0},
-one_mem' := by {simp, },
-mul_mem':= by {intros a b ha hb, simp only [integral_matrices_with_determinant.mat_m_vals,
-  matrix.special_linear_group.coe_mul, set.mem_set_of_eq,
-  subtype.val_eq_coe] at *,
-  have := (modular_group.mat_mul_expl a b).2.2.1,
-  simp only [ integral_matrices_with_determinant.mat_m_vals, matrix.special_linear_group.coe_fn_eq_coe ] at this,
-  dsimp at *, simp at *, rw this, simp, rw [ha, hb], simp,},
-inv_mem':= by {intros a ha, simp only [ set.mem_set_of_eq, subtype.val_eq_coe],
-have := modular_group.explicit_inv_is_inv a,
-simp [modular_group.SL2Z_inv_explicit] at this, rw this, simp at *, exact ha,},
-}
-
-@[simp]
-lemma Gamma0_N_mem (N : ℕ) (A: SL(2, ℤ)) : A ∈ (Gamma0_N N) ↔ (A 1 0 : zmod N)=0 :=iff.rfl
-
-lemma Gamma0_det (N : ℕ) (A : Gamma0_N N) : (A.1.1.det : zmod N) = 1 :=
-begin
-have ha:= A.1.property,
-rw ha,
-simp,
-end
-
-def Gamma0_map' (N : ℕ) : (Gamma0_N N) → (zmod N) :=
-λ g, (g 1 1 : zmod N)
-
-def Gamma_0_map (N : ℕ): (Gamma0_N N) →* (zmod N)   :={
- to_fun :=  λ g, (g 1 1 : zmod N),
- map_one' := by {
-  simp only [coe_fn_coe_base', integral_matrices_with_determinant.mat_m_vals,
-  matrix.special_linear_group.coe_one, int.cast_one,
-  matrix.one_apply_eq, subgroup.coe_one, subtype.val_eq_coe], },
- map_mul' := by {intros A B,
-   have := (modular_group.mat_mul_expl A B).2.2.2,
+  ext,
+  split,
+  { intro h,
+    have := hH.conj_mem (g⁻¹ • x) _ (conj_act.of_conj_act g),
+    rw subgroup.mem_pointwise_smul_iff_inv_smul_mem at h,
     dsimp at *,
-    simp [coe_fn_coe_base'] at *,
-    rw this,
-    have ha:= A.property,
-    simp at *,
-    rw ha,
-    simp,} ,
-}
-
-def Gamma1_N' (N : ℕ) : subgroup (Gamma0_N N) := (Gamma_0_map N).ker
-
-@[simp]
-lemma Gamma1_N_mem' (N : ℕ) (γ :(Gamma0_N N)) :γ ∈ (Gamma1_N' N) ↔ ((Gamma_0_map N) γ)=1:=iff.rfl
-
-lemma Gamma1_to_Gamma0_mem (N : ℕ) (A : Gamma0_N N) : A ∈ (Gamma1_N' N) ↔
-  (A 0 0 : zmod N) = 1 ∧ (A 1 1 : zmod N) = 1  ∧ (A 1 0 : zmod N) = 0 :=
-begin
-  split,
-  intro ha,
-  have hA:= A.property,
-  simp only [Gamma0_N_mem, integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe] at hA,
-  simp only [Gamma1_N_mem', integral_matrices_with_determinant.mat_m_vals,
-    coe_fn_coe_base, subtype.val_eq_coe] at *,
-  simp_rw Gamma_0_map at ha, dsimp at *,
-  simp only [ha, hA, and_true, eq_self_iff_true],
-  have adet:= Gamma0_det N A,
-  rw matrix.det_fin_two at adet,
-  simp only [int.cast_mul, int.cast_sub, subtype.val_eq_coe] at adet,
-  simp [coe_fn_coe_base'] at *,
-  rw [hA, ha] at adet,
-  simp at adet,
-  simp [adet, hA],
-  intro ha,
-  simp only [Gamma1_N_mem'],
-  simp_rw Gamma_0_map,
-  simp only [integral_matrices_with_determinant.mat_m_vals, coe_fn_coe_base,
-    monoid_hom.coe_mk, subtype.val_eq_coe],
-  exact ha.2.1,
+    rw conj_act.smul_def at *,
+    simp only [conj_act.of_conj_act_inv, conj_act.of_conj_act_to_conj_act, inv_inv] at *,
+    convert this,
+    simp only [←mul_assoc, mul_right_inv, one_mul, mul_inv_cancel_right],
+    rw subgroup.mem_pointwise_smul_iff_inv_smul_mem at h,
+    exact h},
+  { intro h,
+    rw [subgroup.mem_pointwise_smul_iff_inv_smul_mem, conj_act.smul_def],
+    apply hH.conj_mem,
+    exact h}
 end
 
-def Gamma1_map (N : ℕ) : (Gamma1_N' N) →* SL(2, ℤ) := ((Gamma0_N N).subtype).comp (Gamma1_N' N).subtype
+@[simp]
+lemma SL_reduction_mod_hom_val (N : ℕ) (γ : SL(2, ℤ)) : ∀ (i j : fin 2),
+  ((SLMOD(N) γ) : (matrix (fin 2) (fin 2) (zmod N))) i j =
+  (((↑ₘγ i j) : ℤ) : zmod N) := λ i j, rfl
 
-def Gamma1_N (N : ℕ) : subgroup SL(2, ℤ) :=subgroup.map (Gamma1_map N) ⊤
+/--The full level `N` congruence subgroup of `SL(2,ℤ)` of matrices that reduce to the identity
+modulo `N`.-/
+def Gamma (N : ℕ) : subgroup SL(2, ℤ) := (SLMOD(N)).ker
+
+lemma Gamma_mem' (N : ℕ) (γ : SL(2, ℤ)) : γ ∈ Gamma N ↔ SLMOD(N) γ = 1 := iff.rfl
 
 @[simp]
-lemma Gamma1_N_mem (N : ℕ) (A : SL(2, ℤ)) : A ∈ (Gamma1_N N) ↔
-  (A 0 0 : zmod N) = 1 ∧ (A 1 1 : zmod N)=1 ∧ (A 1 0 : zmod N) = 0 :=
+lemma Gamma_mem (N : ℕ) (γ : SL(2, ℤ)) : γ ∈ Gamma N ↔ (((↑ₘγ 0 0) : ℤ) : zmod N) = 1 ∧
+  (((↑ₘγ 0 1) : ℤ) : zmod N) = 0 ∧ (((↑ₘγ 1 0) : ℤ) : zmod N) = 0 ∧
+  (((↑ₘγ 1 1) : ℤ) : zmod N) = 1 :=
 begin
+  rw Gamma_mem',
   split,
-  intro ha,
-  simp only [integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe] at *,
-  dsimp at *,
-  simp_rw Gamma1_N at ha,
-  rw subgroup.mem_map at ha,
-  rw Gamma1_map at  ha,
-  simp at ha,
-  let x:= classical.some ha,
-  have hx:= x.property,
-  simp only [Gamma1_to_Gamma0_mem]at hx,
-  have hxx:= classical.some_spec ha,
-  simp_rw x at hx,
-  rw ← hxx,
-  simp only [coe_fn_coe_base', integral_matrices_with_determinant.mat_m_vals, coe_fn_coe_base,
-  subtype.val_eq_coe] at *,
-  simp only [hx, eq_self_iff_true, and_self],
-  intro ha,
-  simp only [integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe] at *,
-  simp_rw Gamma1_N,
-  rw subgroup.mem_map,
-  have hA: A ∈ (Gamma0_N N), by {simp only [ha.right.right, Gamma0_N_mem,
-    integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe],},
-  have HA : (⟨A , hA⟩ : Gamma0_N N) ∈ Gamma1_N' N,
-    by {simp only [Gamma1_to_Gamma0_mem, integral_matrices_with_determinant.mat_m_vals,
-    coe_fn_coe_base, subtype.val_eq_coe,subgroup.coe_mk], exact ha,},
+  { intro h,
+    simp [←(SL_reduction_mod_hom_val N γ), h] },
+  { intro h,
+    ext,
+    rw SL_reduction_mod_hom_val N γ,
+    fin_cases i; fin_cases j,
+    all_goals {simp_rw h, refl} }
+end
 
-  let B:= (⟨ (⟨A , hA⟩ : Gamma0_N N), HA ⟩ : (( Gamma1_N' N ) : subgroup (Gamma0_N N))),
-  set t : ↥(Gamma1_N' N) := B,
-  existsi t,
-  rw Gamma1_map,
+lemma Gamma_normal (N : ℕ) : subgroup.normal (Gamma N) := (SLMOD(N)).normal_ker
+
+lemma Gamma_one_top : Gamma 1 = ⊤ :=
+begin
+  ext,
   simp,
 end
 
-lemma Gamma1_in_Gamma0 (N : ℕ) : (Gamma1_N N) ≤ (Gamma0_N N) :=
+lemma Gamma_zero_bot : Gamma 0 = ⊥ :=
+begin
+  ext,
+  simp only [Gamma_mem, coe_coe, coe_matrix_coe, int.coe_cast_ring_hom, map_apply, int.cast_id,
+    subgroup.mem_bot],
+  split,
+  { intro h,
+    ext,
+    fin_cases i; fin_cases j,
+    any_goals {simp [h]} },
+  { intro h,
+    simp [h] }
+end
+
+/--The congruence subgroup of `SL(2,ℤ)` of matrices whose lower left-hand entry reduces to zero
+modulo `N`. -/
+def Gamma0 (N : ℕ) : subgroup SL(2, ℤ) :=
+{ carrier := { g : SL(2, ℤ) | ((↑ₘg 1 0 : ℤ) : zmod N) = 0 },
+  one_mem' := by { simp },
+  mul_mem':= by {intros a b ha hb,
+    simp only [ set.mem_set_of_eq],
+    have h := ((two_mul_expl a.1 b.1).2.2.1),
+    simp only [coe_coe, coe_matrix_coe, coe_mul, int.coe_cast_ring_hom, map_apply,
+      set.mem_set_of_eq, subtype.val_eq_coe, mul_eq_mul] at *,
+    rw h,
+    simp [ha, hb] },
+  inv_mem':= by {intros a ha,
+    simp only [ set.mem_set_of_eq, subtype.val_eq_coe],
+    rw (SL2_inv_expl a),
+    simp only [subtype.val_eq_coe, cons_val_zero, cons_val_one, head_cons, coe_coe, coe_matrix_coe,
+      coe_mk, int.coe_cast_ring_hom, map_apply, int.cast_neg, neg_eq_zero, set.mem_set_of_eq] at *,
+    exact ha } }
+
+@[simp]
+lemma Gamma0_mem (N : ℕ) (A: SL(2, ℤ)) : A ∈ Gamma0 N ↔ (((↑ₘA) 1 0 : ℤ) : zmod N) = 0 := iff.rfl
+
+lemma Gamma0_det (N : ℕ) (A : Gamma0 N) : (A.1.1.det : zmod N) = 1 :=
+by {simp [A.1.property]}
+
+/--The group homomorphism from `Gamma0` to `zmod N` given by mapping a matrix to its lower
+right-hand entry. -/
+def Gamma_0_map (N : ℕ): Gamma0 N →* zmod N :=
+{ to_fun := λ g, ((↑ₘg 1 1 : ℤ) : zmod N),
+  map_one' := by { simp, },
+  map_mul' := by {intros A B,
+  have := (two_mul_expl A.1.1 B.1.1).2.2.2,
+  simp only [coe_coe, subgroup.coe_mul, coe_matrix_coe, coe_mul, int.coe_cast_ring_hom, map_apply,
+    subtype.val_eq_coe, mul_eq_mul] at *,
+  rw this,
+  have ha := A.property,
+  simp only [int.cast_add, int.cast_mul, add_left_eq_self, subtype.val_eq_coe, Gamma0_mem, coe_coe,
+    coe_matrix_coe, int.coe_cast_ring_hom, map_apply] at *,
+  rw ha,
+  simp,} }
+
+/--The congruence subgroup `Gamma1` (as a subgroup of `Gamma0`) of matrices whose bottom
+row is congruent to `(0,1)` modulo `N`.-/
+def Gamma1' (N : ℕ) : subgroup (Gamma0 N) := (Gamma_0_map N).ker
+
+@[simp]
+lemma Gamma1_mem' (N : ℕ) (γ : Gamma0 N) : γ ∈ Gamma1' N ↔ (Gamma_0_map N) γ = 1 := iff.rfl
+
+lemma Gamma1_to_Gamma0_mem (N : ℕ) (A : Gamma0 N) : A ∈ Gamma1' N ↔
+  ((↑ₘA 0 0 : ℤ) : zmod N) = 1 ∧ ((↑ₘA 1 1 : ℤ) : zmod N) = 1 ∧ ((↑ₘA 1 0 : ℤ) : zmod N) = 0 :=
+begin
+  split,
+  { intro ha,
+    have hA := A.property,
+    rw Gamma0_mem at hA,
+    have adet := Gamma0_det N A,
+    rw matrix.det_fin_two at adet,
+    simp only [Gamma_0_map, coe_coe, coe_matrix_coe, int.coe_cast_ring_hom, map_apply, Gamma1_mem',
+      monoid_hom.coe_mk, subtype.val_eq_coe, int.cast_sub, int.cast_mul] at *,
+    rw [hA, ha] at adet,
+    simp only [mul_one, mul_zero, sub_zero] at adet,
+    simp only [adet, hA, ha, eq_self_iff_true, and_self]},
+  { intro ha,
+    simp only [Gamma1_mem', Gamma_0_map, monoid_hom.coe_mk, coe_coe, coe_matrix_coe,
+      int.coe_cast_ring_hom, map_apply],
+    exact ha.2.1,}
+end
+
+/--The congruence subgroup `Gamma1` of `SL(2,ℤ)` consisting of matrices whose bottom
+row is congruent to `(0,1)` modulo `N`. -/
+def Gamma1 (N : ℕ) : subgroup SL(2, ℤ) := subgroup.map
+(((Gamma0 N).subtype).comp (Gamma1' N).subtype) ⊤
+
+@[simp]
+lemma Gamma1_mem (N : ℕ) (A : SL(2, ℤ)) : A ∈ Gamma1 N ↔
+  ((↑ₘA 0 0 : ℤ) : zmod N) = 1 ∧ ((↑ₘA 1 1 : ℤ) : zmod N) = 1 ∧ ((↑ₘA 1 0 : ℤ) : zmod N) = 0 :=
+begin
+  split,
+  { intro ha,
+    simp_rw [Gamma1, subgroup.mem_map] at ha,
+    simp at ha,
+    obtain ⟨⟨x, hx⟩, hxx⟩ := ha,
+    rw Gamma1_to_Gamma0_mem at hx,
+    rw ←hxx,
+    convert hx },
+  { intro ha,
+    simp_rw [Gamma1, subgroup.mem_map],
+    have hA : A ∈ (Gamma0 N), by {simp [ha.right.right, Gamma0_mem, subtype.val_eq_coe],},
+    have HA : (⟨A , hA⟩ : Gamma0 N) ∈ Gamma1' N,
+      by {simp only [Gamma1_to_Gamma0_mem, subgroup.coe_mk, coe_coe, coe_matrix_coe,
+        int.coe_cast_ring_hom, map_apply],
+      exact ha,},
+    refine ⟨(⟨(⟨A , hA⟩ : Gamma0 N), HA ⟩ : (( Gamma1' N ) : subgroup (Gamma0 N))), _⟩,
+    simp }
+end
+
+lemma Gamma1_in_Gamma0 (N : ℕ) : Gamma1 N ≤ Gamma0 N :=
 begin
   intros x HA,
-  simp only [Gamma0_N_mem, Gamma1_N_mem, integral_matrices_with_determinant.mat_m_vals,
-    subtype.val_eq_coe] at *,
+  simp only [Gamma0_mem, Gamma1_mem, coe_coe, coe_matrix_coe, int.coe_cast_ring_hom,
+    map_apply] at *,
   exact HA.2.2,
 end
 
-lemma Gamma1_N_is_congruence (N : ℕ)  : is_congruence_subgroup (Gamma1_N N) :=
+section congruence_subgroup
+
+/--A congruence subgroup is a subgroup of `SL(2,ℤ)` which contains some `Gamma N` for some
+`(N : ℕ+)`. -/
+def is_congruence_subgroup (Γ : subgroup SL(2, ℤ)) : Prop := ∃ (N : ℕ+), Gamma N ≤ Γ
+
+lemma is_congruence_subgroup_trans (H K : subgroup SL(2, ℤ)) (h: H ≤ K)
+  (h2 : is_congruence_subgroup H) : is_congruence_subgroup K :=
 begin
-  simp_rw is_congruence_subgroup,
-  use N,
+  obtain ⟨N , hN⟩ := h2,
+  refine ⟨N, le_trans hN h⟩,
+end
+
+lemma Gamma_is_cong_sub (N : ℕ+) : is_congruence_subgroup (Gamma N) :=
+⟨N, by {simp only [le_refl]}⟩
+
+lemma Gamma1_is_congruence (N : ℕ+) : is_congruence_subgroup (Gamma1 N) :=
+begin
+  refine ⟨N, _⟩,
   intros A hA,
-  simp only [Gamma1_N_mem, integral_matrices_with_determinant.mat_m_vals,
-    subtype.val_eq_coe, Gamma_N_mem] at *,
+  simp only [Gamma1_mem, Gamma_mem] at *,
   simp only [hA, eq_self_iff_true, and_self],
 end
 
-lemma Gamma0_N_is_congruence (N : ℕ) :  is_congruence_subgroup (Gamma0_N N) :=
+lemma Gamma0_is_congruence (N : ℕ+) : is_congruence_subgroup (Gamma0 N) :=
+is_congruence_subgroup_trans _ _ (Gamma1_in_Gamma0 N) (Gamma1_is_congruence N)
+
+end congruence_subgroup
+
+section conjugation
+
+open_locale pointwise
+
+lemma Gamma_cong_eq_self (N : ℕ) (g : conj_act SL(2, ℤ)) : g • (Gamma N) = Gamma N :=
 begin
-apply is_congruence_subgroup_trans _ _  (Gamma1_in_Gamma0 N) (Gamma1_N_is_congruence N),
+  apply normal.conj_act (Gamma_normal N),
 end
 
-def conj_cong_subgroup (g : SL(2, ℤ))  (Γ : subgroup SL(2, ℤ)) : subgroup SL(2, ℤ) :={
-carrier := { h : SL(2, ℤ) | ∃ γ : Γ, g⁻¹ * γ * g = h},
-one_mem' := by  {simp only [set.mem_set_of_eq],
-use 1,
-simp only [mul_one, mul_left_inv, subgroup.coe_one],}  ,
-mul_mem' := by {intros a b ha hb,
-  simp only [set.mem_set_of_eq] at *,
-  obtain ⟨aa, haa⟩ := ha,
-  obtain ⟨bb, hbb⟩ := hb,
-  existsi aa*bb,
-  rw   ←  haa,
-  rw ← hbb,
-  simp,
-  simp_rw ←  mul_assoc,
-  simp,},
-inv_mem' := by {intros x hx, simp at *,
-  let a:= classical.some hx,
-  have ha:= classical.some_spec hx,
-  existsi a⁻¹ ,
-  rw ← ha,
-  simp,
-  simp_rw ←  mul_assoc,} ,
-}
-
-@[simp]
-lemma conf_cong_mem  (g : SL(2, ℤ))  (Γ : subgroup SL(2, ℤ)) (h : SL(2, ℤ)) :
- (h ∈ conj_cong_subgroup g Γ) ↔ ∃ x : Γ, g⁻¹ * x * g = h  :=iff.rfl
-
-lemma Gamma_N_cong_eq_self (N : ℕ) (g : SL(2, ℤ)) : conj_cong_subgroup g (Gamma_N N) = (Gamma_N N) :=
+lemma conj_cong_is_cong (g : conj_act SL(2, ℤ)) (Γ : subgroup SL(2, ℤ))
+  (h : is_congruence_subgroup Γ) : is_congruence_subgroup (g • Γ) :=
 begin
-have h:= (Gamma_N_normal N).conj_mem ,
-ext, split, intro x,
-simp only [conf_cong_mem] at x,
-let y := classical.some_spec x, rw ← y,
-let yy:= classical.some x,
-have hh:= h yy yy.property g⁻¹,
-  simp only [integral_matrices_with_determinant.mat_m_vals, matrix.special_linear_group.coe_mul,
-  inv_inv, subtype.val_eq_coe, matrix.special_linear_group.coe_inv] at hh, exact hh,
-intro y,
-have hh:= h x y g,
-simp only [conf_cong_mem],
-existsi (⟨g*x*g⁻¹, hh⟩ : ↥(Gamma_N N)),
-simp only [subgroup.coe_mk],
-simp_rw ← mul_assoc,
-simp only [one_mul, mul_left_inv, inv_mul_cancel_right],
+  obtain ⟨N, HN⟩ := h,
+  refine ⟨N, _⟩,
+  rw [←Gamma_cong_eq_self N g, subgroup.pointwise_smul_le_pointwise_smul_iff],
+  exact HN,
 end
 
-lemma subgroup_conj_covariant (g : SL(2, ℤ))  (Γ_1 Γ_2 : subgroup SL(2, ℤ)) (h : Γ_1 ≤ Γ_2) :
-  (conj_cong_subgroup g Γ_1) ≤ (conj_cong_subgroup g Γ_2) :=
-begin
-simp_rw set_like.le_def at *,
-simp only [forall_apply_eq_imp_iff', conf_cong_mem, mul_right_inj, forall_exists_index, mul_left_inj],
-intro a,
-have ha := h a.2,
-existsi (⟨a, ha⟩ : Γ_2),
-simp only [subgroup.coe_mk],
-end
-
-lemma conj_cong_is_cong (g : SL(2, ℤ))  (Γ : subgroup SL(2, ℤ)) (h : is_congruence_subgroup Γ) :
-  is_congruence_subgroup  (conj_cong_subgroup g Γ) :=
-begin
-simp_rw is_congruence_subgroup at *,
-obtain⟨ N, HN⟩:= h,
-use N,
-rw ←  Gamma_N_cong_eq_self N g,
-apply subgroup_conj_covariant ,
-exact HN,
-end
+end conjugation

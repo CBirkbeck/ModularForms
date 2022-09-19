@@ -268,6 +268,12 @@ begin
   exact prod_of_bound_is_bound (hf.infinity A) (hg.infinity A),
 end
 
+instance (k : ℤ) (Γ : subgroup SL(2, ℤ)) : add_comm_group (M k Γ ) :=
+begin
+ exact (M k Γ).add_comm_group,
+end
+
+
 /-! Constant functions are modular forms of weight 0 -/
 section const_mod_form
 
@@ -298,8 +304,110 @@ lemma const_mod_form : const_one_form ∈ M 0 Γ :=
   transf := by { intro γ, apply const_one_form_is_invar, },
   infinity := by { intro A, rw const_one_form_is_invar A, exact const_one_form_is_bound,} }
 
+/-lemma one_mul (k : ℤ) (f : M k Γ) :
+(⟨f * ⟨ const_one_form, const_mod_form Γ⟩, (mul_modform k 0 f const_one_form f.2 (const_mod_form Γ))⟩ : (M (k + 0) Γ)) = f
+-/
 end const_mod_form
+
+instance graded_mod_ring (Γ : subgroup SL(2, ℤ)) : direct_sum.gcomm_ring (λ k, M k Γ) :={
+  mul := λ k_1, λ k_2,  (λ f g, ⟨f * g , mul_modform k_1 k_2 Γ f g f.2 g.2⟩),
+  one := ⟨const_one_form, const_mod_form Γ⟩,
+  one_mul := by {intro f,
+  rw graded_monoid.ghas_one.to_has_one,
+  simp only [const_one_form],
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp only [zero_add],
+  simp only [submodule.coe_mk, one_mul],},
+  mul_one := by {intro f,
+  rw graded_monoid.ghas_one.to_has_one,
+  simp only [const_one_form],
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp only [add_zero],
+  simp only [submodule.coe_mk, mul_one],},
+  mul_assoc := by {intros f g h,
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp only,
+  apply add_assoc,
+  simp only [submodule.coe_mk],
+  apply mul_assoc},
+  mul_comm := by {intros f g,
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp only,
+  apply add_comm,
+  simp only,
+  apply mul_comm,},
+  mul_zero := by {intros i j f, simp,},
+  zero_mul := by {intros i j f, simp,},
+  mul_add := by {intros i j f g h,
+  simp only [submodule.coe_add, add_mem_class.mk_add_mk, subtype.mk_eq_mk],
+  ext1,
+  simp only [pi.mul_apply, pi.add_apply],
+  apply mul_add,},
+  add_mul := by {intros i j f g h,
+  simp only [submodule.coe_add, add_mem_class.mk_add_mk, subtype.mk_eq_mk],
+  ext1,
+  simp only [pi.mul_apply, pi.add_apply],
+  apply add_mul,},
+  gnpow_zero' := by {intro f, apply sigma.subtype_ext,refl, refl,},
+  gnpow_succ' := by {intros n f, rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,refl, refl},
+  nat_cast := λ n, n • (⟨const_one_form, const_mod_form Γ⟩ : (M 0 Γ)),
+  nat_cast_zero := by {simp},
+  nat_cast_succ := by {intro n, simp [add_smul], refl,},
+  int_cast := λ n, n • (⟨const_one_form, const_mod_form Γ⟩ : (M 0 Γ)),
+  int_cast_of_nat := by {simp},
+  int_cast_neg_succ_of_nat := by {intro , apply _root_.neg_smul,},
+  }
+
+
+
+/-
 open_locale complex_conjugate
+
+instance graded_mod_ring (Γ : subgroup SL(2, ℤ)) : direct_sum.gcomm_ring (λ k, M k Γ) :={
+  mul := λ k_1, λ k_2,  (λ f g, ⟨f * g , mul_modform k_1 k_2 Γ f g f.2 g.2⟩),
+  mul_zero := by {intros i j f, simp,},
+  zero_mul := by {intros i j f, simp,},
+  mul_add := by {intros i j f g h, simp, ext1, simp, apply mul_add,},
+  add_mul := by {intros i j f g h, simp, ext1, simp, apply add_mul,},
+  one := (⟨const_one_form, const_mod_form Γ⟩ : (M 0 Γ)),
+  one_mul := by {intro f,
+  rw graded_monoid.ghas_one.to_has_one,
+  simp [const_one_form],
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp,
+  simp,},
+  mul_one := by {intro f,
+  rw graded_monoid.ghas_one.to_has_one,
+  simp [const_one_form],
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp,
+  simp,},
+  mul_assoc := by {intros f g h,
+  rw graded_monoid.ghas_mul.to_has_mul,
+  apply sigma.subtype_ext,
+  simp,
+  apply add_assoc,
+  simp,
+  apply mul_assoc},
+  nat_cast := λ n, n • (⟨const_one_form, const_mod_form Γ⟩ : (M 0 Γ)),
+  nat_cast_zero := by {simp},
+  nat_cast_succ := by {simp},
+  int_cast := λ n, n • (⟨const_one_form, const_mod_form Γ⟩ : (M 0 Γ)),
+  int_cast_of_nat := by {simp},
+  int_cast_neg_succ_of_nat := by {intro , apply _root_.neg_smul,},
+  mul_comm := by {intros f g,
+  apply sigma.subtype_ext,
+  simp,
+  simp,  sorry},}
+
+
 
 section petersson_product
 
@@ -368,6 +476,6 @@ begin
 end
 
 end petersson_product
-
+-/
 
 end modular_forms
