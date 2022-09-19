@@ -5,8 +5,11 @@ import algebra.monoid_algebra.basic
 import group_theory.free_abelian_group
 
 variables {G : Type*} { I : Type*} [group G]
+
+noncomputable theory
 open commensurable
 open_locale pointwise
+
 
 lemma family_commensurable (H : subgroup G) (ι : I → subgroup G)
 (hι : ∀ i, commensurable (ι i) H) (g : commensurable.commensurator H) (i j : I) :
@@ -44,7 +47,7 @@ begin
   simp at hab,
   rw ← quotient.out_inj,
   convert hab,
-
+  sorry,
 end
 
 
@@ -65,7 +68,8 @@ begin
   intro hx,
   simp_rw set.mem_Union at *,
   simp_rw mem_right_coset_iff at *,
-
+  sorry,
+  sorry,
 
 
 end

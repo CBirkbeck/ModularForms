@@ -7,7 +7,7 @@ import analysis.complex.cauchy_integral
 import analysis.analytic.basic
 import analysis.calculus.parametric_interval_integral
 import data.complex.basic
-import measure_theory.integral.circle_integral_transform
+import measure_theory.integral.circle_transform
 /-!
 # Uniform limits of holomorphic functions
 
@@ -21,7 +21,7 @@ noncomputable theory
 
 universes u v
 
-variables {E : Type} [normed_group E] [normed_space ℂ E]
+variables {E : Type} [normed_add_comm_group E] [normed_space ℂ E]
 
 namespace complex
 
@@ -131,10 +131,12 @@ begin
     apply this y x (h_ball hx),},
   have := interval_integral.has_deriv_at_integral_of_dominated_loc_of_deriv_le hε hF_meas hF_int
     hF'_meas h_bound bound_integrable h_diff,
-  simp only [F, has_deriv_at, has_deriv_at_filter, has_fderiv_within_at, mem_ball, zero_lt_mul_left,
+  simp [F, has_deriv_at, has_deriv_at_filter, has_fderiv_within_at, mem_ball, zero_lt_mul_left,
     inv_pos, zero_lt_bit0, zero_lt_one, norm_eq_abs,
     interval_integral.interval_integrable_const] at *,
-  use continuous_linear_map.smul_right (1 : ℂ →L[ℂ] ℂ) (interval_integral (F' x) 0 (2 * π) volume),
+  refine ⟨(continuous_linear_map.smul_right (1 : ℂ →L[ℂ] ℂ) (interval_integral (F' x) 0 (2 * π)
+    volume)), _⟩,
+  simp at *,
   apply (has_fderiv_at_filter.mono this.2 inf_le_left),
 end
 
@@ -406,7 +408,7 @@ lemma circle_integral_unif_of_diff_has_fderiv {F : ℕ → ℂ → ℂ} {f : ℂ
   (hD : has_fderiv_within_at (circle_integral_form R z f) D (ball z R) x ) :
   ∃ (f' : ℂ →L[ℂ] ℂ), has_fderiv_within_at f f' (ball z R) x :=
 begin
-  use D,
+  refine ⟨D, _⟩,
   simp_rw [has_fderiv_within_at_iff_tendsto, metric.tendsto_nhds, tendsto_uniformly_on_iff,
   dist_eq_norm] at *,
   intros ε hε,
@@ -420,11 +422,11 @@ begin
   rw filter.eventually_iff_exists_mem at *,
   obtain ⟨S1, hS1, HS1⟩ := hDε,
   let U := S1 ⊓ ball z R,
-  use U,
+  refine ⟨U, _⟩,
   have hU : U ∈ 𝓝[ball z R] x ,
   by {simp only [U, metric.mem_nhds_within_iff, exists_prop, mem_ball, and_true, gt_iff_lt,
   inf_eq_inter, inter_subset_right, subset_inter_iff] at *, exact hS1,},
-  simp only [hU, true_and],
+  simp only [hU, exists_true_left],
   clear hU hS1,
   intros y hy,
   simp_rw U at hy,

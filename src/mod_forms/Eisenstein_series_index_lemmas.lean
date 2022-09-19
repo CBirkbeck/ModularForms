@@ -205,8 +205,19 @@ end
 
 lemma nat_abs_inter (a: ℤ) (n: ℕ) (h: a.nat_abs < n): a < (n: ℤ) ∧  0 <(n: ℤ)+ a:=
 begin
-have:= int.nat_abs_eq  a, cases this,rw this, norm_cast, simp_rw h,simp,linarith,rw this,
-split, linarith, rw ←int.coe_nat_lt at h, rw ← sub_pos at h,convert h,
+  have:= int.nat_abs_eq  a,
+  cases this,
+  rw this,
+  norm_cast,
+  simp_rw h,
+  simp only [true_and],
+  linarith,
+  rw this,
+  split,
+  linarith,
+  rw ←int.coe_nat_lt at h,
+  rw ← sub_pos at h,
+  convert h,
 end
 
 lemma nat_abs_inter2 (a: ℤ) (n: ℕ) (h: a.nat_abs ≤ n): a ≤ (n: ℤ) ∧  0 ≤ (n: ℤ)+ a:=

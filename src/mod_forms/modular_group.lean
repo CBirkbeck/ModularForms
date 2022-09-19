@@ -97,33 +97,29 @@ rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw finset.sum_range_succ,
 rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-  ite_eq_left_iff],
+simp only [nat.succ_pos', dite_eq_ite, fin.mk_zero, if_true, finset.sum_empty, finset.range_zero,
+  nat.one_lt_bit0_iff, zero_add, fin.mk_one, le_refl],
   split,  simp ,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw finset.sum_range_succ,
 rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-  ite_eq_left_iff],
+simp only [nat.succ_pos', dite_eq_ite, fin.mk_zero, if_true, finset.sum_empty, finset.range_zero,
+  nat.one_lt_bit0_iff, zero_add, fin.mk_one, le_refl],
   split, simp ,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw finset.sum_range_succ,
 rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-  ite_eq_left_iff],
+simp only [nat.succ_pos', dite_eq_ite, fin.mk_zero, if_true, finset.sum_empty, finset.range_zero,
+  nat.one_lt_bit0_iff, zero_add, fin.mk_one, le_refl],
 simp,
 rw  matrix.mul_apply,
 rw finset.sum_fin_eq_sum_range,
 rw finset.sum_range_succ,
 rw finset.sum_range_succ,
-simp only [nat.succ_pos', lt_self_iff_false, dite_eq_ite, fin.mk_zero, forall_false_left, if_true, finset.sum_empty, not_le,
-  finset.range_zero, nat.one_lt_bit0_iff, zero_add, add_right_inj, fin.mk_one, subtype.val_eq_coe,
-  ite_eq_left_iff],
+simp only [nat.succ_pos', dite_eq_ite, fin.mk_zero, if_true, finset.sum_empty, finset.range_zero,
+  nat.one_lt_bit0_iff, zero_add, fin.mk_one, le_refl],
 end
 
 
@@ -269,9 +265,9 @@ end
 
 lemma sl2_inv' (A: SL2Z) (B: SL2Z)  (h1: B 0 0 = A 1 1)  (h2: B 0 1= - A 0 1) (h3: B 1 0 = - A 1 0) (h4: B 1 1 = A 0 0): A * B= 1 :=
 begin
-have H :=sl2_inv A B h1 h2 h3 h4, simp at H, rw ← matrix.mul_eq_mul at H, norm_cast at H,
+have H :=sl2_inv A B h1 h2 h3 h4, simp at H, rw ← matrix.mul_eq_mul at H,
 simp only [valorsl] at *, cases B, cases A, dsimp at *, ext1, cases j,
-cases i, dsimp at *, simp at *, dsimp at *, solve_by_elim,
+cases i, dsimp at *, simp at *,solve_by_elim,
 
 end
 
@@ -368,15 +364,17 @@ simp [SL2Z_M],
 end
 
 lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_determinant m):
- (A • M) = N ↔  N 0 0= A 0 0 * M 0 0 + A 0 1 * M 1 0 ∧
+ ((A • M) : (integral_matrices_with_determinant m)) = N ↔  N 0 0= A 0 0 * M 0 0 + A 0 1 * M 1 0 ∧
  N 0 1= A 0 0 * M 0 1 + A 0 1 * M 1 1 ∧
  N 1 0= A 1 0 * M 0 0 + A 1 1 * M 1 0 ∧
  N 1 1= A 1 0 * M 0 1 + A 1 1 * M 1 1 :=
 begin
 split,
 intro h,
-have:= mat_mul_expl  A M,  rw ← h, simp [valor_mat_m],intro h, ext i j, fin_cases i; fin_cases j, simp [valor_mat_m] at *, rw h.1,
-simp [valor_mat_m] at *, rw h.2.1,simp [valor_mat_m] at *, rw h.2.2.1,simp [valor_mat_m] at *, rw h.2.2.2,
+have:= mat_mul_expl  A M,  rw ← h, simp [valor_mat_m],intro h, ext i j, fin_cases i; fin_cases j,
+simp [valor_mat_m] at *, rw h.1,
+simp [valor_mat_m] at *, rw h.2.1,simp [valor_mat_m] at *, rw h.2.2.1,simp [valor_mat_m] at *,
+rw h.2.2.2,
 end
 
 @[simp] lemma SL2Z_M_a : (SL2Z_M m A M).1 0 0 = A.1 0 0 * M.1 0 0 + A.1 0 1 * M.1 1 0 :=

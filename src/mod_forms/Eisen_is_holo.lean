@@ -326,9 +326,9 @@ begin
 end
 
 lemma Eisenstein_is_bounded (k: ℕ) (hk : 3 ≤ k) :
-  upper_half_plane.is_bound_at_infty (Eisenstein_series_of_weight_ k) :=
+  upper_half_plane.is_bounded_at_im_infty (Eisenstein_series_of_weight_ k) :=
 begin
-  simp only [upper_half_plane.bound_mem, subtype.forall, upper_half_plane.coe_im],
+  simp only [upper_half_plane.bounded_mem, subtype.forall, upper_half_plane.coe_im],
   let M : ℝ := 8 / rfunct (lbpoint 1 2 $ by linarith) ^ k * Riemann_zeta (k - 1),
   use [M, 2],
   intros z hz,
@@ -419,10 +419,10 @@ have hff:= (hf ⟨x, hx⟩).2,
 apply differentiable_at.differentiable_within_at,
 simp_rw differentiable_at at *,
 obtain ⟨g, hg⟩:= hff,
-use g,
+refine ⟨g,_⟩,
 apply has_fderiv_at.congr_of_eventually_eq hg,
 simp_rw filter.eventually_eq_iff_exists_mem,
-use ℍ',
+refine  ⟨ℍ', _⟩,
 split,
 simp_rw metric.mem_nhds_iff, simp,
 simp_rw chart_at, simp,
@@ -442,9 +442,6 @@ split,
 apply mdiff_to_holo f,
 apply holo_to_mdiff f,
 end
-
-
-
 
 lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
  modular_forms.is_modular_form_of_weight_and_level  k ⊤

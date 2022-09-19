@@ -88,8 +88,10 @@ lemma SL2_inv_expl (A : SL2Z) : A⁻¹ = ⟨![![A.1 1 1, -A.1 0 1], ![-A.1 1 0 ,
 begin
   ext,
   have := matrix.adjugate_fin_two A.1,
-  simp only [subtype.val_eq_coe, special_linear_group.coe_inv, special_linear_group.coe_mk] at *,
-  rw [ this],
+  simp only [subtype.val_eq_coe] at this,
+  simp at *,
+  simp_rw [this],
+  simp,
 end
 
 @[simp] lemma SL2Z_inv_a (A : SL2Z) : (A⁻¹).1 0 0 = A.1 1 1 :=
