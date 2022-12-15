@@ -1,21 +1,24 @@
 import mod_forms.Eisenstein_series_index_lemmas
 import analysis.complex.upper_half_plane.basic
+import analysis.complex.upper_half_plane.metric
 import analysis.complex.upper_half_plane.topology
+import number_theory.modular_forms.basic
+import geometry.manifold.mfderiv
 import tactic
 
 universes u v w
 
 open complex
 
-open_locale big_operators nnreal classical filter
+open_locale big_operators nnreal classical filter upper_half_plane
 
-local notation `ℍ` := upper_half_plane
-
-local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
+open modular_form
+open slash_invariant_form
 
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
 noncomputable theory
 
+local notation `ℍ'`:= (⟨upper_half_plane.upper_half_space , upper_half_plane_is_open⟩: topological_space.opens ℂ)
 
 /-! ### Eisenstein series -/
 
@@ -70,7 +73,7 @@ def Eisenstein_series_of_weight_' (k: ℤ) : C(ℍ, ℂ):=
 
 lemma Eise_is_nonneg (k: ℤ) (z : ℍ) (y : ℤ × ℤ): 0 ≤ abs (Eise k z y):=
 begin
- apply complex.abs_nonneg,
+ apply complex.abs.nonneg,
 end
 
 lemma calc_lem (k: ℤ) (a b c d i1 i2: ℂ) (z : ℍ) (h: c*z+d ≠ 0) :
@@ -118,8 +121,26 @@ begin
   apply upper_half_plane.denom_ne_zero A,
 end
 
-lemma Eisenstein_is_wmodular (Γ : subgroup SL2Z) (k: ℤ)  :
- (Eisenstein_series_of_weight_ k) ∈ (modular_forms.weakly_modular_submodule k Γ) :=
+def Eisenstein_is_wmodular (Γ : subgroup SL2Z) (k: ℤ) :
+(slash_invariant_form Γ k) :=
+{to_fun := (Eisenstein_series_of_weight_ k),
+  slash_action_eq' := begin
+  intro A,
+  ext1,
+  simp_rw slash_action_eq'_iff,
+  rw Eisenstein_series_of_weight_,
+  simp only [set.mem_set_of_eq],
+  simp,
+  have h1:= Eise_moeb k x A,
+  have h2:=tsum_congr h1,
+  convert h2,
+  simp only [subtype.val_eq_coe],
+  have h3:=equiv.tsum_eq (Ind_equiv A) (Eise k x),
+  rw tsum_mul_left,
+  rw h3,
+  end }
+
+/-
 begin
 rw modular_forms.wmodular_mem',
 rw Eisenstein_series_of_weight_,
@@ -135,6 +156,12 @@ rw h3,
 simp,
 end
 
+-/
+lemma asufasd (a b : ℂ): complex.abs(a * b)= complex.abs (a) * complex.abs(b):=
+begin
+  exact map_mul abs a b,
+end
+
 lemma Eise_on_square_is_bounded ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):
   (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
 begin
@@ -144,7 +171,7 @@ begin
   by {norm_cast,
   intro hx,
   rw hx at C1,
-  simp only [int.cast_zero, complex.abs_zero] at C1,
+  simp  [int.cast_zero] at C1,
   norm_cast at C1,
   rw ← C1 at hn,
   simp only [nat.one_ne_zero, le_zero_iff] at hn,
@@ -162,8 +189,7 @@ begin
   exact h0,},
   rw this,},
   rw h1,
-  rw complex.abs_mul,
-  rw complex.abs_mul,
+  simp_rw  map_mul complex.abs,
   have h3: complex.abs (↑(x.fst) ^ k)= (complex.abs (↑(x.fst)))^k , by {apply complex.abs_pow, },
   rw h3,
   rw C1,
@@ -174,11 +200,11 @@ begin
   have:=auxlem2 z n  x h k ,
   apply this, norm_cast,
   simp only [zero_le'],
-  simp only [complex.abs_pos, ne.def],
+  simp only [complex.abs.pos, ne.def],
   have hh : ((x.fst): ℂ) * (z: ℂ) + (x.snd: ℂ) ≠ 0, by {
   intro H,
   have H1 : x.1 = 0 ∨ (z: ℂ).im = 0, by simpa using congr_arg complex.im H,
-  cases H1, {rw H1 at C1, simp only [int.cast_zero, complex.abs_zero] at C1,
+  cases H1, {rw H1 at C1, simp only [int.cast_zero, abs_zero] at C1,
   norm_cast at C1,
   rw ← C1 at hn,
   simp only [nat.one_ne_zero, square_mem, le_zero_iff] at *,
@@ -188,11 +214,12 @@ begin
   rw H1 at HH,
   simp at HH,
   exact HH,},
+  apply complex.abs.pos,
   apply pow_ne_zero,
   exact hh,
-  simp only [complex.abs_mul],
+  rw map_mul complex.abs,
   apply mul_pos,
-  rw complex.abs_pos,
+  apply complex.abs.pos,
   apply pow_ne_zero,
   have:= rfunct_pos z,
   norm_cast,
@@ -200,7 +227,7 @@ begin
   rw np at this,
   simp only [lt_self_iff_false] at this,
   exact this,
-  simp only [complex.abs_pos],
+  apply complex.abs.pos,
   apply pow_ne_zero,
   norm_cast,
   intro Hn,
@@ -223,7 +250,7 @@ begin
   have h0: (x.2: ℂ ) ≠ 0, by {norm_cast,
   intro hx,
   rw hx at C2,
-  simp only [int.cast_zero, complex.abs_zero] at C2,
+  simp only [int.cast_zero, abs_zero] at C2,
   norm_cast at C2,
   rw ← C2 at hn,
   simp only [nat.one_ne_zero, le_zero_iff] at hn,
@@ -238,8 +265,8 @@ begin
   simp only [one_mul],
   exact h0,},
   rw h1,
-  rw complex.abs_mul,
-  rw complex.abs_mul,
+  rw map_mul complex.abs,
+  rw map_mul complex.abs,
   have h3: complex.abs (↑(x.2) ^ k)= (complex.abs (↑(x.2)))^k ,
   by {apply complex.abs_pow,},
   rw h3,
@@ -260,7 +287,7 @@ begin
   {rw H1 at H,
   simp only [int.cast_eq_zero, int.cast_zero, zero_mul, zero_add] at H,
   rw H at C2,
-  simp only [int.cast_zero, complex.abs_zero] at C2,
+  simp only [int.cast_zero, abs_zero] at C2,
   norm_cast at C2,
   rw ← C2 at hn,
   simp only [nat.one_ne_zero, square_mem, le_zero_iff] at *,
@@ -268,11 +295,12 @@ begin
   have HH:= z.property, simp only [subtype.val_eq_coe] at HH,
   rw H1 at HH, simp only [lt_self_iff_false] at HH,
   exact HH,},
-  rw complex.abs_pos,
+  apply complex.abs.pos,
   apply pow_ne_zero,
-  exact hh,simp only [complex.abs_mul],
+  exact hh,
+  rw map_mul complex.abs,
   apply mul_pos,
-  rw complex.abs_pos,
+  apply complex.abs.pos,
   apply pow_ne_zero,
   have:= rfunct_pos z,
   norm_cast,
@@ -280,7 +308,7 @@ begin
   rw np at this,
   simp only [lt_self_iff_false] at this,
   exact this,
-  simp only [complex.abs_pos],
+  apply complex.abs.pos,
   apply pow_ne_zero,
   norm_cast,
   intro Hn,
@@ -303,11 +331,10 @@ begin
   rw Square_zero at hx,
   simp only [finset.mem_singleton] at hx,
   simp_rw hx,
-  simp only [add_zero, int.cast_zero, zero_mul, complex.abs_mul],
+  simp only [add_zero, int.cast_zero, zero_mul, map_mul complex.abs],
   have h1: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,},
   rw h1,
-  rw complex.abs_zero,
-  simp only [mul_zero],
+  simp,
 end
 
 lemma Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) (hn: 1 ≤ k): ∀ (x: ℤ × ℤ),
@@ -338,7 +365,7 @@ lemma BigClaim (k : ℕ) (z : ℍ) (h : 3 ≤ k):
 begin
   intro n,
   rw real_Eise,
-  simp only [one_div, complex.abs_pow, complex.abs_inv, zpow_coe_nat],
+  simp  [one_div, complex.abs_pow, abs_inv, zpow_coe_nat],
   have k0: 1 ≤ k, by {linarith,},
   have BO :=  Eise_on_square_is_bounded'' ( k : ℕ) (z : ℍ) (n : ℕ) k0,
   by_cases n0 : n=0,
@@ -346,13 +373,13 @@ begin
   rw Square_zero,
   simp only [add_zero, int.cast_zero, nat.cast_zero, zero_mul, finset.sum_singleton],
   have H0: (0: ℂ)^k=0, by {rw zero_pow_eq_zero, linarith,},
-  simp only [complex.abs_zero, inv_zero],
+  simp  [abs_zero, inv_zero],
   have H00: (0: ℝ)^((k: ℤ)-1)=0,
   by { rw zero_zpow, linarith,},
   rw H00,
   simp [inv_zero, mul_zero], norm_cast at *, rw H0,},
   have := finset.sum_le_sum BO,
-  simp only [finset.sum_const, complex.abs_mul, nsmul_eq_mul] at this,
+  simp only [finset.sum_const, map_mul complex.abs, nsmul_eq_mul] at this,
   rw Square_size n at this,
   norm_cast at this,
   have ne:( (8 * n) * (complex.abs (rfunct z ^ k) * ((n ^ k): ℝ))⁻¹ : ℝ)=
@@ -411,7 +438,7 @@ begin
   have HI:=Squares_cover_all,
   let g:= λ (y : ℤ × ℤ), (real_Eise k z) y,
   have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y,
-  by {simp_rw g, intro y, rw real_Eise, simp, simp [complex.abs_nonneg],},
+  by {simp_rw g, intro y, rw real_Eise, simp,},
   have index_lem:= sum_lemma g  gpos In HI,
   rw index_lem,
   let e:=λ (x: ℕ), ∑ (y : ℤ × ℤ) in (In x), g y,
@@ -422,7 +449,7 @@ begin
   by {simp_rw e,
   apply SmallClaim k z h,},
   have epos: ∀ (x : ℕ), 0 ≤ e x, by {simp_rw e, simp_rw g, intro x,
-  apply finset.sum_nonneg,  intros i hi, apply complex.abs_nonneg, },
+  apply finset.sum_nonneg,  intros i hi, apply complex.abs.nonneg, },
   have hk: 1 < ((k-1): ℤ), by { linarith, },
   have nze: ((8/((rfunct z)^k)): ℝ)  ≠ 0,
   by {apply div_ne_zero,
@@ -453,7 +480,7 @@ begin
   have HI:=Squares_cover_all,
   let g:= λ (y : ℤ × ℤ), (real_Eise k z) y,
   have gpos: ∀ (y : ℤ × ℤ), 0 ≤ g y,
-  by {simp_rw g, intro y, rw real_Eise, simp, simp  [complex.abs_nonneg],},
+  by {simp_rw g, intro y, rw real_Eise, simp,},
   have hgsumm: summable g,
   by {simp_rw g, apply real_eise_is_summable k z h, },
   have index_lem:= tsum_lemma g In HI hgsumm,
@@ -582,10 +609,6 @@ begin
   split,
   simp_rw e,
   simp,
-  apply mul_pos,
-  rw inv_pos,
-  linarith,
-  simp,
   apply upper_half_plane.im_ne_zero z,
   split,
   simp_rw b,
@@ -605,7 +628,7 @@ begin
   rw d1 at  hxz,
   rw dist_eq_norm at hxz,
   simp only [norm_eq_abs] at hxz,
-  have:= abs_sub_le x.1 z.1 0,
+  have:= complex.abs.sub_le (x : ℂ) (z : ℂ) 0,
   simp only [sub_zero, subtype.val_eq_coe] at this,
   split,
   simp_rw a,
@@ -633,8 +656,8 @@ begin
   simp_rw a,
   split,
   apply add_nonneg,
-  apply complex.abs_nonneg,
-  apply complex.abs_nonneg,
+  apply complex.abs.nonneg,
+  apply complex.abs.nonneg,
   simp_rw b,
   simp_rw e,
   ring_nf,
@@ -737,7 +760,7 @@ begin
     simp,},
     norm_cast at this,
     rw ← this,
-    have v2: 0 ≤ complex.abs (z_val_val.re), by {apply complex.abs_nonneg,},
+    have v2: 0 ≤ complex.abs (z_val_val.re), by {apply complex.abs.nonneg,},
     norm_cast at v2,
     have v1: 0 ≤ A, by {apply le_trans v2 z_property_left,},
     apply aux6 _ _ v2 v1,
@@ -985,6 +1008,7 @@ begin
   intro z,
   by_cases hy: (y.1 : ℂ)*z.1 + y.2 ≠ 0,
   simp_rw Eise, ring_nf,
+
   have:= aux8 y.1 y.2 k z.1,
   simp only [subtype.val_eq_coe] at this,
   have nz: (y.1 : ℂ)*z.1 + y.2 ≠ 0 , by {apply hy,},
@@ -995,7 +1019,7 @@ begin
   (↑-k * (↑(y.fst) * ↑z + ↑(y.snd)) ^ (-k - 1) * ↑(y.fst)) upper_half_plane.upper_half_space ↑z, by {apply H'},
   simp at H,
   let fx:=(-k*((y.1:ℂ)*z.1+y.2)^(-k-1)*(y.1) : ℂ),
-  use fx,
+  refine ⟨ fx, _⟩,
   rw has_deriv_within_at_iff_tendsto at *,
   simp  [ zpow_neg, algebra.id.smul_eq_mul, eq_self_iff_true,
    ne.def, int.cast_neg, subtype.val_eq_coe, norm_eq_abs,
@@ -1003,20 +1027,18 @@ begin
   rw metric.tendsto_nhds_within_nhds at *,
   intros ε hε,
   have HH:= H ε hε,
-  use classical.some HH,
-  have:= classical.some_spec HH,
-  simp  [exists_prop, gt_iff_lt,  dist_zero_right] at this,
-  have hg:= this.1,
-  simp  [hg, true_and, exists_prop, gt_iff_lt,  dist_zero_right] at *,
+  obtain ⟨d1, hd1, hh⟩ := HH,
+  refine ⟨d1 ,hd1, _⟩,
   intros x hx hd,
   dsimp at *,
   simp_rw extend_by_zero,
   simp only [dite_eq_ite, if_true, subtype.coe_prop, subtype.coe_eta, subtype.coe_mk],
   rw ← dite_eq_ite, rw dif_pos hx,
-  have H3:= this_1 hx hd,
+  have H3:= hh hx hd,
   simp_rw fx,
   convert H3,
-  ring,
+
+  ring_nf,
   simp only [not_not, subtype.val_eq_coe] at hy,
   have hz: y.1 =0 ∧ y.2 = 0,
   by {by_contra,

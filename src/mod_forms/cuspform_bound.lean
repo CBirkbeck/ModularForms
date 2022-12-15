@@ -11,8 +11,8 @@ FIXME : The code here depends on a couple of lemmas at the end of `mod_forms2.le
 to be trivial but are gnarly because of the coercion issues around SL2Z actions. For some reason
 that code stops working if I transplant it to this file. -/
 
-open modular_forms complex filter asymptotics
-open_locale real topological_space manifold filter modular_forms
+open modular_form complex filter asymptotics
+open_locale real topological_space manifold filter modular_form
 
 noncomputable theory
 
@@ -20,11 +20,11 @@ local notation `ℍ` := upper_half_plane
 local notation `SL(` n `, ` R `)`:= matrix.special_linear_group (fin n) R
 
 /-- The Petersson function of a cuspform is continuous. -/
-lemma pet_cts {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) : continuous (pet_self f k) :=
+lemma pet_cts  {k : ℤ} (f : cusp_form ⊤ k) : continuous (pet_self f k) :=
 begin
   apply continuous.mul,
   { continuity,
-    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ hf).hol.continuous },
+    exact f.holo'.continuous },
   { simp_rw upper_half_plane.im, continuity, exact or.inl a.2.ne',}
 end
 
@@ -39,13 +39,13 @@ begin
     obtain ⟨x, ⟨⟨hx1, hx2⟩, hx3⟩, hzx⟩ := hz,
     rw ←hzx,
     refine ⟨x.2.le, hx2, _, hx3⟩,
-    rw [←one_le_sq_iff, ←norm_sq_eq_abs], exact hx1, apply complex.abs_nonneg, },
+    rw [←one_le_sq_iff, ←norm_sq_eq_abs], exact hx1, apply complex.abs.nonneg, },
   { intro hz, obtain ⟨hz1, hz2, hz3, hz4⟩ := hz,
     rcases le_or_lt (im z) 0,
     -- This is a clumsy way of showing that im z = 0 leads to a contradiction.
     -- Todo: improve this by comparison with three_lt_four_mul_im_sq_of_mem_fdo in modular.lean.
     { have : im z = 0 := by linarith,
-      have t := (one_le_sq_iff (abs_nonneg _)).mpr hz3,
+      have t := (one_le_sq_iff (complex.abs.nonneg _)).mpr hz3,
       rw ←norm_sq_eq_abs at t, rw norm_sq at t, simp only [monoid_with_zero_hom.coe_mk] at t,
       rw this at t, simp only [mul_zero, add_zero] at t,
       rw ←abs_mul_self at t, rw ←pow_two at t, rw _root_.abs_pow at t,
@@ -58,19 +58,18 @@ begin
       { simp at t3, linarith }, { linarith }, { linarith }, },
     -- Now the main argument.
     use ⟨z, h⟩, refine ⟨⟨⟨_, hz2⟩, hz4⟩, by simp⟩,
-    rw norm_sq_eq_abs, rw one_le_sq_iff (complex.abs_nonneg _), exact hz3,
+    rw norm_sq_eq_abs, rw one_le_sq_iff (complex.abs.nonneg _), exact hz3,
   }
 end
 
 /-- The standard fundamental domain, truncated at some finite height, is compact. -/
 lemma compact_trunc_fd (A : ℝ) : is_compact {x : ℍ | x ∈ modular_group.fd ∧ x.im ≤ A} :=
 begin
-  rw [embedding_subtype_coe.is_compact_iff_is_compact_image, image_fd A,
-    metric.compact_iff_closed_bounded],
-  split,
+  rw [embedding_subtype_coe.is_compact_iff_is_compact_image, image_fd A],
+  apply metric.is_compact_of_is_closed_bounded,
   { apply_rules [is_closed.inter],
     { apply is_closed_Ici.preimage continuous_im, },
-    { have : continuous (λ u, |re u| : ℂ → ℝ) := by { continuity, exact continuous_abs },
+    { have : continuous (λ u, |re u| : ℂ → ℝ) := by { continuity },
       refine is_closed.preimage this (@is_closed_Iic _ _ _ _ (1/2)) },
     { apply is_closed_Ici.preimage complex.continuous_abs, },
     { apply is_closed_Iic.preimage continuous_im, } },

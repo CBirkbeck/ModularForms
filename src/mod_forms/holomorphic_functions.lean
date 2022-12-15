@@ -242,10 +242,10 @@ lemma aux2 (x : ℂ) (a b : ℝ) : metric.ball x a ∩ metric.ball x b = metric.
 begin
   ext,
   split,
-  simp only [and_imp, metric.mem_ball, set.mem_inter_eq, lt_min_iff],
+  simp  [and_imp, metric.mem_ball, lt_min_iff],
   intros ha hb,
   simp only [ha, hb, and_self],
-  simp only [and_imp, metric.mem_ball, set.mem_inter_eq, lt_min_iff],
+  simp [and_imp, metric.mem_ball,  lt_min_iff],
   intros ha hb,
   simp only [ha, hb, and_self],
 end

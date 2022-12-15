@@ -120,7 +120,10 @@ begin
   rw hFb,
   apply ha b hb ⟨x, hxx⟩ hx,
 end
+/--The extension of a function from `ℍ` to `ℍ'`-/
+def hol_extn (f : ℍ → ℂ) : ℍ' → ℂ := λ (z : ℍ'), (f (z : ℍ))
 
+instance : has_coe (ℍ → ℂ) (ℍ' → ℂ) := ⟨λ f, hol_extn f ⟩
 
 lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
   is_holomorphic_on (hol_extn (Eisenstein_series_of_weight_ k)):=
@@ -240,11 +243,12 @@ begin
   refl,
 end
 
-lemma mod_form_periodic (k : ℤ) (f : ℍ → ℂ)
-  (h: f ∈ (modular_forms.weakly_modular_submodule k (⊤ : subgroup SL2Z))) :
+lemma mod_form_periodic (k : ℤ)
+  ( f : (slash_invariant_form (⊤ : subgroup SL2Z) k)) :
   ∀ (z : ℍ) (n : ℤ), f( ((TN n) : matrix.GL_pos (fin 2) ℝ)  • z ) = f(z) :=
 begin
-  simp only [modular_forms.wmodular_mem', coe_coe] at h,
+  have h := slash_invariant_form.slash_action_eqn' k ⊤ f,
+  simp only [slash_invariant_form.slash_action_eqn', coe_coe],
   intros z n,
   have htop : (TN n) ∈ (⊤ : subgroup SL2Z), by {simp,},
   have H:= h ⟨(TN n), htop⟩ z,
@@ -321,7 +325,7 @@ begin
   apply abs_tsum',
   have := real_eise_is_summable k z hk,
   simp_rw real_Eise at this,
-  simp only [one_div, complex.abs_pow, complex.abs_inv, norm_eq_abs, zpow_coe_nat] at *,
+  simp only [one_div, complex.abs_pow, abs_inv, norm_eq_abs, zpow_coe_nat] at *,
   apply this,
 end
 
@@ -333,7 +337,10 @@ begin
   use [M, 2],
   intros z hz,
   obtain ⟨n, hn⟩ := upp_half_translation z,
-  simp_rw ← (mod_form_periodic k _ (Eisenstein_is_wmodular ⊤ k) z n),
+  have := (mod_form_periodic k (Eisenstein_is_wmodular ⊤ k) z n),
+  have hf : (Eisenstein_is_wmodular ⊤ k) z = Eisenstein_series_of_weight_  k z, by {refl,},
+  rw hf at this,
+  rw ← this,
   let Z := (((TN n) : matrix.GL_pos (fin 2) ℝ) • z),
   apply le_trans (eis_bound_by_real_eis k Z hk),
   have hZ : Z ∈ upper_half_space_slice 1 2,
@@ -443,20 +450,26 @@ apply mdiff_to_holo f,
 apply holo_to_mdiff f,
 end
 
-lemma Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
- modular_forms.is_modular_form_of_weight_and_level  k ⊤
- (λ z : ℍ, Eisenstein_series_of_weight_ k z) :=
-{ hol:= by
-  { simp_rw hol_extn,
-    rw mdiff_iff_holo,
-    apply Eisenstein_is_holomorphic k hk, },
-  transf := by { simp only, apply Eisenstein_is_wmodular ⊤ k, },
-  infinity := by
+def Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
+ modular_form  ⊤ k :=
+{ to_fun := hol_extn ((Eisenstein_is_wmodular ⊤ k).to_fun),
+  slash_action_eq' := by {rw hol_extn, apply (Eisenstein_is_wmodular ⊤ k).2,  },
+  holo' := by
+  {
+    have := Eisenstein_is_holomorphic k hk,
+    have h2 := (mdiff_iff_holo (hol_extn ((Eisenstein_is_wmodular ⊤ k).to_fun))).2 this,
+    convert h2, },
+  bdd_at_infty' := by
   { intros A,
-    have := Eisenstein_is_wmodular ⊤ k ⟨A, by tauto⟩,
-    simp only [modular_forms.slash_action_eq_slash', coe_coe, modular_forms.slash_action_eq_slash,
-  subtype.coe_mk] at *, rw this,
-    apply Eisenstein_is_bounded k hk, }
+    rw hol_extn,
+    simp_rw (Eisenstein_is_wmodular ⊤ k).2,
+    have := Eisenstein_is_bounded k hk,
+    convert this,
+    have hr:= (Eisenstein_is_wmodular ⊤ k).2 ⟨A, by {tauto}⟩,
+    have hr2: (Eisenstein_is_wmodular ⊤ k).to_fun = Eisenstein_series_of_weight_ k, by {refl},
+    rw hr2 at hr,
+    convert hr,
+    },
 }
 
 end Eisenstein_series

@@ -28,7 +28,7 @@ lemma M_test_summable (F : ℕ → α → ℂ) (M : ℕ → ℝ)
 begin
   intro a,
   apply summable_if_complex_abs_summable,
-  have c1 : ∀ (n : ℕ), 0 ≤ (complex.abs (F n a)), by {intro n, apply complex.abs_nonneg (F n a),},
+  have c1 : ∀ (n : ℕ), 0 ≤ (complex.abs (F n a)), by {intro n, apply complex.abs.nonneg (F n a),},
   have H1 : ∀ (n : ℕ), (complex.abs (F n a)) ≤ (M n), by {simp only [h1, forall_const]},
   apply summable_of_nonneg_of_le c1 H1,
   exact h2,
@@ -41,7 +41,7 @@ begin
   exact sub_eq_of_eq_add' (eq.symm this),
 end
 
-lemma abs_tsum (f : ℕ → ℂ) (h : summable (λ (i : ℕ), ∥ f i ∥ )) :
+lemma abs_tsum (f : ℕ → ℂ) (h : summable (λ (i : ℕ), complex.abs(f i) )) :
   complex.abs (∑'(i : ℕ), f i ) ≤  (∑' (i : ℕ), complex.abs (f i)) :=
 begin
   rw ← complex.norm_eq_abs,
@@ -50,13 +50,19 @@ begin
   exact h,
 end
 
-lemma abs_tsum' {f : α → ℂ} (h : summable (λ (i : α), ∥ f i ∥ )) :
+lemma abs_tsum' {f : α → ℂ} (h : summable (λ (i : α), complex.abs( f i) )) :
   complex.abs (∑'(i : α), f i ) ≤  (∑' (i : α), complex.abs (f i)) :=
 begin
   rw ← complex.norm_eq_abs,
   simp_rw ← complex.norm_eq_abs,
   apply norm_tsum_le_tsum_norm,
   exact h,
+end
+
+
+example (r : ℝ) : complex.abs (r : ℂ)= |r| :=
+begin
+  exact abs_of_real r,
 end
 
 lemma M_test_uniform (h : nonempty α) (F : ℕ → α → ℂ) (M : ℕ → ℝ)
@@ -68,7 +74,7 @@ begin
   have Mpos: ∀ (n : ℕ), 0 ≤ M n ,
     by {intro n,
     have := h1 n,
-    have t1 : ∀ (a : α), 0 ≤  complex.abs(F n a), by {intro a, apply complex.abs_nonneg,},
+    have t1 : ∀ (a : α), 0 ≤  complex.abs(F n a), by {intro a, apply complex.abs.nonneg,},
     apply le_trans (t1 _) (this _),
     have ne := exists_true_iff_nonempty.2 h,
     use classical.some ne,},
@@ -78,15 +84,20 @@ begin
   simp only [filter.eventually_at_top, gt_iff_lt, ge_iff_le] at *,
   have H := summable_iff_vanishing_norm.1 h2 ε hε,
   simp only at H,
-  have HU : ∃ (a : ℕ), ∀ (b : ℕ), a ≤ b → ∥ ∑' i, M (i+b) ∥ < ε,
+  have HU : ∃ (a : ℕ), ∀ (b : ℕ), a ≤ b → | ∑' i, M (i+b) | < ε,
      by { have HC := tendsto_sum_nat_add M,
      simp [tendsto_iff_dist_tendsto_zero] at HC,
      simp only [dist_zero_right, norm_norm] at HC,
      simp_rw metric.tendsto_nhds at HC,
      simp only [filter.eventually_at_top, gt_iff_lt, ge_iff_le, dist_zero_right, norm_norm] at HC,
-     simpa using (HC ε hε),},
+     simp at *,
+     have HXX := (HC ε hε),
+     obtain ⟨a, ha⟩ := HXX,
+     refine ⟨a, _⟩,
+     intros b hb,
+     convert ha b hb,},
   have c1 : ∀ (a : α) (n : ℕ), 0 ≤ (complex.abs (F n a)),
-  by {intros a n, apply complex.abs_nonneg (F n a),},
+  by {intros a n, apply complex.abs.nonneg (F n a),},
   have H1 : ∀ (a : α) (n : ℕ), complex.abs (F n a) ≤ (M n), by {simp [h1]},
   have B1 : ∀ (a : α), ∑' (n : ℕ), complex.abs(F n a) ≤ ∑' (n : ℕ), M n,
     by { intro a,
@@ -101,8 +112,8 @@ begin
     use HU_w,
     intros b hb,
     intro r,
-    have :  ∑' i, complex.abs (F (i+b) r)  ≤ ∥ ∑' i, M (i+b) ∥,
-      by { have r1 : ∥ ∑' i, M (i+b) ∥=∑' i, M (i+b),
+    have :  ∑' i, complex.abs (F (i+b) r)  ≤ |∑' i, M (i+b) |,
+      by { have r1 : | ∑' i, M (i+b) | =∑' i, M (i+b),
         by {apply real.norm_of_nonneg,
         apply  tsum_nonneg,
         simp only [Mpos, forall_const],},
