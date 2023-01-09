@@ -24,7 +24,7 @@ def set_of_points_mod_n (E : elliptic_curve ℚ) (n : ℕ) := {P : (zmod n) × (
   let ⟨x, y⟩ := P in  y^2 + (rat_red E.a₁ n)* x * y+ (rat_red E.a₃ n) * y   =
   x^3 +(rat_red E.a₂ n)* x^2 + (rat_red E.a₄ n) * x + (rat_red E.a₆ n)}
 
-def EllipticCurve.ap (E : elliptic_curve ℚ) (p : ℕ) : ℕ :=
+def elliptic_curve.ap (E : elliptic_curve ℚ) (p : ℕ) : ℕ :=
   p-(cardinal.mk (set_of_points_mod_n E p)).to_nat
 
 def is_normalised_eigenform {N : ℕ} {k : ℤ}

@@ -73,44 +73,44 @@ begin
       refine is_closed.preimage this (@is_closed_Iic _ _ _ _ (1/2)) },
     { apply is_closed_Ici.preimage complex.continuous_abs, },
     { apply is_closed_Iic.preimage continuous_im, } },
-  { rw bounded_iff_exists_norm_le, use real.sqrt (A ^ 2 + (1 / 2) ^ 2),
+  { rw bounded_iff_forall_norm_le, use real.sqrt (A ^ 2 + (1 / 2) ^ 2),
     intros x hx, rw set.mem_set_of_eq at hx,
     rw norm_eq_abs, rw complex.abs, apply real.le_sqrt_of_sq_le,
+    simp,
     rw real.sq_sqrt (norm_sq_nonneg _),
     rw norm_sq, dsimp, rw add_comm, apply add_le_add,
     { rw ←pow_two, rw sq_le_sq, apply abs_le_abs,
       { exact hx.2.2.2 }, { exact le_trans (by linarith) (le_trans hx.1 hx.2.2.2), } },
-    { rw ←pow_two, rw sq_le_sq, apply abs_le_abs,
+    { rw ←pow_two, rw ←inv_pow, rw sq_le_sq,  rw inv_eq_one_div, apply abs_le_abs,
       { exact le_trans (le_abs_self (re x)) hx.2.1 },
       { exact le_trans (neg_le_abs_self (re x)) hx.2.1 } } }
 end
 
 /-- The Petersson function is bounded on the standard fundamental domain. -/
-lemma pet_bound_on_fd {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) :
+lemma pet_bound_on_fd {k : ℤ}  (f : cusp_form ⊤ k) :
   ∃ (C : ℝ), ∀ (z : ℍ), (z ∈ modular_group.fd) → |pet_self f k z| ≤ C :=
 begin
-  obtain ⟨A, C1, H1⟩ := pet_bounded_large hf,
-  have := (compact_trunc_fd A).exists_bound_of_continuous_on (pet_cts hf).continuous_on,
+  obtain ⟨A, C1, H1⟩ := pet_bounded_large f,
+  have := (compact_trunc_fd A).exists_bound_of_continuous_on (pet_cts f).continuous_on,
   cases this with C2 H2, use max C1 C2, intros z hz,
   rcases le_or_lt (im z) A,
   { exact le_trans (H2 z ⟨hz, h⟩) (le_max_right _ _), },
   { convert le_trans (H1 z h.le) (le_max_left C1 C2),
     apply _root_.abs_of_nonneg,
     rw pet_self, apply mul_nonneg,
-    { apply pow_nonneg, apply complex.abs_nonneg},
+    { apply pow_nonneg, apply absolute_value.nonneg},
     { apply zpow_nonneg, exact z.2.le }, }
 end
 
 /-- The Petersson function is bounded everywhere. -/
-theorem pet_bound {f : ℍ → ℂ} {k : ℤ} (hf : f ∈ S k ⊤) :
+theorem pet_bound {k : ℤ}   (f : cusp_form ⊤ k) :
   ∃ (C : ℝ), ∀ (z : ℍ), |pet_self f k z| ≤ C :=
 begin
-  obtain ⟨C, HC⟩ := pet_bound_on_fd hf, use C, intro z,
+  obtain ⟨C, HC⟩ := pet_bound_on_fd f, use C, intro z,
   obtain ⟨g, hg⟩ := modular_group.exists_smul_mem_fd z,
   replace HC := HC (g • z) hg,
   have : pet_self f k (g • z) = pet_self f k z,
-  { apply pet_self_is_invariant,
-    exact (is_modular_form_of_weight_and_level_of_is_cusp_form_of_weight_and_level _ _ hf).transf,
-      tauto, },
+  { apply pet_self_is_invariant f.to_slash_invariant_form ,
+    simp [g.2] },
   rwa this at HC
 end
