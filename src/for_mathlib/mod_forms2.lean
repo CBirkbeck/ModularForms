@@ -32,6 +32,129 @@ is_open.preimage complex.continuous_im is_open_Ioi
 
 local notation `ℍ'`:= (⟨upper_half_plane.upper_half_space , upper_half_plane_is_open⟩: topological_space.opens ℂ)
 
+section graded_ring
+
+namespace modular_form
+
+open modular_form
+
+variables (F : Type*) (Γ : subgroup SL(2, ℤ)) (k : ℤ)
+
+/-cast for modular forms, which is useful for removing `heq`'s. -/
+def mcast {a b : ℤ} {Γ : subgroup SL(2, ℤ)} (h : a = b) (f : modular_form Γ a) :
+  (modular_form Γ b) :=
+{ to_fun := (f : ℍ → ℂ),
+  slash_action_eq' := by {intro A, have := f.slash_action_eq' A, convert this, exact h.symm,},
+  holo' := f.holo',
+  bdd_at_infty' := by {intro A, convert f.bdd_at_infty' A, exact h.symm }}
+
+lemma type_eq {a b : ℤ} (Γ : subgroup SL(2, ℤ)) (h : a = b) :
+  (modular_form Γ a) = (modular_form Γ b) :=
+begin
+  induction h,
+  refl,
+end
+
+lemma cast_eq_mcast {a b : ℤ} {Γ : subgroup SL(2, ℤ)} (h : a = b) (f : modular_form Γ a) :
+  cast (type_eq Γ h) f = mcast h f :=
+begin
+  induction h,
+  ext1,
+  refl,
+end
+
+lemma heq_one_mul (k : ℤ) {Γ : subgroup SL(2, ℤ)} (f : modular_form Γ k) :
+  (1 : modular_form Γ 0).mul f == f :=
+begin
+   apply heq_of_cast_eq (type_eq Γ (zero_add k).symm).symm,
+    funext,
+    rw [cast_eq_mcast, mcast, mul],
+    simp only [one_coe_eq_one, one_mul],
+    ext1,
+    refl,
+    simp only [zero_add]
+end
+
+lemma heq_mul_one (k : ℤ) {Γ : subgroup SL(2, ℤ)} (f : modular_form Γ k) :
+  f.mul (1 : modular_form Γ 0) == f :=
+begin
+      apply heq_of_cast_eq (type_eq Γ (add_zero k).symm).symm,
+      funext,
+      rw [cast_eq_mcast, mcast, mul],
+      simp only [one_coe_eq_one, mul_one],
+      ext1,
+      refl,
+      simp only [add_zero]
+end
+
+lemma heq_mul_assoc {a b c : ℤ} (f : modular_form Γ a) (g : modular_form Γ b)
+  (h : modular_form Γ c) : (f.mul g).mul h ==  f.mul (g.mul h) :=
+begin
+  apply heq_of_cast_eq (type_eq Γ (add_assoc a b c)),
+  rw [cast_eq_mcast, mcast],
+  ext1,
+  simp only [mul_coe, pi.mul_apply, ←mul_assoc],
+  refl,
+end
+
+lemma heq_mul_comm (a b : ℤ) (f : modular_form Γ a) (g : modular_form Γ b) : f.mul g == g.mul f :=
+begin
+  apply heq_of_cast_eq (type_eq Γ (add_comm a b)),
+  rw [cast_eq_mcast, mcast],
+  ext1,
+  simp only [mul_coe, pi.mul_apply, mul_comm],
+  refl,
+end
+
+instance graded_mod_ring (Γ : subgroup SL(2, ℤ)) : direct_sum.gcomm_ring (λ k, modular_form Γ k) :=
+{ mul := λ k_1, λ k_2, λ f g, f.mul g,
+  one := 1,
+  one_mul := by {intro f,
+    rw [graded_monoid.ghas_one.to_has_one, graded_monoid.ghas_mul.to_has_mul],
+    apply sigma.ext,
+    { simp only [zero_add] },
+    { simp only [submodule.coe_mk, one_mul, heq_one_mul] }},
+  mul_one := by {intro f,
+    rw [graded_monoid.ghas_one.to_has_one, graded_monoid.ghas_mul.to_has_mul],
+    apply sigma.ext,
+    { simp only [add_zero] },
+    { simp only [submodule.coe_mk, mul_one, heq_mul_one]}},
+  mul_assoc := by {intros f g h,
+    rw graded_monoid.ghas_mul.to_has_mul,
+    apply sigma.ext,
+    { apply add_assoc },
+    { simp only [submodule.coe_mk, heq_mul_assoc] }},
+  mul_zero := by {intros i j f, ext1, simp,},
+  zero_mul := by {intros i j f, ext1, simp,},
+  mul_add := by {intros i j f g h,
+    ext1,
+    simp only [pi.mul_apply, mul_add, mul_coe, add_apply],},
+  add_mul := by {intros i j f g h,
+    ext1,
+    simp only [add_mul, mul_coe, pi.mul_apply, add_apply],},
+  mul_comm := by {intros f g,
+    rw graded_monoid.ghas_mul.to_has_mul,
+    apply sigma.ext,
+    { apply add_comm },
+    { apply heq_mul_comm }},
+  gnpow_zero' := by {intro f,
+    apply sigma.ext,
+    repeat {refl}},
+  gnpow_succ' := by {intros n f,
+    rw graded_monoid.ghas_mul.to_has_mul,
+    apply sigma.ext,
+    repeat {refl}},
+  nat_cast := λ n, n • (1 : (modular_form Γ 0)),
+  nat_cast_zero := by {simp},
+  nat_cast_succ := by {intro n, simp only [add_smul, one_nsmul, add_right_inj], refl,},
+  int_cast := λ n, n • (1 : (modular_form Γ 0)),
+  int_cast_of_nat := by {simp},
+  int_cast_neg_succ_of_nat := by {intro , apply _root_.neg_smul }}
+
+end modular_form
+
+end graded_ring
+
 section petersson_product
 
 def pet (f g : ℍ → ℂ) (k : ℤ) : ℍ → ℂ :=
