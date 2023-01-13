@@ -121,7 +121,7 @@ begin
   apply upper_half_plane.denom_ne_zero A,
 end
 
-def Eisenstein_is_wmodular (Γ : subgroup SL2Z) (k: ℤ) :
+def Eisenstein_is_slash_inv (Γ : subgroup SL2Z) (k: ℤ) :
 (slash_invariant_form Γ k) :=
 {to_fun := (Eisenstein_series_of_weight_ k),
   slash_action_eq' := begin

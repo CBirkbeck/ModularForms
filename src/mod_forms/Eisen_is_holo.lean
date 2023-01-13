@@ -3,9 +3,10 @@ import for_mathlib.unform_limits_of_holomorphic
 import for_mathlib.mod_forms2
 import geometry.manifold.mfderiv
 
+
 universes u v w
 
-open complex
+open complex upper_half_plane
 
 open_locale big_operators nnreal classical filter
 
@@ -13,6 +14,7 @@ local notation `ℍ` := upper_half_plane
 
 local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
 local notation `SL2Z`:=matrix.special_linear_group (fin 2) ℤ
+local notation `SL(` n `, ` R `)` := matrix.special_linear_group (fin n) R
 noncomputable theory
 
 namespace Eisenstein_series
@@ -123,10 +125,12 @@ end
 /--The extension of a function from `ℍ` to `ℍ'`-/
 def hol_extn (f : ℍ → ℂ) : ℍ' → ℂ := λ (z : ℍ'), (f (z : ℍ))
 
+local notation `↑ₕ` := hol_extn
+
 instance : has_coe (ℍ → ℂ) (ℍ' → ℂ) := ⟨λ f, hol_extn f ⟩
 
 lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
-  is_holomorphic_on (hol_extn (Eisenstein_series_of_weight_ k)):=
+  is_holomorphic_on (↑ₕ(Eisenstein_series_of_weight_ k)):=
 begin
   rw ←  is_holomorphic_on_iff_differentiable_on,
   apply diff_on_diff,
@@ -337,8 +341,8 @@ begin
   use [M, 2],
   intros z hz,
   obtain ⟨n, hn⟩ := upp_half_translation z,
-  have := (mod_form_periodic k (Eisenstein_is_wmodular ⊤ k) z n),
-  have hf : (Eisenstein_is_wmodular ⊤ k) z = Eisenstein_series_of_weight_  k z, by {refl,},
+  have := (mod_form_periodic k (Eisenstein_is_slash_inv ⊤ k) z n),
+  have hf : (Eisenstein_is_slash_inv ⊤ k) z = Eisenstein_series_of_weight_  k z, by {refl,},
   rw hf at this,
   rw ← this,
   let Z := (((TN n) : matrix.GL_pos (fin 2) ℝ) • z),
@@ -450,26 +454,35 @@ apply mdiff_to_holo f,
 apply holo_to_mdiff f,
 end
 
-def Eisenstein_series_is_modular_form  (k: ℕ) (hk : 3 ≤ k) :
+local notation f `∣[`:73 k:0, A `]` :72 := slash_action.map ℂ k A f
+
+lemma Eisenstein_series_is_mdiff (k: ℕ) (hk : 3 ≤ k) :
+mdifferentiable 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) (↑ₕ (Eisenstein_is_slash_inv ⊤ ↑k).to_fun) :=
+begin
+  have := Eisenstein_is_holomorphic k hk,
+  have h2 := (mdiff_iff_holo (↑ₕ((Eisenstein_is_slash_inv ⊤ k).to_fun))).2 this,
+  convert h2,
+end
+
+lemma Eisenstein_series_is_bounded (k: ℕ) (hk : 3 ≤ k) (A: SL(2, ℤ)) :
+  is_bounded_at_im_infty ((↑ₕ (Eisenstein_is_slash_inv ⊤ k).to_fun)∣[(k : ℤ) ,A]) :=
+begin
+rw hol_extn,
+simp_rw (Eisenstein_is_slash_inv ⊤ k).2,
+have := Eisenstein_is_bounded k hk,
+convert this,
+have hr:= (Eisenstein_is_slash_inv ⊤ k).2 ⟨A, by {tauto}⟩,
+have hr2: (Eisenstein_is_slash_inv ⊤ k).to_fun = Eisenstein_series_of_weight_ k, by {refl},
+rw hr2 at hr,
+convert hr,
+end
+
+
+def Eisenstein_series_is_modular_form (k: ℕ) (hk : 3 ≤ k) :
  modular_form  ⊤ k :=
-{ to_fun := hol_extn ((Eisenstein_is_wmodular ⊤ k).to_fun),
-  slash_action_eq' := by {rw hol_extn, apply (Eisenstein_is_wmodular ⊤ k).2,  },
-  holo' := by
-  {
-    have := Eisenstein_is_holomorphic k hk,
-    have h2 := (mdiff_iff_holo (hol_extn ((Eisenstein_is_wmodular ⊤ k).to_fun))).2 this,
-    convert h2, },
-  bdd_at_infty' := by
-  { intros A,
-    rw hol_extn,
-    simp_rw (Eisenstein_is_wmodular ⊤ k).2,
-    have := Eisenstein_is_bounded k hk,
-    convert this,
-    have hr:= (Eisenstein_is_wmodular ⊤ k).2 ⟨A, by {tauto}⟩,
-    have hr2: (Eisenstein_is_wmodular ⊤ k).to_fun = Eisenstein_series_of_weight_ k, by {refl},
-    rw hr2 at hr,
-    convert hr,
-    },
-}
+{ to_fun :=  ↑ₕ((Eisenstein_is_slash_inv ⊤ k).to_fun),
+  slash_action_eq' := by {rw hol_extn, apply (Eisenstein_is_slash_inv ⊤ k).2,  },
+  holo' := Eisenstein_series_is_mdiff k hk,
+  bdd_at_infty' := λ A, Eisenstein_series_is_bounded k hk A}
 
 end Eisenstein_series
