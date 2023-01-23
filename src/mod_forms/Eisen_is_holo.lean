@@ -129,7 +129,7 @@ local notation `↑ₕ` := hol_extn
 
 instance : has_coe (ℍ → ℂ) (ℍ' → ℂ) := ⟨λ f, hol_extn f ⟩
 
-lemma Eisenstein_is_holomorphic (k: ℕ) (hk : 3 ≤ k):
+lemma Eisenstein_is_holomorphic' (k: ℕ) (hk : 3 ≤ k):
   is_holomorphic_on (↑ₕ(Eisenstein_series_of_weight_ k)):=
 begin
   rw ←  is_holomorphic_on_iff_differentiable_on,
@@ -159,6 +159,18 @@ begin
   apply uniform_of_diff_circle_int_is_diff F (extend_by_zero (Eisenstein_series_of_weight_ k)) x hε
   hdiff hunif,
 end
+
+lemma Eisenstein_is_holomorphic (k: ℤ) (hk : 3 ≤ k):
+  is_holomorphic_on (↑ₕ(Eisenstein_series_of_weight_ k)):=
+begin
+have :  ∃ (n : ℕ), (n : ℤ) = k , by {have hk': 0 ≤ k, by {linarith}, exact can_lift.prf k hk' },
+obtain ⟨n, hn⟩ := this,
+have hn3 : 3 ≤ n, by {linarith},
+have :=  Eisenstein_is_holomorphic' n hn3,
+convert this,
+apply hn.symm,
+end
+
 
 def my_vadd : ℤ → ℍ → ℍ :=
 λ n, λ (z : ℍ), ⟨z.1+n, by {simp, apply z.2},⟩
@@ -333,7 +345,7 @@ begin
   apply this,
 end
 
-lemma Eisenstein_is_bounded (k: ℕ) (hk : 3 ≤ k) :
+lemma Eisenstein_is_bounded' (k: ℕ) (hk : 3 ≤ k) :
   upper_half_plane.is_bounded_at_im_infty (Eisenstein_series_of_weight_ k) :=
 begin
   simp only [upper_half_plane.bounded_mem, subtype.forall, upper_half_plane.coe_im],
@@ -357,6 +369,18 @@ begin
     apply le_trans hz,
     apply le_abs_self,},
   convert Real_Eisenstein_bound_unifomly_on_stip k hk 1 2 (by linarith) ⟨Z, hZ⟩,
+end
+
+
+lemma Eisenstein_is_bounded (k: ℤ) (hk : 3 ≤ k) :
+  upper_half_plane.is_bounded_at_im_infty (Eisenstein_series_of_weight_ k) :=
+begin
+have :  ∃ (n : ℕ), (n : ℤ) = k , by {have hk': 0 ≤ k, by {linarith}, exact can_lift.prf k hk' },
+obtain ⟨n, hn⟩ := this,
+have hn3 : 3 ≤ n, by {linarith},
+have :=  Eisenstein_is_bounded' n hn3,
+convert this,
+apply hn.symm,
 end
 
 
@@ -454,18 +478,25 @@ apply mdiff_to_holo f,
 apply holo_to_mdiff f,
 end
 
+example (k : ℤ) (hk : 0 ≤ k) : ∃ (n : ℕ), (n : ℤ) = k :=
+begin
+exact can_lift.prf k hk,
+
+end
+
+
 local notation f `∣[`:73 k:0, A `]` :72 := slash_action.map ℂ k A f
 
-lemma Eisenstein_series_is_mdiff (k: ℕ) (hk : 3 ≤ k) :
-mdifferentiable 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) (↑ₕ (Eisenstein_is_slash_inv ⊤ ↑k).to_fun) :=
+lemma Eisenstein_series_is_mdiff (k : ℤ) (hk : 3 ≤ k) :
+mdifferentiable 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) (↑ₕ (Eisenstein_is_slash_inv ⊤ ↑k)) :=
 begin
   have := Eisenstein_is_holomorphic k hk,
   have h2 := (mdiff_iff_holo (↑ₕ((Eisenstein_is_slash_inv ⊤ k).to_fun))).2 this,
   convert h2,
 end
 
-lemma Eisenstein_series_is_bounded (k: ℕ) (hk : 3 ≤ k) (A: SL(2, ℤ)) :
-  is_bounded_at_im_infty ((↑ₕ (Eisenstein_is_slash_inv ⊤ k).to_fun)∣[(k : ℤ) ,A]) :=
+lemma Eisenstein_series_is_bounded (k : ℤ) (hk : 3 ≤ k) (A: SL(2, ℤ)) :
+  is_bounded_at_im_infty ((↑ₕ(Eisenstein_is_slash_inv ⊤ k))∣[k ,A]) :=
 begin
 rw hol_extn,
 simp_rw (Eisenstein_is_slash_inv ⊤ k).2,
@@ -478,11 +509,50 @@ convert hr,
 end
 
 
-def Eisenstein_series_is_modular_form (k: ℕ) (hk : 3 ≤ k) :
+def Eisenstein_series_is_modular_form (k : ℤ) (hk : 3 ≤ k) :
  modular_form  ⊤ k :=
-{ to_fun :=  ↑ₕ((Eisenstein_is_slash_inv ⊤ k).to_fun),
-  slash_action_eq' := by {rw hol_extn, apply (Eisenstein_is_slash_inv ⊤ k).2,  },
+{ to_fun :=  ↑ₕ(Eisenstein_is_slash_inv ⊤ k),
+  slash_action_eq' := by {convert (Eisenstein_is_slash_inv ⊤ k).2},
   holo' := Eisenstein_series_is_mdiff k hk,
   bdd_at_infty' := λ A, Eisenstein_series_is_bounded k hk A}
+
+def Eisenstein_series (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
+
+local notation `G[` k `]` :=  (Eisenstein_series k)
+
+def Eisenstein_4 := 60 • G[4]
+
+def Eisenstein_6 := 140 • G[6]
+
+local notation `E₄` := Eisenstein_4
+
+local notation `E₆` := Eisenstein_6
+
+def discriminant_form : modular_form ⊤ 12 := ((E₄).mul E₄).mul E₄ - 27 • ((E₆).mul E₆)
+
+open_locale direct_sum big_operators
+
+example  : comm_ring (⨁ (n : ℤ),  modular_form ⊤ n) := by apply_instance
+
+variable (v :(⨁ (n : ℕ),  modular_form ⊤ n))
+
+def E4:= direct_sum.of _ 4 Eisenstein_4
+
+def E6:= direct_sum.of _ 6 Eisenstein_6
+
+def Delta := E4^3-27*E6^2
+
+lemma ad : direct_sum.of _ 12 discriminant_form = Delta :=
+begin
+  rw Delta,
+  rw E4,
+  rw E6,
+  rw discriminant_form,
+  simp,
+  congr,
+  --simp,
+  --apply direct_sum.of_eq_of_graded_monoid_eq,
+
+end
 
 end Eisenstein_series

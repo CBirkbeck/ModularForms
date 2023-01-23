@@ -151,6 +151,9 @@ instance graded_mod_ring (Γ : subgroup SL(2, ℤ)) : direct_sum.gcomm_ring (λ 
   int_cast_of_nat := by {simp},
   int_cast_neg_succ_of_nat := by {intro , apply _root_.neg_smul }}
 
+
+
+
 end modular_form
 
 end graded_ring
