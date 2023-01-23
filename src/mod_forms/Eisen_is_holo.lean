@@ -516,43 +516,5 @@ def Eisenstein_series_is_modular_form (k : ℤ) (hk : 3 ≤ k) :
   holo' := Eisenstein_series_is_mdiff k hk,
   bdd_at_infty' := λ A, Eisenstein_series_is_bounded k hk A}
 
-def Eisenstein_series (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
-
-local notation `G[` k `]` :=  (Eisenstein_series k)
-
-def Eisenstein_4 := 60 • G[4]
-
-def Eisenstein_6 := 140 • G[6]
-
-local notation `E₄` := Eisenstein_4
-
-local notation `E₆` := Eisenstein_6
-
-def discriminant_form : modular_form ⊤ 12 := ((E₄).mul E₄).mul E₄ - 27 • ((E₆).mul E₆)
-
-open_locale direct_sum big_operators
-
-example  : comm_ring (⨁ (n : ℤ),  modular_form ⊤ n) := by apply_instance
-
-variable (v :(⨁ (n : ℕ),  modular_form ⊤ n))
-
-def E4:= direct_sum.of _ 4 Eisenstein_4
-
-def E6:= direct_sum.of _ 6 Eisenstein_6
-
-def Delta := E4^3-27*E6^2
-
-lemma ad : direct_sum.of _ 12 discriminant_form = Delta :=
-begin
-  rw Delta,
-  rw E4,
-  rw E6,
-  rw discriminant_form,
-  simp,
-  congr,
-  --simp,
-  --apply direct_sum.of_eq_of_graded_monoid_eq,
-
-end
 
 end Eisenstein_series
