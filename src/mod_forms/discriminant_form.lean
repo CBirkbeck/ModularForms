@@ -77,14 +77,14 @@ sorry,
 end
 
 lemma q_exp_iden (k : ℕ) (hn : 2 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
-  ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ), ((n+1)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
+  ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
 begin
 sorry,
 end
 
 lemma q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2: even k) (z : ℍ):
 ∑' (x : ℤ × ℤ),  1/(((x.1 : ℂ)*z+x.2)^k) = 2 * (Riemann_zeta k) +
-  2 * (∑' (c : ℕ), (∑' (d : ℤ), 1/(c*z + d)^k)) :=
+  2 * (∑' (c : ℕ+), (∑' (d : ℤ), 1/(c*z + d)^k)) :=
 begin
 rw Riemann_zeta,
 sorry,
@@ -121,24 +121,46 @@ simp_rw Eisenstein_is_slash_inv,
 refl,
 end
 
+
+
+instance nat_pos_mul : mul_action ℕ+ ℍ :=
+{ smul := λ x z, upper_half_plane.mk (x  * z) $ by {simp, apply z.2},
+  one_smul := λ z, by {simp, },
+  mul_smul := λ x y z, by {dsimp, simp, simp_rw ←mul_assoc, } }
+
+lemma auxnpm (c: ℕ+) (z : ℍ) : (((c • z) : ℍ) : ℂ) = (c : ℂ) * (z : ℂ) :=
+begin
+refl,
+end
+
+
 lemma Eisen_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : even k) (z : ℍ) :
   (Eisenstein_series k) z =  2* (Riemann_zeta k) +
-  2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ),  (sigma_fn (k-1) (n+1))*(complex.exp ( 2 *↑π * I * z * n)) :=
+  2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+),  (sigma_fn (k-1) (n))*(complex.exp ( 2 *↑π * I * z * n)) :=
 begin
 rw eisen_iden k hk hk2,
 rw Eisenstein_series_of_weight_,
 simp_rw Eise,
 norm_cast at hk,
 have:= q_exp_iden_2 k hk hk2 z,
+have t2:=q_exp_iden k _ ,
+have t4 : (∑' (c : ℕ+), (∑' (d : ℤ), 1/(((((c • z) : ℍ) : ℂ) + d)^k))) =
+∑' (e : ℕ+), ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1))*complex.exp ( 2 *↑π * I * e *z* n),
+by { congr, funext, rw t2 (c • z : ℍ),  rw auxnpm c z, rw ←mul_assoc, },
 norm_cast,
 rw this,
+simp [auxnpm] at *,
+rw mul_assoc,
+congr,
+rw t4,
 simp,
-have :=q_exp_iden k _ _,
+
 sorry,
 sorry,
-sorry,
+
 end
 
+#exit
 lemma I_pow_4 : I^4 = 1 :=
 begin
 simp only [I_pow_bit0, neg_one_sq],
