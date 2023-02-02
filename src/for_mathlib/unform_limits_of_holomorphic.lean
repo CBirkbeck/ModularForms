@@ -18,7 +18,7 @@ is holomorphic.
 -/
 
 open topological_space set measure_theory interval_integral metric filter function complex
-open_locale interval real nnreal ennreal topological_space big_operators
+open_locale interval real nnreal ennreal  big_operators topology
 
 noncomputable theory
 
@@ -129,8 +129,8 @@ lemma abs_circle_transform_bounding_function_le {R r : ℝ} (hr : r < R) (hr' : 
 begin
   have cts := continuous_on_abs_circle_transform_bounding_function hr z,
   have comp : is_compact (((closed_ball z r) ×ˢ [0, 2 * π]) : set (ℂ × ℝ)),
-  { apply_rules [is_compact.prod, proper_space.is_compact_closed_ball z r, is_compact_interval], },
-  have none := (nonempty_closed_ball.2 hr').prod nonempty_interval,
+  { apply_rules [is_compact.prod, proper_space.is_compact_closed_ball z r, is_compact_uIcc], },
+  have none := (nonempty_closed_ball.2 hr').prod (nonempty_uIcc),
   simpa using is_compact.exists_forall_ge comp none (cts.mono (by { intro z, simp, tauto })),
 end
 
@@ -156,7 +156,7 @@ begin
   obtain ⟨y1, hy1, hfun⟩ := periodic.exists_mem_Ico₀
     (circle_transform_deriv_periodic R z v f) real.two_pi_pos y,
   have hy2: y1 ∈ [0, 2*π], by {convert (Ico_subset_Icc_self hy1),
-    simp [interval_of_le real.two_pi_pos.le]},
+    simp [real.two_pi_pos.le]},
   have := mul_le_mul (hab ⟨⟨v, y1⟩, ⟨ball_subset_closed_ball (H hv), hy2⟩⟩)
    (HX2 (circle_map z R y1) (circle_map_mem_sphere z hR.le y1))
    (complex.abs.nonneg _) (complex.abs.nonneg _),
@@ -214,7 +214,7 @@ begin
   simp only [metric.ball_mem_nhds x He, exists_true_left],
   intros y hy,
   exact continuous_on.ae_measurable ((continuous_circle_transform hR hf (HB hy))).continuous_on
-    (measurable_set_interval_oc),
+    (measurable_set_Ioc),
 end
 
 lemma circle_interval_integrable {R : ℝ} {f : ℂ → ℂ} (hR : 0 < R)
@@ -227,7 +227,7 @@ lemma circle_transform_deriv_ae_measurable {R : ℝ} (hR : 0 < R)
    ae_measurable (( λ w θ, (circle_transform_deriv R z w f θ)) x)
   (volume.restrict (Ι 0 (2 * π))) :=
 continuous_on.ae_measurable ((continuous_circle_transform_deriv hR hf (hx))).continuous_on
-    (measurable_set_interval_oc)
+     (measurable_set_Ioc)
 
 /--The `circle_integral_form` of a function, which is continuous on `sphere z R` is differentiable
 on `ball z R`. -/
@@ -264,9 +264,9 @@ begin
     apply eventually_of_forall,
     simp_rw [circle_transform, circle_transform_deriv] at this,
     intros y hy x hx,
-    rw (interval_oc_of_le real.two_pi_pos.le) at hy,
+    simp  [real.two_pi_pos.le] at hy,
     have hy2 : y ∈ [0, 2*π], by {convert (Ioc_subset_Icc_self hy),
-      simp [interval_of_le real.two_pi_pos.le]},
+      simp [ real.two_pi_pos.le]},
     exact this y x (h_ball hx)},
   have := interval_integral.has_deriv_at_integral_of_dominated_loc_of_deriv_le hε hF_meas hF_int
     hF'_meas h_bound bound_integrable h_diff,

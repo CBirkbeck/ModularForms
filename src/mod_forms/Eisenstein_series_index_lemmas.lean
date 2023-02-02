@@ -1,6 +1,6 @@
 import tactic.pi_instances
 import mod_forms.mod_group
-import linear_algebra.general_linear_group
+import linear_algebra.matrix.general_linear_group
 import for_mathlib.mod_forms2
 import data.matrix.notation
 import data.setoid.partition
@@ -208,12 +208,21 @@ begin
   have:= int.nat_abs_eq  a,
   cases this,
   rw this,
+  split,
   norm_cast,
-  simp_rw h,
-  simp only [true_and],
+  exact h,
+  norm_cast,
+  simp only [add_pos_iff],
+  left,
+  have h1 : 0 ≤ a.nat_abs, by {exact zero_le (int.nat_abs a),},
   linarith,
   rw this,
   split,
+  rw neg_lt_iff_pos_add,
+  norm_cast,
+  simp,
+  have h1 : 0 ≤ a.nat_abs, by {exact zero_le (int.nat_abs a),},
+  left,
   linarith,
   rw ←int.coe_nat_lt at h,
   rw ← sub_pos at h,
@@ -313,9 +322,13 @@ begin
   have h22:=h2.2,
   exact nat.lt_succ_iff_lt_or_eq.mp h22,
   rw this at h2,
-  simp at *,
   have h22:=h2.1,
-  exact lt_or_eq_of_le h22,
+  have H:= lt_or_eq_of_le h22,
+  simp only [neg_lt_neg_iff, neg_inj] at H,
+  norm_cast at H,
+  have h234: n = a.nat_abs ↔ a.nat_abs =n, by {exact comm, },
+  rw ←h234,
+  exact H,
 end
 
 lemma cat1 (a b : ℤ) (n: ℕ)  (h1: b=-(n:ℤ)) (h2: -(n:ℤ) ≤ a ∧ a < (n:ℤ)+1 ):
@@ -330,9 +343,13 @@ begin
  have h22:=h2.2,
  exact nat.lt_succ_iff_lt_or_eq.mp h22,
  rw this at h2,
- simp at *,
  have h22:=h2.1,
- exact lt_or_eq_of_le h22,
+ have H:= lt_or_eq_of_le h22,
+  simp only [neg_lt_neg_iff, neg_inj] at H,
+  norm_cast at H,
+  have h234: n = a.nat_abs ↔ a.nat_abs =n, by {exact comm, },
+  rw ←h234,
+  exact H,
 end
 
 
@@ -340,13 +357,13 @@ lemma dog (a b : ℤ) (n: ℕ)  (h1: a=(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (
   a.nat_abs= n ∧ b.nat_abs < n :=
 begin
  rw h1, simp,  have:=int.nat_abs_eq b, cases this, rw this at h2, norm_cast at h2,exact h2.2,
- rw this at h2, have h22:= h2.1, linarith,
+ rw this at h2, have h22:= h2.1, norm_cast at *, linarith,
 end
 
 lemma dog1 (a b : ℤ) (n: ℕ)  (h1: a=-(n:ℤ)) (h2: 1 ≤ (n: ℤ)+ b ∧ b < (n:ℤ) ): a.nat_abs= n ∧ b.nat_abs < n :=
 begin
  rw h1, simp,  have:=int.nat_abs_eq b, cases this, rw this at h2, norm_cast at h2,exact h2.2,
- rw this at h2, have h22:= h2.1, linarith,
+ rw this at h2, have h22:= h2.1,  norm_cast at *, linarith,
 end
 
 lemma sqr_eq_sqr2 (n: ℕ): (Square n)=(Square2 n):=

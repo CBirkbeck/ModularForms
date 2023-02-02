@@ -2,7 +2,7 @@
 import geometry.manifold.mfderiv
 
 noncomputable theory
-open_locale classical topological_space manifold
+open_locale classical topology manifold
 
 open set
 

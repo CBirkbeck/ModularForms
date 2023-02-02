@@ -64,9 +64,11 @@ end
 
 def cot (z : ℂ) := (complex.cos z)/(complex.sin z)
 
-lemma cot_series_rep (z : ℂ) : ↑π * cot (↑π* z) =
-1/z + ∑' (n : ℕ), (1/(z-(n+1))-1/(z+(n+1))) :=
+lemma cot_series_rep (z : ℍ) : ↑π * cot (↑π* z) - 1/z =
+ ∑' (n : ℕ+), (1/(z-n)-1/(z+n)) :=
 begin
+apply symm,
+refine (has_sum.tsum_eq _),
 sorry,
 end
 
@@ -134,6 +136,16 @@ refl,
 end
 
 
+lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
+ ∑' (c : ℕ+), ∑' (m : ℕ+), (m^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c * m)) =
+  ∑' (e : ℕ+), (sigma_fn k e)* complex.exp ( 2 *↑π * I * z * e) :=
+begin
+simp_rw sigma_fn,
+simp,
+sorry,
+
+end
+
 lemma Eisen_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : even k) (z : ℍ) :
   (Eisenstein_series k) z =  2* (Riemann_zeta k) +
   2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+),  (sigma_fn (k-1) (n))*(complex.exp ( 2 *↑π * I * z * n)) :=
@@ -154,6 +166,7 @@ rw mul_assoc,
 congr,
 rw t4,
 simp,
+rw tsum_mul_left,
 
 sorry,
 sorry,

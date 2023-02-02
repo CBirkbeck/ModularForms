@@ -12,7 +12,7 @@ to be trivial but are gnarly because of the coercion issues around SL2Z actions.
 that code stops working if I transplant it to this file. -/
 
 open modular_form complex filter asymptotics
-open_locale real topological_space manifold filter modular_form
+open_locale real topology manifold filter modular_form
 
 noncomputable theory
 

@@ -249,7 +249,7 @@ begin
   ring_nf,
   rw [tpb, tpb2],
   have hs:=  int.nat_abs_of_nonneg ( int.mod_nonneg (A 0 0) H2),
-   simp at *, rw this,
+   simp only [mul_one, ne.def, int.nat_abs_eq_zero, integral_matrices_with_determinant.mat_m_vals, subtype.val_eq_coe] at *, rw this,
   rw  [← int.coe_nat_lt],
   rw hs,
   rw [← int.abs_eq_nat_abs],
@@ -658,7 +658,7 @@ left_inv := λ ⟨⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨d, hd⟩⟩, H1, H2⟩, subtyp
   (fin.eq_of_veq $ int.nat_abs_of_nat _),
 right_inv := λ ⟨ ⟨A ,H1⟩,  H2, H3, H4, H5⟩,
 by {
-  simp [ subtype.mk_eq_mk],
+  simp only [subtype.mk_eq_mk, integral_matrices_with_determinant.mat_m_vals],
    ext i j,
    fin_cases i; fin_cases j,
    simp only [em],

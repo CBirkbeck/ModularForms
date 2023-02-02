@@ -21,7 +21,7 @@ to zero.
 -/
 
 open modular_form complex filter asymptotics
-open_locale real topological_space manifold filter
+open_locale real topology manifold filter
 
 noncomputable theory
 

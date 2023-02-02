@@ -3,11 +3,12 @@ import data.complex.basic
 import topology.instances.nnreal
 import analysis.complex.basic
 import order.filter.at_top_bot
+import analysis.normed.group.infinite_sum
 universes u v w
 
 noncomputable theory
 
-open complex metric open_locale big_operators nnreal classical filter topological_space
+open complex metric open_locale big_operators nnreal classical filter
 
 variables {α : Type u} {β : Type v}
 

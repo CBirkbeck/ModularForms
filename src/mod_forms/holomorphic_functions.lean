@@ -11,7 +11,7 @@ local attribute [instance] classical.prop_decidable
 noncomputable theory
 
 universes u v
-open_locale classical topological_space big_operators filter
+open_locale classical  big_operators filter
 open filter complex asymptotics
 
 section

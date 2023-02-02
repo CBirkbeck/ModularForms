@@ -3,7 +3,6 @@ import for_mathlib.unform_limits_of_holomorphic
 import for_mathlib.mod_forms2
 import geometry.manifold.mfderiv
 
-
 universes u v w
 
 open complex upper_half_plane
@@ -386,7 +385,7 @@ end
 
 variable (f : ℍ' → ℂ)
 
-open_locale classical topological_space manifold
+open_locale classical topology manifold
 
 instance : inhabited ℍ' :=
 begin
@@ -515,6 +514,5 @@ def Eisenstein_series_is_modular_form (k : ℤ) (hk : 3 ≤ k) :
   slash_action_eq' := by {convert (Eisenstein_is_slash_inv ⊤ k).2},
   holo' := Eisenstein_series_is_mdiff k hk,
   bdd_at_infty' := λ A, Eisenstein_series_is_bounded k hk A}
-
 
 end Eisenstein_series
