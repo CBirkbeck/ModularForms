@@ -7,7 +7,7 @@ noncomputable theory
 
 open modular_form Eisenstein_series upper_half_plane topological_space set measure_theory
 interval_integral metric filter function complex
-open_locale interval real nnreal ennreal topological_space big_operators nat
+open_locale interval real nnreal ennreal topology big_operators nat
 
 def Eisenstein_series (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
 
@@ -95,6 +95,8 @@ end
 
 def sigma_fn (k n : ℕ) : ℤ := ∑ (d : ℕ)  in nat.divisors n, d^k
 
+def sigma' (k n : ℕ) : ℤ:= ∑ x in nat.divisors_antidiagonal n, x.1^k
+
 lemma sigme_fn_one (k : ℕ) : sigma_fn k 1 = 1 :=
 begin
 rw sigma_fn,
@@ -135,17 +137,111 @@ begin
 refl,
 end
 
-
-lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
- ∑' (c : ℕ+), ∑' (m : ℕ+), (m^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c * m)) =
-  ∑' (e : ℕ+), (sigma_fn k e)* complex.exp ( 2 *↑π * I * z * e) :=
+def mapdiv (n : ℕ+) : (nat.divisors_antidiagonal n) → ℕ+ × ℕ+ :=
 begin
-simp_rw sigma_fn,
-simp,
-sorry,
-
+intro x,
+have h1 := x.1.1,
+have h11:= nat.fst_mem_divisors_of_mem_antidiagonal x.2,
+have h111:= nat.pos_of_mem_divisors h11,
+have h2 := x.1.2,
+have h22:= nat.snd_mem_divisors_of_mem_antidiagonal x.2,
+have h222:= nat.pos_of_mem_divisors h22,
+set n1 : ℕ+ := ⟨x.1.1, h111⟩,
+set n2 : ℕ+ := ⟨x.1.2, h222⟩,
+use ⟨n1,n2⟩,
 end
 
+variable (f : Σ (n : ℕ+), nat.divisors_antidiagonal n)
+
+
+def sigma_antidiagonal_equiv_prod : (Σ (n : ℕ+), nat.divisors_antidiagonal n) ≃ ℕ+ × ℕ+ :=
+{ to_fun := λ x, mapdiv x.1 x.2,
+  inv_fun := λ x, ⟨⟨x.1.1 * x.2.1, by {apply mul_pos x.1.2 x.2.2} ⟩, ⟨x.1,x.2⟩,
+    by {rw nat.mem_divisors_antidiagonal, simp, }⟩,
+  left_inv :=
+    begin
+      rintros ⟨n, ⟨k, l⟩, h⟩,
+      rw nat.mem_divisors_antidiagonal at h,
+      simp_rw mapdiv,
+      simp only [h, pnat.mk_coe, eq_self_iff_true, subtype.coe_eta, true_and],
+      cases h, cases n, dsimp at *, induction h_left, refl,
+    end,
+  right_inv := by {
+    rintros ⟨n, ⟨k, l⟩, h⟩,
+    simp_rw mapdiv,
+    exfalso,
+    simp only [not_lt_zero'] at h,
+    exact h,
+    simp_rw mapdiv,
+    simp only [eq_self_iff_true, subtype.coe_eta],}, }
+
+lemma sum_div_eq_sum_antidiag (f : ℕ → ℂ) (n : ℕ+) : ∑ (x : ℕ) in nat.divisors n, f(x) =
+∑ x in nat.divisors_antidiagonal n, f(x.1) :=
+begin
+sorry,
+end
+
+variables (r : ℕ) (y : nat.divisors_antidiagonal r)
+
+lemma ineqaux (z : ℍ) (k : ℕ) (n : ℕ+)  :
+ ‖(∑ (x : nat.divisors_antidiagonal n),  (x.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2))‖
+ ≤ complex.abs (2* n^(k+1) * complex.exp ( 2 *↑π * I * z * n) ) :=
+ begin
+sorry,
+ end
+
+
+lemma summable_mul_prod_iff_summable_mul_sigma_antidiagonall {f  : ℕ+ × ℕ+ → ℂ} :
+  summable (λ x : ℕ+ × ℕ+, f x ) ↔
+  summable (λ x : (Σ (n : ℕ+), nat.divisors_antidiagonal n), f ⟨(mapdiv x.1 x.2).1,  (mapdiv x.1 x.2).2⟩) :=
+begin
+simp_rw mapdiv,
+apply  sigma_antidiagonal_equiv_prod.summable_iff.symm,
+end
+
+
+
+lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
+ ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
+  ∑' (e : ℕ+), ∑ (x : nat.divisors_antidiagonal e),  x.1.1^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2) :=
+begin
+rw ←sigma_antidiagonal_equiv_prod.tsum_eq,
+
+rw tsum_sigma',
+congr,
+funext,
+rw tsum_fintype,
+congr,
+apply (λ n, (has_sum_fintype _).summable),
+exact fintype_of_option,
+have :=summable_of_norm_bounded _ _ (ineqaux z k),
+have hf:= @summable_mul_prod_iff_summable_mul_sigma_antidiagonall
+(λ (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2))),
+rw sigma_antidiagonal_equiv_prod,
+simp at *,
+rw ← hf,
+
+sorry,
+sorry,
+exact t2_5_space.t2_space,
+end
+
+lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
+ ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
+  ∑' (e : ℕ+), (sigma' k e)* complex.exp ( 2 *↑π * I * z * e) :=
+begin
+simp_rw sigma',
+simp,
+rw ←sigma_antidiagonal_equiv_prod.tsum_eq,
+
+apply tsum_sigma' _ _,
+sorry,
+
+exact t2_5_space.t2_space,
+
+
+end
+#exit
 lemma Eisen_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : even k) (z : ℍ) :
   (Eisenstein_series k) z =  2* (Riemann_zeta k) +
   2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+),  (sigma_fn (k-1) (n))*(complex.exp ( 2 *↑π * I * z * n)) :=
