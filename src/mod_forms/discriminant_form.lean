@@ -181,14 +181,32 @@ begin
 sorry,
 end
 
-variables (r : ℕ) (y : nat.divisors_antidiagonal r)
+variables (r : ℕ) (y : (Σ (x : ℕ+), nat.divisors_antidiagonal x))
+
+#check y.2.1
 
 lemma ineqaux (z : ℍ) (k : ℕ) (n : ℕ+)  :
- ‖(∑ (x : nat.divisors_antidiagonal n),  (x.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2))‖
+ ‖(∑ (x : nat.divisors_antidiagonal n), complex.abs  ((x.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2)))‖
  ≤ complex.abs (2* n^(k+1) * complex.exp ( 2 *↑π * I * z * n) ) :=
  begin
 sorry,
  end
+
+lemma ineqauxx (z : ℍ) (k : ℕ) (n : (Σ (x : ℕ+), nat.divisors_antidiagonal x))  :
+ ‖(  (n.2.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * n.2.1.1*n.2.1.2))‖
+ ≤ complex.abs (2* n.1^(k+1) * complex.exp ( 2 *↑π * I * z * n.1) ) :=
+ begin
+sorry,
+ end
+
+lemma ineqaux2 (z : ℍ) (k : ℕ) (x : ℕ+ × ℕ+)  :
+ ‖( (x.1 : ℝ)^k * complex.abs (complex.exp ( 2 *↑π * I * z * x.1*x.2)))‖
+ ≤ complex.abs (2* (x.1*x.2)^(k+1) * complex.exp ( 2 *↑π * I * z * x.1*x.2) ) :=
+ begin
+sorry,
+ end
+
+
 
 
 lemma summable_mul_prod_iff_summable_mul_sigma_antidiagonall {f  : ℕ+ × ℕ+ → ℂ} :
@@ -197,6 +215,87 @@ lemma summable_mul_prod_iff_summable_mul_sigma_antidiagonall {f  : ℕ+ × ℕ+ 
 begin
 simp_rw mapdiv,
 apply  sigma_antidiagonal_equiv_prod.summable_iff.symm,
+end
+
+lemma auhgsdf {f  : ℕ+ × ℕ+ → ℂ} :
+ summable (λ x : (Σ (n : ℕ+), nat.divisors_antidiagonal n), f ⟨(mapdiv x.1 x.2).1,  (mapdiv x.1 x.2).2⟩) ↔
+ summable   (λ (i : ℕ+), ∑ (x : ↥(nat.divisors_antidiagonal i)),f ⟨(mapdiv i x).1,  (mapdiv i x).2⟩):=
+begin
+simp_rw mapdiv,
+simp,
+
+
+end
+
+
+
+lemma nat_pos_tsum (f : ℕ → ℝ) (hf : f 0 = 0 ) : summable (λ (x : ℕ+), f x) ↔   summable f :=
+begin
+rw function.injective.summable_iff,
+simp,
+exact pnat.coe_injective,
+intros x hx,
+simp at hx,
+rw hx,
+exact hf,
+
+end
+
+lemma exp_upper_half_plane_lt_one (z : ℍ) : complex.abs (complex.exp ( 2 *↑π * I * z)) < 1 :=
+begin
+rw ←upper_half_plane.re_add_im,
+rw mul_add,
+rw exp_add,
+simp only [absolute_value.map_mul],
+have h1 : complex.abs (exp (2 * ↑π * I * ↑(z.re))) = complex.abs (exp ((2 * ↑π  * ↑(z.re)) * I )),
+  by {ring_nf},
+rw h1,
+norm_cast,
+have := abs_exp_of_real_mul_I (2 * π * z.re),
+rw this,
+simp only [of_real_mul, of_real_bit0, of_real_one, one_mul],
+have h2 :  complex.abs (exp (2 * ↑π * I * (↑(z.im) * I))) =
+  complex.abs (exp (2 * ↑π * (↑(z.im) * I^2))), by {ring_nf,},
+rw h2,
+simp only [I_sq, mul_neg, mul_one],
+norm_cast,
+simp only [real.abs_exp, real.exp_lt_one_iff, right.neg_neg_iff],
+apply mul_pos,
+apply real.two_pi_pos,
+exact z.2,
+end
+
+
+lemma summable_pow_mul_exp  {k : ℕ} (z : ℍ) :
+  summable (λ (i : ℕ+), complex.abs (2 * ↑i ^ (k + 1) * exp (2 * ↑π * I * ↑z * ↑i))) :=
+begin
+simp,
+have h2ne : (2 : ℝ) ≠ 0, by {exact ne_zero.ne 2,},
+simp_rw mul_assoc,
+rw ←(summable_mul_left_iff h2ne),
+simp_rw ←coe_coe,
+have hv1 : ∀ (b : ℕ+), complex.abs (complex.exp ( 2 *↑π * I * z * b)) =
+  (complex.abs (complex.exp ( 2 *↑π * I * z)))^(b : ℕ), by {intro b,
+  rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf},
+simp_rw ←mul_assoc,
+simp_rw hv1,
+simp_rw coe_coe,
+have lj :=nat_pos_tsum (λ (x : ℕ), (x : ℝ)^(k+1)* (complex.abs (complex.exp ( 2 *↑π * I * z)))^x ),
+simp at lj,
+rw lj,
+apply summable_pow_mul_geometric_of_norm_lt_1,
+simp,
+apply exp_upper_half_plane_lt_one,
+end
+
+
+
+lemma summable_pow_lem  {k : ℕ} (z : ℍ) :
+  summable
+  (λ (a : ℕ+ × ℕ+), ((a.fst) ^ k : ℝ) * complex.abs (exp (2 * ↑π * I * ↑z * (a.fst) * (a.snd)))) :=
+begin
+apply summable_of_norm_bounded _ _ (ineqaux2 z k),
+sorry,
 end
 
 
@@ -214,19 +313,47 @@ rw tsum_fintype,
 congr,
 apply (λ n, (has_sum_fintype _).summable),
 exact fintype_of_option,
-have :=summable_of_norm_bounded _ _ (ineqaux z k),
+
+have :=summable_of_norm_bounded _ _ (ineqauxx z k),
+apply this,
+rw summable_sigma_of_nonneg,
+split,
+apply (λ n, (has_sum_fintype _).summable) ,
+exact fintype_of_option,
+simp,
+apply summable_of_nonneg_of_le _ _ (@summable_pow_mul_exp (k+1) z),
+intro x,
+rw tsum_fintype,
+simp,
+sorry,
+intro b,
+rw tsum_fintype,
+simp,
+sorry,
+intro x,
+sorry,
+
+/-
+have :=summable_of_norm_bounded _ _ (ineqaux z (k+1)),
+
+apply summable_of_nonneg_of_le  _ _ this,
+simp,
+simp,
 have hf:= @summable_mul_prod_iff_summable_mul_sigma_antidiagonall
 (λ (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2))),
 rw sigma_antidiagonal_equiv_prod,
-simp at *,
-rw ← hf,
 
+simp at *,
+
+rw ← hf,
+apply summable_of_summable_norm,
+simp,
 sorry,
-sorry,
+apply summable_pow_mul_exp z,-/
 exact t2_5_space.t2_space,
 end
 
-lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
+lemma sum_sigma_fn_eqn  {k : ℕ} (z : ℍ) :
  ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
   ∑' (e : ℕ+), (sigma' k e)* complex.exp ( 2 *↑π * I * z * e) :=
 begin
