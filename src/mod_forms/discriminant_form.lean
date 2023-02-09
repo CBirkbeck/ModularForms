@@ -93,7 +93,16 @@ sorry,
 end
 
 
-def sigma_fn (k n : ℕ) : ℤ := ∑ (d : ℕ)  in nat.divisors n, d^k
+def sigma_fn (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, d^k
+
+def sigma_fn' (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, (n/d)^k
+
+lemma sigma_fn_eql (k n : ℕ) : sigma_fn k n = sigma_fn' k n :=
+begin
+simp_rw sigma_fn,
+simp_rw sigma_fn',
+rw ←nat.sum_div_divisors,
+end
 
 def sigma' (k n : ℕ) : ℤ:= ∑ x in nat.divisors_antidiagonal n, x.1^k
 
@@ -175,39 +184,53 @@ def sigma_antidiagonal_equiv_prod : (Σ (n : ℕ+), nat.divisors_antidiagonal n)
     simp_rw mapdiv,
     simp only [eq_self_iff_true, subtype.coe_eta],}, }
 
-lemma sum_div_eq_sum_antidiag (f : ℕ → ℂ) (n : ℕ+) : ∑ (x : ℕ) in nat.divisors n, f(x) =
-∑ x in nat.divisors_antidiagonal n, f(x.1) :=
+
+
+
+lemma ine (a b k: ℕ) (h : a ≤ b): a^k ≤ 2* b^(k+1):=
 begin
-sorry,
+have h1 : a^k ≤ b^k, by {exact pow_mono_right k h,},
+apply le_trans h1,
+have h2: b^k ≤ b^(k+1), by {sorry,},
+apply le_trans h2,
+apply le_mul_of_one_le_left,
+apply pow_nonneg,
+simp only [zero_le'],
+linarith,
 end
 
-variables (r : ℕ) (y : (Σ (x : ℕ+), nat.divisors_antidiagonal x))
 
-#check y.2.1
 
-lemma ineqaux (z : ℍ) (k : ℕ) (n : ℕ+)  :
- ‖(∑ (x : nat.divisors_antidiagonal n), complex.abs  ((x.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2)))‖
- ≤ complex.abs (2* n^(k+1) * complex.exp ( 2 *↑π * I * z * n) ) :=
- begin
-sorry,
- end
 
 lemma ineqauxx (z : ℍ) (k : ℕ) (n : (Σ (x : ℕ+), nat.divisors_antidiagonal x))  :
  ‖(  (n.2.1.1 : ℂ)^k * complex.exp ( 2 *↑π * I * z * n.2.1.1*n.2.1.2))‖
  ≤ complex.abs (2* n.1^(k+1) * complex.exp ( 2 *↑π * I * z * n.1) ) :=
  begin
-sorry,
+simp,
+have hn := n.2.2,
+simp at *,
+norm_cast,
+simp_rw ←hn,
+have gt : ∀ (a b : ℕ), ((a * b : ℕ) : ℂ)= (a : ℂ) * (b : ℂ ), by {exact nat.cast_mul,},
+rw gt,
+rw ←mul_assoc,
+simp,
+rw (mul_le_mul_right _),
+have J := nat.fst_mem_divisors_of_mem_antidiagonal n.2.2,
+simp at J,
+have J2:= nat.le_of_dvd _ J,
+norm_cast,
+apply ine,
+exact J2,
+apply n.1.2,
+exact real.has_zero,
+exact ordered_semiring.to_mul_pos_mono,
+exact mul_pos_reflect_lt.to_mul_pos_mono_rev,
+simp,
+apply complex.exp_ne_zero,
  end
 
-lemma ineqaux2 (z : ℍ) (k : ℕ) (x : ℕ+ × ℕ+)  :
- ‖( (x.1 : ℝ)^k * complex.abs (complex.exp ( 2 *↑π * I * z * x.1*x.2)))‖
- ≤ complex.abs (2* (x.1*x.2)^(k+1) * complex.exp ( 2 *↑π * I * z * x.1*x.2) ) :=
- begin
-sorry,
- end
-
-
-
+#exit
 
 lemma summable_mul_prod_iff_summable_mul_sigma_antidiagonall {f  : ℕ+ × ℕ+ → ℂ} :
   summable (λ x : ℕ+ × ℕ+, f x ) ↔
@@ -217,15 +240,7 @@ simp_rw mapdiv,
 apply  sigma_antidiagonal_equiv_prod.summable_iff.symm,
 end
 
-lemma auhgsdf {f  : ℕ+ × ℕ+ → ℂ} :
- summable (λ x : (Σ (n : ℕ+), nat.divisors_antidiagonal n), f ⟨(mapdiv x.1 x.2).1,  (mapdiv x.1 x.2).2⟩) ↔
- summable   (λ (i : ℕ+), ∑ (x : ↥(nat.divisors_antidiagonal i)),f ⟨(mapdiv i x).1,  (mapdiv i x).2⟩):=
-begin
-simp_rw mapdiv,
-simp,
 
-
-end
 
 
 
@@ -239,6 +254,24 @@ simp at hx,
 rw hx,
 exact hf,
 
+end
+
+lemma nat_pos_tsum2 (f : ℕ → ℂ) (hf : f 0 = 0 ) : summable (λ (x : ℕ+), f x) ↔  summable f :=
+begin
+rw function.injective.summable_iff,
+simp,
+exact pnat.coe_injective,
+intros x hx,
+simp at hx,
+rw hx,
+exact hf,
+
+end
+
+lemma nat_pos_tsum' (ξ : ℂ) :  summable (λ n : ℕ, ξ ^ n) → summable (λ n : ℕ+, ξ ^ (n : ℕ)) :=
+begin
+intro h,
+apply h.subtype,
 end
 
 lemma exp_upper_half_plane_lt_one (z : ℍ) : complex.abs (complex.exp ( 2 *↑π * I * z)) < 1 :=
@@ -291,19 +324,64 @@ end
 
 lemma anti_diag_card_le  (n : ℕ+) : (nat.divisors_antidiagonal n).card ≤ n^2 :=
 begin
+classical!,
 simp_rw nat.divisors_antidiagonal,
-sorry,
+apply le_trans (finset.card_filter_le _  _),
+simp,
+rw pow_two,
 end
 
+lemma summable1 {k : ℕ} (z : ℍ)  :  summable (λ (p : Σ (b : ℕ+), ↥(nat.divisors_antidiagonal b)),
+  ((sigma_antidiagonal_equiv_prod p).fst : ℂ) ^ k *
+    exp (2 * ↑π * I * ↑z * ((sigma_antidiagonal_equiv_prod p).fst) * ((sigma_antidiagonal_equiv_prod p).snd))) :=
+begin
+have :=summable_of_norm_bounded _ _ (ineqauxx z k),
+apply this,
+rw summable_sigma_of_nonneg,
+split,
+apply (λ n, (has_sum_fintype _).summable) ,
+exact fintype_of_option,
+simp only [coe_coe, absolute_value.map_mul, complex.abs_two, complex.abs_pow, abs_cast_nat],
+apply summable_of_nonneg_of_le _ _ (@summable_pow_mul_exp (k+2) z),
+intro x,
+rw tsum_fintype,
+simp only [finset.univ_eq_attach, finset.sum_const, finset.card_attach, nsmul_eq_mul],
+norm_cast,
+apply mul_nonneg,
+exact (nat.divisors_antidiagonal x).card.cast_nonneg,
+apply mul_nonneg,
+simp only [nat.cast_mul, nat.cast_bit0, algebra_map.coe_one, zero_le_mul_right, nat.cast_pos,
+  pnat.pos, zero_le_bit0, zero_le_one],
+apply complex.abs.nonneg,
+intro b,
+rw tsum_fintype,
+simp only [finset.univ_eq_attach, finset.sum_const, finset.card_attach, nsmul_eq_mul, coe_coe,
+  absolute_value.map_mul, complex.abs_two, complex.abs_pow, abs_cast_nat],
+have hk : 2 * (b : ℝ) ^ (k + 2 + 1) * complex.abs (exp (2 * ↑π * I * ↑z * b)) =
+  b^2 * (2 * b ^ (k + 1) * complex.abs (exp (2 * ↑π * I * ↑z * b))) , by {ring_exp},
+simp_rw ←coe_coe,
+rw hk,
+have ht := anti_diag_card_le b,
+refine mul_le_mul _ _ _ _,
+simp only [coe_coe],
+norm_cast,
+apply ht,
+refine eq.le _,
+refl,
+simp only [coe_coe, zero_le_mul_left, zero_lt_mul_right, pow_pos, nat.cast_pos, pnat.pos,
+zero_lt_bit0, zero_lt_one, map_nonneg],
+nlinarith,
+intro x,
+apply complex.abs.nonneg,
 
-
+end
 
 lemma sum_sigma_fn_eq  {k : ℕ} (z : ℍ) :
- ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
-  ∑' (e : ℕ+), ∑ (x : nat.divisors_antidiagonal e),  x.1.1^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2) :=
+  ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
+  ∑' (e : ℕ+),
+    ∑ (x : nat.divisors_antidiagonal e),  x.1.1^k * complex.exp ( 2 *↑π * I * z * x.1.1*x.1.2) :=
 begin
 rw ←sigma_antidiagonal_equiv_prod.tsum_eq,
-
 rw tsum_sigma',
 congr,
 funext,
@@ -311,69 +389,152 @@ rw tsum_fintype,
 congr,
 apply (λ n, (has_sum_fintype _).summable),
 exact fintype_of_option,
-
-have :=summable_of_norm_bounded _ _ (ineqauxx z k),
-apply this,
-rw summable_sigma_of_nonneg,
-split,
-apply (λ n, (has_sum_fintype _).summable) ,
-exact fintype_of_option,
-simp,
-apply summable_of_nonneg_of_le _ _ (@summable_pow_mul_exp (k+1) z),
-intro x,
-rw tsum_fintype,
-simp,
-norm_cast,
-apply mul_nonneg,
-exact (nat.divisors_antidiagonal x).card.cast_nonneg,
-apply mul_nonneg,
-simp,
-apply complex.abs.nonneg,
-intro b,
-rw tsum_fintype,
-simp,
-
-sorry,
-intro x,
-apply complex.abs.nonneg,
-
-
-/-
-have :=summable_of_norm_bounded _ _ (ineqaux z (k+1)),
-
-apply summable_of_nonneg_of_le  _ _ this,
-simp,
-simp,
-have hf:= @summable_mul_prod_iff_summable_mul_sigma_antidiagonall
-(λ (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2))),
-rw sigma_antidiagonal_equiv_prod,
-
-simp at *,
-
-rw ← hf,
-apply summable_of_summable_norm,
-simp,
-sorry,
-apply summable_pow_mul_exp z,-/
+apply summable1,
 exact t2_5_space.t2_space,
 end
+
+lemma div_mul_aux  {k : ℕ} (z : ℍ) (n : ℕ) :
+  ∑ (x : ℕ) in n.divisors, ↑(n/x) ^ k * exp (2 * (↑π * (I * (↑z * ( ↑(n / x) * ↑x ))))) =
+  ∑ (x : ℕ) in n.divisors, ↑(n/x) ^ k * exp (2 * (↑π * (I * (↑z * n)))) :=
+begin
+apply finset.sum_congr,
+refl,
+funext,
+intros x hx,
+congr,
+norm_cast,
+apply nat.div_mul_cancel,
+rw nat.mem_divisors at hx,
+exact hx.1,
+end
+
+lemma sumaux (f : ℕ × ℕ → ℂ) (e : ℕ+) : ∑ (x : nat.divisors_antidiagonal e), f x =
+  ∑ (x : ℕ × ℕ) in nat.divisors_antidiagonal e, f x :=
+begin
+simp only [finset.univ_eq_attach],
+apply finset.sum_finset_coe,
+end
+
 
 lemma sum_sigma_fn_eqn  {k : ℕ} (z : ℍ) :
  ∑' (c  : ℕ+ × ℕ+), (c.1^k : ℂ) * (complex.exp ( 2 *↑π * I * z * c.1 * c.2)) =
-  ∑' (e : ℕ+), (sigma' k e)* complex.exp ( 2 *↑π * I * z * e) :=
+  ∑' (e : ℕ+), (sigma_fn k e)* complex.exp ( 2 *↑π * I * z * e) :=
 begin
-simp_rw sigma',
-simp,
-rw ←sigma_antidiagonal_equiv_prod.tsum_eq,
+simp_rw sigma_fn_eql,
+rw sum_sigma_fn_eq z,
+congr,
+funext,
+rw sigma_fn',
+have :=nat.sum_divisors_antidiagonal' (λ x, λ y, ((x) : ℂ)^k* complex.exp ( 2 *↑π * I * z * x* y)),
+simp only [subtype.val_eq_coe, nat.cast_sum, nat.cast_pow, coe_coe] at *,
+simp_rw mul_assoc at *,
+rw div_mul_aux _ _ at this,
 
-apply tsum_sigma' _ _,
-sorry,
-
-exact t2_5_space.t2_space,
-
-
+rw ← coe_coe,
+have hr : (∑ (x : ℕ) in (e : ℕ).divisors, ↑(↑e / x) ^ k) * exp (2 * (↑π * (I * (↑z * ↑e)))) =
+  ∑ (x : ℕ) in (e : ℕ).divisors, ↑(↑e / x) ^ k * exp (2 * (↑π * (I * (↑z * (e : ℕ))))) , by {
+    rw ←coe_coe,
+    apply finset.sum_mul,},
+rw hr,
+rw ← this,
+have := sumaux  (λ x, ((x.1) : ℂ)^k* complex.exp ( 2 *↑π * I * z * x.1* x.2)) e,
+convert this,
+repeat{
+funext,
+simp_rw mul_assoc},
 end
-#exit
+
+lemma djhg (a b c : ℂ) (h : a = b) : c*a=c*b :=
+begin
+exact congr_arg (has_mul.mul c) h
+end
+
+lemma a1 {k : ℕ} (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * ↑z * e * c)) :=
+begin
+
+have h2ne : (e : ℂ)^(k-1) ≠ 0, by {apply pow_ne_zero, simp,},
+rw ←(summable_mul_left_iff h2ne),
+
+have hv1 : ∀ (b : ℕ+),  (complex.exp ( 2 *↑π * I * z * e * b)) =
+  ( (complex.exp ( 2 *↑π * I * z * e)))^(b : ℕ), by {intro b,
+    rw ←exp_nat_mul, ring_nf},
+simp_rw hv1,
+apply nat_pos_tsum',
+simp,
+have hv2 : ∀ (b : ℕ+), complex.abs (complex.exp ( 2 *↑π * I * z * b)) =
+  (complex.abs (complex.exp ( 2 *↑π * I * z)))^(b : ℕ), by {intro b,
+  rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf},
+simp at *,
+rw hv2 e,
+apply pow_lt_one,
+apply complex.abs.nonneg,
+apply exp_upper_half_plane_lt_one,
+simp,
+end
+
+lemma a2 {k : ℕ} (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * c*  ↑z * e)) :=
+begin
+have := @a1 k e z,
+convert this,
+funext,
+simp,
+left,
+ring_nf,
+end
+
+lemma a3 {k : ℕ} (h : 2 ≤ k) (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (c : ℂ) ^ (k - 1) * exp (2 * ↑π * I * e*  ↑z * c)) :=
+begin
+
+have hv1 : ∀ (b : ℕ+),  (complex.exp ( 2 *↑π * I * e *z * b)) =
+  ( (complex.exp ( 2 *↑π * I * e * z)))^(b : ℕ), by {intro b,
+   rw ←exp_nat_mul, ring_nf},
+
+simp_rw hv1,
+simp_rw coe_coe,
+have lj :=nat_pos_tsum2 (λ (x : ℕ), (x : ℂ)^(k-1)* ( (complex.exp ( 2 *↑π * I * e * z)))^x ),
+simp at lj,
+have hk : 1 < k, by {linarith,},
+have hl:= lj hk,
+simp at *,
+
+
+
+have H:= summable_pow_mul_geometric_of_norm_lt_1 (k-1) ,
+
+have H2:= hl.2 (H _),
+exact H2,
+simp,
+have hv2 : ∀ (b : ℕ+), complex.abs (complex.exp ( 2 *↑π * I * b * z)) =
+  (complex.abs (complex.exp ( 2 *↑π * I * z)))^(b : ℕ), by {intro b,
+  rw ←complex.abs_pow, congr, rw ←exp_nat_mul, simp, rw ←mul_assoc, ring,},
+simp at *,
+rw hv2 e,
+apply pow_lt_one,
+apply complex.abs.nonneg,
+apply exp_upper_half_plane_lt_one,
+simp,
+exact complete_of_proper,
+end
+
+lemma a4 {k : ℕ} (z : ℍ) :  summable (uncurry (λ (b c : ℕ+), ↑b ^ (k - 1) * exp (2 * ↑π * I * ↑c * ↑z * ↑b))) :=
+begin
+rw summable_mul_prod_iff_summable_mul_sigma_antidiagonall,
+rw uncurry,
+simp,
+have:= @summable1 (k-1) z,
+rw sigma_antidiagonal_equiv_prod at this,
+simp at *,
+convert this,
+funext,
+simp_rw mapdiv,
+have hg : 2 * ↑π * I * x.2.1.2 * ↑z * x.2.1.1 =
+  2 * ↑π * I * z* x.2.1.1 * x.2.1.2, by {simp,ring,},
+simp at *,
+left,
+rw hg,
+end
+
+
 lemma Eisen_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : even k) (z : ℍ) :
   (Eisenstein_series k) z =  2* (Riemann_zeta k) +
   2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+),  (sigma_fn (k-1) (n))*(complex.exp ( 2 *↑π * I * z * n)) :=
@@ -389,19 +550,41 @@ have t4 : (∑' (c : ℕ+), (∑' (d : ℤ), 1/(((((c • z) : ℍ) : ℂ) + d)^
 by { congr, funext, rw t2 (c • z : ℍ),  rw auxnpm c z, rw ←mul_assoc, },
 norm_cast,
 rw this,
-simp [auxnpm] at *,
+simp only [auxnpm, coe_coe, one_div, of_real_mul, of_real_bit0, int.cast_neg, int.cast_bit0, algebra_map.coe_one, neg_mul,
+  of_real_neg, add_right_inj] at *,
 rw mul_assoc,
 congr,
 rw t4,
-simp,
+simp only,
 rw tsum_mul_left,
-
-sorry,
-sorry,
-
+apply congr_arg,
+have H := @sum_sigma_fn_eqn (k-1) z,
+simp_rw ←coe_coe ,
+rw ←H,
+rw tsum_comm',
+rw tsum_prod',
+simp only [coe_coe],
+congr',
+funext,
+congr,
+funext,
+have ho :2 * ↑π * I * c * ↑z * b = 2 * ↑π * I * z * b * c , by {ring},
+simp at ho,
+rw ho,
+rw summable_mul_prod_iff_summable_mul_sigma_antidiagonall,
+apply summable1,
+intro e,
+simp,
+apply a1,
+exact a4 z,
+intro b,
+apply a2,
+intro c,
+apply a3,
+repeat{linarith},
 end
 
-#exit
+
 lemma I_pow_4 : I^4 = 1 :=
 begin
 simp only [I_pow_bit0, neg_one_sq],
@@ -496,19 +679,19 @@ have r2 : ∀ (n : ℤ),
 by {intro n, simp only [neg_mul], congr, have : 2 * ↑π * I * I * ↑n = 2 * ↑π * (I * I) * ↑n, by {ring}, rw this, rw I_mul_I, ring,},
 simp only [nat.cast_bit0, algebra_map.coe_one, nat.factorial_succ, nat.factorial_two, nat.cast_mul, nat.cast_add,
   nat.succ_sub_succ_eq_sub, tsub_zero, subtype.coe_mk] at H3,
-have r3 : ∑' (n : ℕ),  ↑(sigma_fn (3) (n+1))*(complex.exp ( 2 *↑π * I * I * n)) =
-  ∑' (n : ℕ),  (sigma_fn (3) (n+1))*(complex.exp ( -2 *↑π * n)),
+have r3 : ∑' (n : ℕ+),  ↑(sigma_fn (3) (n))*(complex.exp ( 2 *↑π * I * I * n)) =
+  ∑' (n : ℕ+),  (sigma_fn (3) (n))*(complex.exp ( -2 *↑π * n)),
 by{congr', funext, simp, left, convert (r2 n), ring},
 rw r3 at H3,
 norm_cast at H3,
-have H4 : 0 ≤ ∑' (n : ℕ), (↑(sigma_fn 3 (n + 1)) * real.exp (↑(-2 : ℤ) * π * ↑n)),
+have H4 : 0 ≤ ∑' (n : ℕ+), (↑(sigma_fn 3 (n)) * real.exp (↑(-2 : ℤ) * π * ↑n)),
 by {apply tsum_nonneg, intro b, apply mul_nonneg, norm_cast, apply sigma_fn_nonneg, apply (real.exp_pos _).le,},
 
 have H5: 0 < 2 * Riemann_zeta 4,
 by {apply mul_pos, linarith, apply Riemann_zeta_pos, linarith,},
 
 let ε := (2 * Riemann_zeta 4) +
-  ((2 * (16 * π ^ 4 / ↑((2 + 1) * 2))))* ∑' (n : ℕ), (↑(sigma_fn 3 (n + 1)) * real.exp (↑(-2 : ℤ) * π * ↑n)),
+  ((2 * (16 * π ^ 4 / ↑((2 + 1) * 2))))* ∑' (n : ℕ+), (↑(sigma_fn 3 (n)) * real.exp (↑(-2 : ℤ) * π * ↑n)),
 
 have H7: G[(4 : ℕ)] (⟨I, by {simp only [I_im, zero_lt_one]}⟩ : ℍ) = ↑ε,
   by {rw H3, simp only [of_real_mul, of_real_bit0, nat.cast_mul, nat.cast_add, nat.cast_bit0,
