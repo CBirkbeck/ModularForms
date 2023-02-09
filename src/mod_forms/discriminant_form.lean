@@ -289,14 +289,12 @@ apply exp_upper_half_plane_lt_one,
 end
 
 
-
-lemma summable_pow_lem  {k : ℕ} (z : ℍ) :
-  summable
-  (λ (a : ℕ+ × ℕ+), ((a.fst) ^ k : ℝ) * complex.abs (exp (2 * ↑π * I * ↑z * (a.fst) * (a.snd)))) :=
+lemma anti_diag_card_le  (n : ℕ+) : (nat.divisors_antidiagonal n).card ≤ n^2 :=
 begin
-apply summable_of_norm_bounded _ _ (ineqaux2 z k),
+simp_rw nat.divisors_antidiagonal,
 sorry,
 end
+
 
 
 
@@ -325,13 +323,20 @@ apply summable_of_nonneg_of_le _ _ (@summable_pow_mul_exp (k+1) z),
 intro x,
 rw tsum_fintype,
 simp,
-sorry,
+norm_cast,
+apply mul_nonneg,
+exact (nat.divisors_antidiagonal x).card.cast_nonneg,
+apply mul_nonneg,
+simp,
+apply complex.abs.nonneg,
 intro b,
 rw tsum_fintype,
 simp,
+
 sorry,
 intro x,
-sorry,
+apply complex.abs.nonneg,
+
 
 /-
 have :=summable_of_norm_bounded _ _ (ineqaux z (k+1)),
