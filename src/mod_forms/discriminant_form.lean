@@ -84,15 +84,230 @@ begin
 sorry,
 end
 
+
+
+lemma int_nat_sum (f : ℤ → ℂ) : summable f →  summable (λ (x : ℕ), f x)   :=
+begin
+have : is_compl (set.range (coe : ℕ → ℤ)) (set.range int.neg_succ_of_nat),
+  { split,
+    { rw disjoint_iff_inf_le,
+      rintros _ ⟨⟨i, rfl⟩, ⟨j, ⟨⟩⟩⟩ },
+    { rw codisjoint_iff_le_sup,
+      rintros (i | j) h,
+      exacts [or.inl ⟨_, rfl⟩, or.inr ⟨_, rfl⟩] } },
+  intro h,
+  rw ←@summable_subtype_and_compl _ _ _ _ _ f _ (set.range (coe : ℕ → ℤ))   at h,
+  cases h,
+  rw ←(equiv.of_injective (coe : ℕ → ℤ) nat.cast_injective).symm.summable_iff ,
+  apply summable.congr h_left,
+  intro b,
+  funext,
+  simp_rw equiv.apply_of_injective_symm,
+  simp,
+  apply congr_arg,
+  cases b, cases h_right, cases h_left, cases b_property, induction b_property_h, dsimp at *,
+  simp at *,
+end
+
+lemma sum_int_even (f : ℤ → ℂ) (hf : ∀ (n : ℤ), f n = f (-n)) (hf2 : summable f) :
+ ∑' n, f n = f 0 + 2 * ∑' (n : ℕ+), f n :=
+begin
+have hpos : has_sum (λ n:ℕ, f(n + 1)) (∑' (n : ℕ+), f n), by {
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  simp at *,
+  rw ←this,
+  have hf3 : summable ((λ (n : ℕ), f (↑n + 1)) ∘ pnat.nat_pred), by {
+    have hs : summable (λ (n : ℕ+), f n), by  {apply (int_nat_sum f hf2).subtype},
+    apply summable.congr hs,
+    intro b, simp, congr, simp },
+  rw (summable.has_sum_iff hf3),
+  congr,
+  funext,
+  simp,
+  congr,
+  norm_cast,
+  simp,},
+have hneg : has_sum (λ (n : ℕ), f (-n.succ)) (∑' (n : ℕ+), f n), by {
+  have h1 : (λ (n : ℕ), f (-↑(n.succ))) = (λ (n : ℕ), f (↑(n.succ))) , by {
+    funext,
+    apply hf,
+  },
+  rw h1,
+  convert hpos,},
+
+have:=(has_sum.pos_add_zero_add_neg hpos hneg).tsum_eq,
+rw this,
+ring,
+end
+
+
+
+lemma embedding_coer : embedding (coe : ℝ → ℂ) :=
+begin
+apply isometry.embedding,
+apply isometry_of_real,
+end
+
+@[norm_cast] lemma tendsto_coe { α : Type*} {f : filter α} {m : α → ℝ} {a : ℝ} :
+  tendsto (λa, (m a : ℂ)) f (𝓝 ↑a) ↔ tendsto m f (𝓝 a) :=
+embedding_coer.tendsto_nhds_iff.symm
+
+
+@[simp, norm_cast] lemma coe_finset_sum { α : Type*} {s : finset α} {f : α → ℝ} :
+  ↑(∑ a in s, f a) = (∑ a in s, f a : ℂ) :=
+of_real.map_sum f s
+
+@[norm_cast] protected lemma has_sum_coe { α : Type*} {f : α → ℝ} {r : ℝ} :
+  has_sum (λa, (f a : ℂ)) ↑r ↔ has_sum f r :=
+have (λs:finset α, ∑ a in s, ↑(f a)) = (coe : ℝ → ℂ) ∘ (λs:finset α, ∑ a in s, f a),
+  from funext $ assume s, coe_finset_sum.symm,
+by unfold has_sum; rw [this, tendsto_coe]
+
+protected lemma tsum_coe_eq { α : Type*} {f : α → ℝ} {r : ℝ} (h : has_sum f r) : ∑'a, (f a : ℂ) = r :=
+(has_sum_coe.2 h).tsum_eq
+
+protected lemma coe_tsum { α : Type*} {f : α → ℝ} : summable f → ↑(tsum f) = ∑'a, (f a : ℂ)
+| ⟨r, hr⟩ := by rw [hr.tsum_eq, tsum_coe_eq hr]
+
+
+lemma coe_summable { α : Type*} (f : α → ℝ) : summable ((coe : ℝ → ℂ) ∘ f) ↔ summable f :=
+begin
+  apply summable.map_iff_of_left_inverse complex.of_real complex.re_add_group_hom,
+  exact complex.continuous_of_real,
+  exact complex.continuous_re,
+  intro, refl,
+end
+
+lemma tsum_coe { α : Type*} (f : α → ℝ) :   ∑' i, (f i : ℂ) = ((∑' i, f i) : ℝ) :=
+begin
+by_cases hf : summable f,
+apply (coe_tsum hf).symm,
+have := tsum_eq_zero_of_not_summable hf,
+rw this,
+simp,
+have h2:= coe_summable f,
+apply tsum_eq_zero_of_not_summable,
+rw h2,
+apply hf,
+
+
+end
+
+lemma nat_pos_tsum2 (f : ℕ → ℂ) (hf : f 0 = 0 ) : summable (λ (x : ℕ+), f x) ↔  summable f :=
+begin
+rw function.injective.summable_iff,
+simp,
+exact pnat.coe_injective,
+intros x hx,
+simp at hx,
+rw hx,
+exact hf,
+
+end
+
+lemma tsum_pnat (f : ℕ → ℂ) (hf : f 0 = 0) : ∑' (n : ℕ+), f n = ∑' n, f n :=
+begin
+by_cases hf2: summable f,
+rw tsum_eq_zero_add,
+rw hf,
+simp,
+have hpos : has_sum (λ n:ℕ, f(n + 1)) (∑' (n : ℕ+), f n), by {
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  simp at *,
+  rw ←this,
+  have hf3 : summable ((λ (n : ℕ), f (n + 1)) ∘ pnat.nat_pred), by {
+    have hs : summable (λ (n : ℕ+), f n), by  {apply (hf2).subtype},
+    apply summable.congr hs,
+    intro b, simp,},
+  rw (summable.has_sum_iff hf3),
+  congr,
+  funext,
+  simp,},
+apply symm,
+apply hpos.tsum_eq,
+apply hf2,
+have h1 := tsum_eq_zero_of_not_summable hf2,
+rw ←(nat_pos_tsum2 f hf) at hf2,
+have h2:= tsum_eq_zero_of_not_summable hf2,
+simp [h1,h2],
+end
+
+lemma neg_even_pow (n : ℤ) (k : ℕ) (hk : even k) : (-n)^k = n^ k :=
+begin
+exact even.neg_pow hk n,
+end
+
+def neg_equiv : ℤ ≃ ℤ :=
+{to_fun := λ n, -n,
+ inv_fun := λ n, -n,
+ left_inv := by {apply neg_neg,},
+ right_inv:= by {apply neg_neg,},
+}
+
+lemma int_sum_neg (f : ℤ → ℂ) (hf : summable f) : ∑' (d : ℤ), f d = ∑' d, f (-d) :=
+begin
+have h : (λ d, f (-d)) = (λ d, f d) ∘ neg_equiv.to_fun, by {funext,
+  simp,
+  refl,},
+rw h,
+apply symm,
+apply neg_equiv.tsum_eq,
+exact t2_5_space.t2_space,
+end
+
 lemma q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2: even k) (z : ℍ):
 ∑' (x : ℤ × ℤ),  1/(((x.1 : ℂ)*z+x.2)^k) = 2 * (Riemann_zeta k) +
   2 * (∑' (c : ℕ+), (∑' (d : ℤ), 1/(c*z + d)^k)) :=
 begin
 rw Riemann_zeta,
+rw tsum_prod,
+rw sum_int_even,
+simp,
+rw rie,
+rw sum_int_even,
+simp,
+have h0 : ((0 : ℂ)^k)⁻¹ = 0, by {convert inv_zero, norm_cast, apply zero_pow', linarith,},
+have h00 : ((0^k : ℕ) : ℝ)⁻¹ = 0, by {convert inv_zero, norm_cast, apply zero_pow', linarith,},
+rw h0,
+simp,
+rw ←tsum_coe,
+norm_cast,
+rw ←tsum_pnat,
+congr,
+funext,
+norm_cast,
+simp,
+norm_cast,
+apply h00,
+intro n,
+apply congr_arg,
+apply symm,
+norm_cast,
+apply even.neg_pow hk2,
+have H := int_Riemann_zeta_is_summmable k _,
+rw rie at H,
+apply summable_int_of_summable_nat,
+
 sorry,
+sorry,
+norm_cast,
+linarith,
+intro n,
+simp,
+apply symm,
+rw int_sum_neg,
+congr,
+funext,
+simp,
+ring,
+convert even.neg_pow hk2 ((z : ℂ)* n + d),
+repeat{sorry},
 end
 
 
+#exit
 def sigma_fn (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, d^k
 
 def sigma_fn' (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, (n/d)^k
@@ -187,11 +402,11 @@ def sigma_antidiagonal_equiv_prod : (Σ (n : ℕ+), nat.divisors_antidiagonal n)
 
 
 
-lemma ine (a b k: ℕ) (h : a ≤ b): a^k ≤ 2* b^(k+1):=
+lemma ine (a b k: ℕ) (hb : 0 < b) (h : a ≤ b): a^k ≤ 2* b^(k+1):=
 begin
 have h1 : a^k ≤ b^k, by {exact pow_mono_right k h,},
 apply le_trans h1,
-have h2: b^k ≤ b^(k+1), by {sorry,},
+have h2: b^k ≤ b^(k+1), by {apply nat.pow_le_pow_of_le_right hb, linarith,},
 apply le_trans h2,
 apply le_mul_of_one_le_left,
 apply pow_nonneg,
@@ -221,6 +436,7 @@ simp at J,
 have J2:= nat.le_of_dvd _ J,
 norm_cast,
 apply ine,
+apply n.1.2,
 exact J2,
 apply n.1.2,
 exact real.has_zero,
@@ -230,7 +446,6 @@ simp,
 apply complex.exp_ne_zero,
  end
 
-#exit
 
 lemma summable_mul_prod_iff_summable_mul_sigma_antidiagonall {f  : ℕ+ × ℕ+ → ℂ} :
   summable (λ x : ℕ+ × ℕ+, f x ) ↔
@@ -256,17 +471,7 @@ exact hf,
 
 end
 
-lemma nat_pos_tsum2 (f : ℕ → ℂ) (hf : f 0 = 0 ) : summable (λ (x : ℕ+), f x) ↔  summable f :=
-begin
-rw function.injective.summable_iff,
-simp,
-exact pnat.coe_injective,
-intros x hx,
-simp at hx,
-rw hx,
-exact hf,
 
-end
 
 lemma nat_pos_tsum' (ξ : ℂ) :  summable (λ n : ℕ, ξ ^ n) → summable (λ n : ℕ+, ξ ^ (n : ℕ)) :=
 begin
@@ -444,11 +649,6 @@ funext,
 simp_rw mul_assoc},
 end
 
-lemma djhg (a b c : ℂ) (h : a = b) : c*a=c*b :=
-begin
-exact congr_arg (has_mul.mul c) h
-end
-
 lemma a1 {k : ℕ} (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * ↑z * e * c)) :=
 begin
 
@@ -590,57 +790,9 @@ begin
 simp only [I_pow_bit0, neg_one_sq],
 end
 
-lemma embedding_coer : embedding (coe : ℝ → ℂ) :=
-begin
-apply isometry.embedding,
-apply isometry_of_real,
-end
-
-@[norm_cast] lemma tendsto_coe { α : Type*} {f : filter α} {m : α → ℝ} {a : ℝ} :
-  tendsto (λa, (m a : ℂ)) f (𝓝 ↑a) ↔ tendsto m f (𝓝 a) :=
-embedding_coer.tendsto_nhds_iff.symm
 
 
-@[simp, norm_cast] lemma coe_finset_sum { α : Type*} {s : finset α} {f : α → ℝ} :
-  ↑(∑ a in s, f a) = (∑ a in s, f a : ℂ) :=
-of_real.map_sum f s
 
-@[norm_cast] protected lemma has_sum_coe { α : Type*} {f : α → ℝ} {r : ℝ} :
-  has_sum (λa, (f a : ℂ)) ↑r ↔ has_sum f r :=
-have (λs:finset α, ∑ a in s, ↑(f a)) = (coe : ℝ → ℂ) ∘ (λs:finset α, ∑ a in s, f a),
-  from funext $ assume s, coe_finset_sum.symm,
-by unfold has_sum; rw [this, tendsto_coe]
-
-protected lemma tsum_coe_eq { α : Type*} {f : α → ℝ} {r : ℝ} (h : has_sum f r) : ∑'a, (f a : ℂ) = r :=
-(has_sum_coe.2 h).tsum_eq
-
-protected lemma coe_tsum { α : Type*} {f : α → ℝ} : summable f → ↑(tsum f) = ∑'a, (f a : ℂ)
-| ⟨r, hr⟩ := by rw [hr.tsum_eq, tsum_coe_eq hr]
-
-
-lemma coe_summable { α : Type*} (f : α → ℝ) : summable ((coe : ℝ → ℂ) ∘ f) ↔ summable f :=
-begin
-  apply summable.map_iff_of_left_inverse complex.of_real complex.re_add_group_hom,
-  exact complex.continuous_of_real,
-  exact complex.continuous_re,
-  intro, refl,
-end
-
-
-lemma tsum_coe { α : Type*} (f : α → ℝ) :   ∑' i, (f i : ℂ) = ((∑' i, f i) : ℝ) :=
-begin
-by_cases hf : summable f,
-apply (coe_tsum hf).symm,
-have := tsum_eq_zero_of_not_summable hf,
-rw this,
-simp,
-have h2:= coe_summable f,
-apply tsum_eq_zero_of_not_summable,
-rw h2,
-apply hf,
-
-
-end
 
 lemma auxeq (r : ℝ) (hr : 0 < r) : (r : ℂ) ≠ 0 :=
 begin
