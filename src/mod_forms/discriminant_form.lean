@@ -73,7 +73,7 @@ sorry,
 end
 
 lemma series_eql (z : ℂ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
-  1/z + ∑' (n : ℕ), (1/(z-(n+1))-1/(z+(n+1))) :=
+  1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
 begin
 sorry,
 end
@@ -81,11 +81,13 @@ end
 lemma q_exp_iden (k : ℕ) (hn : 2 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
   ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
 begin
+
+
 sorry,
 end
 
 
-
+#exit
 lemma int_nat_sum (f : ℤ → ℂ) : summable f →  summable (λ (x : ℕ), f x)   :=
 begin
 have : is_compl (set.range (coe : ℕ → ℤ)) (set.range int.neg_succ_of_nat),
@@ -257,6 +259,53 @@ apply neg_equiv.tsum_eq,
 exact t2_5_space.t2_space,
 end
 
+lemma complex_rie_summable (k : ℕ) (hk : 3 ≤ k) :
+  summable (λ (n : ℕ), (( n : ℂ)^k)⁻¹) :=
+begin
+have hk1: 1 < (k : ℤ), by {linarith},
+have H:= int_Riemann_zeta_is_summmable k hk1,
+rw rie at H,
+simp_rw inv_eq_one_div,
+have H2: (λ (n : ℕ), 1/(n : ℂ)^k)=  (coe : ℝ → ℂ) ∘ (λ n, 1/ ((n : ℝ))^k), by {
+  funext,
+  simp},
+rw H2,
+rw coe_summable,
+apply summable.congr H,
+intro b,
+simp,
+end
+
+
+
+lemma prod_sum (f : ℤ × ℤ → ℂ) (hf : summable f) : summable (λ a, ∑' b, f ⟨a,b⟩ ) :=
+begin
+have := equiv.summable_iff (equiv.sigma_equiv_prod ℤ ℤ) ,
+rw ←this at hf,
+have H:= summable.sigma hf,
+simp at H,
+apply summable.congr H,
+intro b,
+simp,
+end
+
+
+lemma Eis_summ (k : ℕ) (hk : 3 ≤ k) (z : ℍ)  :
+  summable (λ (p : ℤ × ℤ), 1 / (((p.fst) : ℂ) * ↑z + ↑(p.snd)) ^ k) :=
+begin
+apply Eisenstein_series_is_summable _ _ hk,
+end
+
+
+lemma summable_factor (n : ℤ) (z : ℍ)  (k : ℕ) (hk : 3 ≤ k) :
+  summable (λ (d : ℤ), ((-((n : ℂ)*z) +d)^k)⁻¹) :=
+begin
+have H := Eis_summ k hk z,
+have H2:= H.prod_factor (-n),
+simp at *,
+exact H2,
+end
+
 lemma q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2: even k) (z : ℍ):
 ∑' (x : ℤ × ℤ),  1/(((x.1 : ℂ)*z+x.2)^k) = 2 * (Riemann_zeta k) +
   2 * (∑' (c : ℕ+), (∑' (d : ℤ), 1/(c*z + d)^k)) :=
@@ -264,21 +313,21 @@ begin
 rw Riemann_zeta,
 rw tsum_prod,
 rw sum_int_even,
-simp,
+simp only [algebra_map.coe_zero, zero_mul, zero_add, one_div, coe_coe, int.cast_coe_nat, add_left_inj],
 rw rie,
 rw sum_int_even,
-simp,
+simp only [algebra_map.coe_zero, coe_coe, int.cast_coe_nat, real.rpow_nat_cast, one_div],
 have h0 : ((0 : ℂ)^k)⁻¹ = 0, by {convert inv_zero, norm_cast, apply zero_pow', linarith,},
 have h00 : ((0^k : ℕ) : ℝ)⁻¹ = 0, by {convert inv_zero, norm_cast, apply zero_pow', linarith,},
 rw h0,
-simp,
+simp only [zero_add, mul_eq_mul_left_iff, bit0_eq_zero, one_ne_zero, or_false],
 rw ←tsum_coe,
 norm_cast,
 rw ←tsum_pnat,
 congr,
 funext,
 norm_cast,
-simp,
+simp only [of_real_inv, of_real_nat_cast],
 norm_cast,
 apply h00,
 intro n,
@@ -289,25 +338,33 @@ apply even.neg_pow hk2,
 have H := int_Riemann_zeta_is_summmable k _,
 rw rie at H,
 apply summable_int_of_summable_nat,
-
-sorry,
-sorry,
+apply complex_rie_summable k hk,
+have HG : (λ (n : ℕ), (((-(n: ℤ)): ℂ)^k)⁻¹) =  (λ (n : ℕ), ((n : ℂ)^k)⁻¹),
+  by {funext,
+    apply congr_arg,
+    rw ←coe_coe,
+    apply even.neg_pow hk2},
+simp only [int.cast_neg, int.cast_coe_nat, real.rpow_nat_cast, one_div, real.summable_nat_pow_inv] at *,
+rw HG,
+apply complex_rie_summable k hk,
 norm_cast,
 linarith,
 intro n,
-simp,
+simp only [one_div, int.cast_neg, neg_mul],
 apply symm,
 rw int_sum_neg,
 congr,
 funext,
-simp,
-ring,
+simp only [int.cast_neg, inv_inj],
+ring_nf,
 convert even.neg_pow hk2 ((z : ℂ)* n + d),
-repeat{sorry},
+ring,
+apply summable_factor n z k hk,
+have h1 := Eis_summ k hk z,
+apply prod_sum _ h1,
+apply Eis_summ k hk z,
 end
 
-
-#exit
 def sigma_fn (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, d^k
 
 def sigma_fn' (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, (n/d)^k
