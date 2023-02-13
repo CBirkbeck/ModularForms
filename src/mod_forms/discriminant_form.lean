@@ -231,6 +231,123 @@ ring_nf,
 
 end
 
+lemma ineq11 (x y d: ℝ  ): 0 ≤ d^2*(x^2+y^2)^2-2*d*x*(x^2+y^2)+x^2:=
+begin
+  have h1: d^2*(x^2+y^2)^2-2*d*x*(x^2+y^2)+x^2 =(d*(x^2+y^2)-x)^2, by {ring,},
+  rw h1,
+  nlinarith,
+end
+
+lemma lowboundd (z : ℍ) (δ : ℝ): ((z.1.2)^4 + (z.1.1*z.1.2)^2)/(z.1.1^2+z.1.2^2)^2 ≤
+  (δ*z.1.1-1)^2+(δ*z.1.2)^2:=
+begin
+  simp only [upper_half_plane.coe_im, subtype.val_eq_coe, upper_half_plane.coe_re],
+  have H1: (δ*z.1.1-1)^2+(δ*z.1.2)^2=δ^2*(z.1.1^2+z.1.2^2)-2*δ*z.1.1+1, by {ring,},
+  simp only [upper_half_plane.coe_im, subtype.val_eq_coe, upper_half_plane.coe_re] at H1,
+  rw H1,
+  rw div_le_iff,
+  simp only,
+  have H2: (δ ^ 2 * ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) - 2 * δ *  (z: ℂ).re + 1) *
+  ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2=δ ^ 2 * ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2)^3 - 2 * δ *
+  (z: ℂ).re* ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2+   ( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2,
+  by {ring,},
+  simp only [upper_half_plane.coe_im, upper_half_plane.coe_re] at H2,
+  rw H2,
+  rw ← sub_nonneg,
+  have H3:( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2) ^ 2-((z: ℂ).im ^ 4 + ((z: ℂ).re * (z: ℂ).im) ^ 2)=
+  ((z: ℂ).re)^2*( (z: ℂ).re ^ 2 +  (z: ℂ).im ^ 2), by {ring,},
+  have H4: δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 3 - 2 * δ *
+  (z: ℂ).re * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 2 + ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) ^ 2 -
+  ((z: ℂ).im ^ 4 + ((z: ℂ).re * (z: ℂ).im) ^ 2)=
+  (((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2))*(δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)^2 - 2 * δ *
+  (z: ℂ).re * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2) +(z: ℂ).re ^ 2), by {ring,},
+  simp only [upper_half_plane.coe_im, upper_half_plane.coe_re] at H4,
+  rw H4,
+  have H5: 0 ≤ (δ ^ 2 * ((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)^2 - 2 * δ * (z: ℂ).re * ((z: ℂ).re ^ 2 +
+  (z: ℂ).im ^ 2) +(z: ℂ).re ^ 2), by {apply ineq11,},
+  have H6: 0 ≤ (((z: ℂ).re ^ 2 + (z: ℂ).im ^ 2)), by {nlinarith,},
+  apply mul_nonneg H6 H5,
+  have H7:= z.property, simp at H7,
+  have H8:0 < (z: ℂ).im ^ 2, by {simp only [H7, pow_pos, upper_half_plane.coe_im], },
+  have H9: 0 <((z: ℂ).im ^ 2+(z: ℂ).re ^ 2), by {nlinarith,},
+  apply pow_two_pos_of_ne_zero,
+  nlinarith,
+end
+
+lemma rfunt_bnd  (z : ℍ) (δ : ℝ) :
+  (rfunct z) ≤ complex.abs ( δ*(z: ℂ) -1):=
+begin
+  {rw rfunct,
+  rw complex.abs,
+  simp,
+  have H1:  real.sqrt (lb z) ≤
+  real.sqrt ((δ*(z: ℂ).re  - 1) * (δ*(z: ℂ).re  - 1) + δ*(z: ℂ).im *  (δ*(z: ℂ).im )),
+  by { rw lb,
+  rw real.sqrt_le_sqrt_iff,
+  have:= lowboundd z δ,
+  rw ← pow_two,
+  rw ← pow_two,
+  simp only [upper_half_plane.coe_im, subtype.val_eq_coe, upper_half_plane.coe_re] at *,
+  apply this,
+  nlinarith,},
+  simp only [upper_half_plane.coe_im, upper_half_plane.coe_re] at H1,
+  rw norm_sq_apply,
+  right,
+  simp,
+  simp_rw H1,},
+end
+
+example (a b : ℂ) : complex.abs(a*b)= complex.abs(a) * complex.abs(b) :=
+begin
+exact map_mul abs a b,
+end
+
+
+lemma upbnd (z : ℍ) (d : ℤ) : (d^2 : ℝ) * rfunct(z )^2 ≤ complex.abs (z^2-d^2) :=
+begin
+by_cases hd : d ≠ 0,
+have h1 : (z^2 : ℂ)-d^2 = d^2 * ((1/d^2)* z^2-1), by {ring_nf, simp[hd],},
+rw h1,
+simp only [one_div, absolute_value.map_mul, complex.abs_pow],
+have h2 := rfunt_bnd z (1/d),
+have h3 := (Eisenstein_series.auxlem z (1/d)).2,
+have h4 := mul_le_mul h2 h3  (rfunct_pos z).le (complex.abs.nonneg _),
+rw ←absolute_value.map_mul at h4,
+rw ←pow_two at h4,
+have h5 : complex.abs ↑d ^ 2 = d^2, by {norm_cast, rw pow_abs, rw abs_eq_self, nlinarith, },
+rw h5,
+refine mul_le_mul _ _ _ _,
+simp,
+convert h4,
+ring_exp,
+simp,
+apply pow_nonneg,
+apply (rfunct_pos z).le,
+nlinarith,
+simp at hd,
+rw hd,
+simp [complex.abs.nonneg],
+end
+
+lemma lhs_summable (z : ℍ) : summable (λ(n : ℕ+), (1/((z : ℂ)-n)+1/(z+n))) :=
+begin
+have h1 : (λ n : ℕ+, (1/((z : ℂ)-n)+1/(z+n))) = (λ (n : ℕ+), z*(1/(z^2-n^2))), by {sorry},
+rw h1,
+apply summable.mul_left,
+apply _root_.summable_if_complex_abs_summable,
+simp,
+have hs : summable (λ (n : ℕ+), (rfunct(z)^2*n^2)⁻¹), by {sorry},
+apply summable_of_nonneg_of_le _ _ hs,
+intro b,
+rw inv_nonneg,
+apply complex.abs.nonneg,
+intro b,
+rw inv_le_inv,
+rw mul_comm,
+apply upbnd z _,
+sorry,
+
+end
 
 
 
