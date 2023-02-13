@@ -157,10 +157,6 @@ simp,
 end
 
 -/
-lemma asufasd (a b : ℂ): complex.abs(a * b)= complex.abs (a) * complex.abs(b):=
-begin
-  exact map_mul abs a b,
-end
 
 lemma Eise_on_square_is_bounded ( k : ℕ) (z : ℍ) (n : ℕ) (x: ℤ × ℤ) (h: x ∈ Square n) (hn: 1 ≤ n):
   (complex.abs(((x.1: ℂ)*z+(x.2: ℂ))^k))⁻¹ ≤ (complex.abs ((rfunct z)^k* n^k))⁻¹ :=
@@ -416,7 +412,8 @@ end
 
 
 lemma SmallClaim (k : ℕ) (z : ℍ) (h : 3 ≤ k):
- ∀ (n : ℕ), (λ (x: ℕ), ∑ (y : ℤ × ℤ) in (Square x),  (real_Eise k z) y) n ≤  (8/(rfunct z)^k) * ((rie (k-1)) n):=
+ ∀ (n : ℕ), (λ (x: ℕ), ∑ (y : ℤ × ℤ) in (Square x), (real_Eise k z) y) n ≤
+  (8/(rfunct z)^k) * ((rie (k-1)) n):=
 begin
 have BIGCLAIM:= BigClaim k z h,
 simp only at BIGCLAIM,

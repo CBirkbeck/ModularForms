@@ -2,6 +2,8 @@ import mod_forms.Eisen_is_holo
 import data.complex.exponential
 import analysis.complex.upper_half_plane.basic
 import mod_forms.Riemann_zeta_fin
+import analysis.calculus.iterated_deriv
+
 
 noncomputable theory
 
@@ -72,22 +74,19 @@ refine (has_sum.tsum_eq _),
 sorry,
 end
 
-lemma series_eql (z : ℂ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
-  1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
+lemma exp_iter_deriv (n m : ℕ) (z : ℂ) :
+  iterated_deriv n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) =
+  (λ t, (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * t)) :=
 begin
-sorry,
+induction n with n IH,
+simp,
+funext x,
+rw iterated_deriv_succ,
+rw IH,
+simp,
+ring_exp,
 end
 
-lemma q_exp_iden (k : ℕ) (hn : 2 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
-  ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
-begin
-
-
-sorry,
-end
-
-
-#exit
 lemma int_nat_sum (f : ℤ → ℂ) : summable f →  summable (λ (x : ℕ), f x)   :=
 begin
 have : is_compl (set.range (coe : ℕ → ℤ)) (set.range int.neg_succ_of_nat),
@@ -142,6 +141,126 @@ have:=(has_sum.pos_add_zero_add_neg hpos hneg).tsum_eq,
 rw this,
 ring,
 end
+
+def neg_equiv : ℤ ≃ ℤ :=
+{to_fun := λ n, -n,
+ inv_fun := λ n, -n,
+ left_inv := by {apply neg_neg,},
+ right_inv:= by {apply neg_neg,},
+}
+
+def succ_equiv : ℤ ≃ ℤ :=
+{to_fun := λ n, n.succ,
+ inv_fun := λ n, n.pred,
+ left_inv := by {apply int.pred_succ,},
+ right_inv:= by {apply int.succ_pred,},
+}
+
+lemma summable_neg (f : ℤ → ℂ) (hf : summable f) : summable (λ d, f (-d)) :=
+begin
+have h : (λ d, f (-d)) = (λ d, f d) ∘ neg_equiv.to_fun, by {funext,
+  simp,
+  refl,},
+rw h,
+have := neg_equiv.summable_iff.mpr hf,
+apply this,
+end
+
+lemma int_sum_neg (f : ℤ → ℂ) (hf : summable f) : ∑' (d : ℤ), f d = ∑' d, f (-d) :=
+begin
+have h : (λ d, f (-d)) = (λ d, f d) ∘ neg_equiv.to_fun, by {funext,
+  simp,
+  refl,},
+rw h,
+apply symm,
+apply neg_equiv.tsum_eq,
+exact t2_5_space.t2_space,
+end
+
+lemma int_tsum_pnat (f : ℤ → ℂ) (hf2 : summable f) :
+  ∑' n, f n = f 0 + (∑' (n : ℕ+), f n) + ∑' (m : ℕ+), f (-m) :=
+begin
+have hpos : has_sum (λ n:ℕ, f(n + 1)) (∑' (n : ℕ+), f n), by {
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  simp at *,
+  rw ←this,
+  have hf3 : summable ((λ (n : ℕ), f (↑n + 1)) ∘ pnat.nat_pred), by {
+    have hs : summable (λ (n : ℕ+), f n), by  {apply (int_nat_sum f hf2).subtype},
+    apply summable.congr hs,
+    intro b, simp, congr, simp },
+  rw (summable.has_sum_iff hf3),
+  congr,
+  funext,
+  simp,
+  congr,
+  norm_cast,
+  simp,},
+have hneg : has_sum (λ (n : ℕ), f (-n.succ)) (∑' (n : ℕ+), f (-n)), by {
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  rw ←this,
+   rw (summable.has_sum_iff _),
+   congr,
+   funext,
+   simp,
+   congr,
+   simp_rw pnat.nat_pred,
+   simp,
+   ring,
+   exact t2_5_space.t2_space,
+   rw equiv.summable_iff,
+   have H : summable (λ (d : ℤ), f (d.pred)), by {
+    have := succ_equiv.symm.summable_iff.2 hf2,
+    apply this},
+   have H2:= summable_neg _ H,
+
+   have := int_nat_sum _ H2,
+   apply summable.congr this,
+   intro b,
+   simp,
+   congr,
+   simp_rw int.pred,
+   ring,
+   exact add_comm_group.to_add_comm_monoid ℂ,
+   exact uniform_space.to_topological_space,
+   },
+have:=(has_sum.pos_add_zero_add_neg hpos hneg).tsum_eq,
+rw this,
+ring_nf,
+
+end
+
+
+
+
+lemma tsums_added (k : ℕ) (hk : 2 ≤ k)(z : ℂ):
+  ∑' (n : ℕ+), (1/(z-n)^k+1/(z+n)^k) = ∑' (d : ℤ), 1/(z-d)^k :=
+begin
+
+
+sorry,
+end
+
+lemma series_eql (z : ℂ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
+  1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
+begin
+sorry,
+end
+
+lemma q_exp_iden (k : ℕ) (hn : 2 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
+  ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
+begin
+
+
+sorry,
+end
+
+
+#exit
+
+
+
 
 
 
@@ -241,23 +360,7 @@ begin
 exact even.neg_pow hk n,
 end
 
-def neg_equiv : ℤ ≃ ℤ :=
-{to_fun := λ n, -n,
- inv_fun := λ n, -n,
- left_inv := by {apply neg_neg,},
- right_inv:= by {apply neg_neg,},
-}
 
-lemma int_sum_neg (f : ℤ → ℂ) (hf : summable f) : ∑' (d : ℤ), f d = ∑' d, f (-d) :=
-begin
-have h : (λ d, f (-d)) = (λ d, f d) ∘ neg_equiv.to_fun, by {funext,
-  simp,
-  refl,},
-rw h,
-apply symm,
-apply neg_equiv.tsum_eq,
-exact t2_5_space.t2_space,
-end
 
 lemma complex_rie_summable (k : ℕ) (hk : 3 ≤ k) :
   summable (λ (n : ℕ), (( n : ℂ)^k)⁻¹) :=
