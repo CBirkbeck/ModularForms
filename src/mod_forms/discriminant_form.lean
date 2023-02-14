@@ -3,6 +3,7 @@ import data.complex.exponential
 import analysis.complex.upper_half_plane.basic
 import mod_forms.Riemann_zeta_fin
 import analysis.calculus.iterated_deriv
+import analysis.calculus.series
 
 
 noncomputable theory
@@ -74,7 +75,7 @@ refine (has_sum.tsum_eq _),
 sorry,
 end
 
-lemma exp_iter_deriv (n m : ℕ) (z : ℂ) :
+lemma exp_iter_deriv (n m : ℕ)  :
   iterated_deriv n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) =
   (λ t, (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * t)) :=
 begin
@@ -329,14 +330,79 @@ rw hd,
 simp [complex.abs.nonneg],
 end
 
+lemma upp_half_not_ints (z : ℍ) (n : ℤ ): (z : ℂ) ≠ n :=
+begin
+simp,
+intro h,
+have h1 := upper_half_plane.im_pos z,
+have h2 : complex.im (n) = 0, by {exact int_cast_im n,},
+rw upper_half_plane.im at h1,
+rw h at h1,
+rw h2 at h1,
+simp at *,
+exact h1,
+end
+
+
+lemma abs_pow_two_upp_half (z : ℍ) (n : ℤ) : 0 < complex.abs((z : ℂ)^2 -n^2) :=
+begin
+simp,
+intro h,
+have h1 : (z : ℂ)^2-n^2=(z-n)*(z+n), by {ring},
+rw h1 at h,
+simp at h,
+cases h,
+have:= upp_half_not_ints z n,
+rw sub_eq_zero at h,
+apply absurd h this,
+have:= upp_half_not_ints z (-n),
+rw add_eq_zero_iff_eq_neg at h,
+simp at *,
+apply absurd h this,
+
+end
+
+
 lemma lhs_summable (z : ℍ) : summable (λ(n : ℕ+), (1/((z : ℂ)-n)+1/(z+n))) :=
 begin
-have h1 : (λ n : ℕ+, (1/((z : ℂ)-n)+1/(z+n))) = (λ (n : ℕ+), z*(1/(z^2-n^2))), by {sorry},
+have h1 : (λ n : ℕ+, (1/((z : ℂ)-n)+1/(z+n))) = (λ (n : ℕ+), (2*z)*(1/(z^2-n^2))), by {
+  funext,
+  field_simp,
+  rw one_div_add_one_div,
+  ring,
+  have h2 :=upp_half_not_ints z (n),
+  simp  [h2] at *,
+  rw sub_eq_zero,
+  exact h2,
+  have h1 :=upp_half_not_ints z (-n),
+  simp at *,
+  rw add_eq_zero_iff_eq_neg,
+  exact h1},
 rw h1,
 apply summable.mul_left,
 apply _root_.summable_if_complex_abs_summable,
 simp,
-have hs : summable (λ (n : ℕ+), (rfunct(z)^2*n^2)⁻¹), by {sorry},
+have hs : summable (λ (n : ℕ+), (rfunct(z)^2*n^2)⁻¹), by {
+simp,
+rw ←summable_mul_right_iff,
+have h12 : (1 : ℤ) < 2, by {linarith},
+have h1 := int_Riemann_zeta_is_summmable 2 h12,
+simp_rw rie at h1,
+simp_rw one_div at h1,
+simp_rw ←coe_coe,
+norm_cast at *,
+have h3 : (λ (b : ℕ+), (↑b ^ 2)⁻¹) = (λ (b : ℕ+), (((b ^ 2) : ℕ) : ℝ)⁻¹), by {
+  funext,
+  congr,
+  simp,
+},
+rw h3,
+apply h1.subtype,
+apply inv_ne_zero,
+apply pow_ne_zero,
+apply norm_num.ne_zero_of_pos,
+apply rfunct_pos,
+},
 apply summable_of_nonneg_of_le _ _ hs,
 intro b,
 rw inv_nonneg,
@@ -345,19 +411,60 @@ intro b,
 rw inv_le_inv,
 rw mul_comm,
 apply upbnd z _,
-sorry,
+apply abs_pow_two_upp_half z _,
+apply mul_pos,
+apply pow_pos,
+apply rfunct_pos,
+have hb:= b.2,
+apply pow_pos,
+simp only [coe_coe, nat.cast_pos, pnat.pos],
+end
 
+lemma Eis_summ (k : ℕ) (hk : 3 ≤ k) (z : ℍ)  :
+  summable (λ (p : ℤ × ℤ), 1 / (((p.fst) : ℂ) * ↑z + ↑(p.snd)) ^ k) :=
+begin
+apply Eisenstein_series_is_summable _ _ hk,
+end
+
+lemma summablemente  (k : ℕ) (hk : 3 ≤ k) (z : ℍ):
+  summable (λ (d : ℤ), 1/((z : ℂ)-d)^k) :=
+begin
+  have H:=Eis_summ k hk z,
+  have H1 := summable.prod_factor H 1,
+  simp at H1,
+  have:= summable_neg (λ n, ((z+n)^k)⁻¹),
+  simp at this,
+  convert this H1,
+  funext,
+  simp,
+  congr,
 end
 
 
 
-lemma tsums_added (k : ℕ) (hk : 2 ≤ k)(z : ℂ):
-  ∑' (n : ℕ+), (1/(z-n)^k+1/(z+n)^k) = ∑' (d : ℤ), 1/(z-d)^k :=
+
+lemma tsums_added (k : ℕ) (hk : 3 ≤ k)(z : ℍ ):
+  ∑' (n : ℕ+), (1/((z : ℂ)-n)^k+1/(z+n)^k) = ∑' (d : ℤ), 1/(z-d)^k :=
 begin
 
 
 sorry,
 end
+
+
+lemma exp_series_ite_deriv (k : ℕ) :
+  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
+  λ z, (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * z * n)) :=
+begin
+
+funext,
+simp_rw iterated_deriv,
+rw iterated_fderiv_tsum,
+have h1 := λ n, exp_iter_deriv k n,
+simp,
+
+end
+
 
 lemma series_eql (z : ℂ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
@@ -510,11 +617,7 @@ simp,
 end
 
 
-lemma Eis_summ (k : ℕ) (hk : 3 ≤ k) (z : ℍ)  :
-  summable (λ (p : ℤ × ℤ), 1 / (((p.fst) : ℂ) * ↑z + ↑(p.snd)) ^ k) :=
-begin
-apply Eisenstein_series_is_summable _ _ hk,
-end
+
 
 
 lemma summable_factor (n : ℤ) (z : ℍ)  (k : ℕ) (hk : 3 ≤ k) :
