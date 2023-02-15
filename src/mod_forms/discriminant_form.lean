@@ -462,7 +462,7 @@ simp_rw iterated_deriv,
 rw iterated_fderiv_tsum,
 have h1 := λ n, exp_iter_deriv k n,
 simp,
-
+all_goals{sorry},
 end
 
 
