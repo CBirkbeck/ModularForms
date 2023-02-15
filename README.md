@@ -1,5 +1,5 @@
 # ModularForms
-This repository consists of LEAN code which defines modular forms and looks to prove that Eisenstein series satisfy these definitions. 
+This repository consists of Lean code which defines modular forms and looks to prove that Eisenstein series satisfy these definitions. 
 
 The code within is being organised in order to be added to mathlib. 
 
