@@ -51,6 +51,15 @@ simp,
 ring_exp,
 end
 
+
+
+lemma exp_iter_deriv_apply (n m : ℕ) (x : ℂ) :
+  (iterated_fderiv ℂ n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s))) x (λ(i : fin n), 1) =
+   (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * x) :=
+begin
+  apply congr_fun (exp_iter_deriv n m),
+end
+
 lemma int_nat_sum (f : ℤ → ℂ) : summable f →  summable (λ (x : ℕ), f x)   :=
 begin
 have : is_compl (set.range (coe : ℕ → ℤ)) (set.range int.neg_succ_of_nat),
@@ -414,18 +423,63 @@ begin
 sorry,
 end
 
+lemma exp_series_ite_deriv' (k : ℕ) :
+  iterated_fderiv ℂ k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
+   λ z, (∑' (n : ℕ), iterated_fderiv ℂ k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n)) z) :=
+begin
+
+rw iterated_fderiv_tsum,
+
+all_goals{sorry},
+end
+
+lemma exp_series_ite_deriv'' (k : ℕ) :
+  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
+   λ z, (∑' (n : ℕ), iterated_deriv k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n)) z) :=
+begin
+ induction k with k IH,
+ simp,
+ funext,
+ have IH2:= congr_fun IH x,
+ simp_rw iterated_deriv_succ,
+ simp_rw deriv,
+ have hf :  ∀ n, differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
+ have := fderiv_tsum_apply _ hf,
+
+all_goals{sorry},
+end
+
 
 lemma exp_series_ite_deriv (k : ℕ) :
   iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
   λ z, (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * z * n)) :=
 begin
-
 funext,
-simp_rw iterated_deriv,
+simp_rw iterated_deriv_eq_iterated_fderiv,
+
+have h1 := congr_fun (exp_series_ite_deriv' k) x,
+simp at h1,
+simp_rw h1,
+have h2 := λ n,  exp_iter_deriv_apply k n x,
+
+/-
 rw iterated_fderiv_tsum,
-have h1 := λ n, exp_iter_deriv k n,
+have h1 := λ n,  exp_iter_deriv_apply k n x,
 simp,
-all_goals{sorry},
+have H : (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * x * n))  =
+  ∑' (n : ℕ), (iterated_fderiv ℂ k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n))) x (λ(i : fin k), 1),
+  by {congr,
+  funext,
+  apply symm,
+  have h0 : complex.exp ( 2 *↑π * I * n * x) = complex.exp ( 2 *↑π * I * x * n), by {ring_nf},
+  rw ←h0,
+  rw ←(h1 n),
+  sorry,
+   },
+rw H,
+simp,
+
+all_goals{sorry},-/
 end
 
 
