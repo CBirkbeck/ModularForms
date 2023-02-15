@@ -9,7 +9,7 @@ import algebra.hom.group_action
 import linear_algebra.matrix
 import linear_algebra.matrix.general_linear_group
 import data.complex.basic
-import mod_forms.mat_m
+import mod_forms.modular_group.mat_m
 
 
 --import .matrix_groups

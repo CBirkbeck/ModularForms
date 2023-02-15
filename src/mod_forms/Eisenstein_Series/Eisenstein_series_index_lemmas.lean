@@ -1,5 +1,5 @@
 import tactic.pi_instances
-import mod_forms.mod_group
+import mod_forms.modular_group.mod_group
 import linear_algebra.matrix.general_linear_group
 import for_mathlib.mod_forms2
 import data.matrix.notation
@@ -15,7 +15,7 @@ import analysis.complex.upper_half_plane.topology
 import topology.compact_open
 import analysis.calculus.deriv
 import number_theory.modular
-import mod_forms.mat_m
+import mod_forms.modular_group.mat_m
 
 universes u v w
 

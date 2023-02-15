@@ -1,4 +1,4 @@
-import mod_forms.Eisenstein_series_index_lemmas
+import mod_forms.Eisenstein_Series.Eisenstein_series_index_lemmas
 import analysis.complex.upper_half_plane.basic
 import analysis.complex.upper_half_plane.metric
 import analysis.complex.upper_half_plane.topology

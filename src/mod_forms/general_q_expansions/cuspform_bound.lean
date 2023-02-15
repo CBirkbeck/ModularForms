@@ -1,6 +1,6 @@
 import for_mathlib.mod_forms2
 import number_theory.modular
-import mod_forms.q_expansion
+import mod_forms.general_q_expansions.q_expansion
 
 /-! **Bounds for the integrand of the Petersson product**
 
