@@ -461,7 +461,7 @@ have h1 := congr_fun (exp_series_ite_deriv' k) x,
 simp at h1,
 simp_rw h1,
 have h2 := λ n,  exp_iter_deriv_apply k n x,
-
+all_goals{sorry},
 /-
 rw iterated_fderiv_tsum,
 have h1 := λ n,  exp_iter_deriv_apply k n x,
