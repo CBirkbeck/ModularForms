@@ -1,4 +1,4 @@
-import mod_forms.Eisenstein_series
+import mod_forms.Eisenstein_Series.Eisenstein_series
 import for_mathlib.unform_limits_of_holomorphic
 import for_mathlib.mod_forms2
 import geometry.manifold.mfderiv
