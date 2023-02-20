@@ -464,6 +464,7 @@ begin
 
 end
 
+/-
 lemma has_fderiv_at_tsumd (x : ℍ):
   has_deriv_at (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))
     (∑' (n : ℕ), (deriv (λ z, complex.exp ( 2 *↑π * I * z * n)) x) ) x:=
@@ -487,7 +488,7 @@ begin
  rw has_deriv_at_deriv_iff,
  simp,
 end
-
+-/
 lemma exp_series_ite_deriv'' (k : ℕ)  :
   iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n)) =
    (∑' (n : ℕ), iterated_deriv k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n))  ) :=
@@ -523,6 +524,7 @@ begin
         using h'f k.succ n x hk } }
 -/
 
+/-
 ext1 z,
 have H:= exp_series_ite_deriv' k,
 simp_rw iterated_deriv,
@@ -542,7 +544,7 @@ have K := (continuous_multilinear_curry_left_equiv ℂ (λ (i : fin ((k)+1)), �
 
 simp_rw hkk at K,
 apply K,
-
+-/
 
   /- induction k with k IH,
  ext1 z,
