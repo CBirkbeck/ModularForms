@@ -24,6 +24,17 @@ def set_of_points_mod_n (E : elliptic_curve ℚ) (n : ℕ) := {P : (zmod n) × (
   let ⟨x, y⟩ := P in  y^2 + (rat_red E.a₁ n)* x * y+ (rat_red E.a₃ n) * y   =
   x^3 +(rat_red E.a₂ n)* x^2 + (rat_red E.a₄ n) * x + (rat_red E.a₆ n)}
 
+/--The set of point `mod n` is finite.-/
+instance ap_fintype (E : elliptic_curve ℚ) (p : ℕ+)  : fintype (set_of_points_mod_n E p) :=
+begin
+rw set_of_points_mod_n,
+apply subtype.fintype _,
+exact classical.dec_pred
+  (λ (x : zmod ↑p × zmod ↑p), x ∈ {P : zmod ↑p × zmod ↑p | set_of_points_mod_n._match_1 E ↑p P}),
+apply prod.fintype _ _,
+repeat {apply zmod.fintype},
+end
+
 def elliptic_curve.ap (E : elliptic_curve ℚ) (p : ℕ) : ℕ :=
   p-(cardinal.mk (set_of_points_mod_n E p)).to_nat
 

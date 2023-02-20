@@ -433,23 +433,137 @@ rw iterated_fderiv_tsum,
 all_goals{sorry},
 end
 
-lemma exp_series_ite_deriv'' (k : ℕ) :
-  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
-   λ z, (∑' (n : ℕ), iterated_deriv k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n)) z) :=
-begin
- induction k with k IH,
- simp,
- funext,
- have IH2:= congr_fun IH x,
- simp_rw iterated_deriv_succ,
- simp_rw deriv,
- have hf :  ∀ n, differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
- have := fderiv_tsum_apply _ hf,
+def uexp (n : ℕ) : ℍ → ℂ :=
+λ z, complex.exp ( 2 *↑π * I * z * n)
 
+
+--EXPERIMENTAL THINGS
+
+lemma has_fderiv_at_tsum_uexp (x : ℂ):
+  has_deriv_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
+    (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) x:=
+begin
+ have A : ∀ (x : ℂ ), tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, extend_by_zero (uexp n) z) x)
+    at_top (𝓝 (∑' (n : ℕ), (λ z, extend_by_zero (uexp n) z) x)),
+  { intro y,
+    apply summable.has_sum,
+    sorry },
+ apply has_deriv_at_of_tendsto_uniformly _ _ A,
+ use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, complex.exp ( 2 *↑π * I * z * i)) a) )),
+ have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))), by {sorry},
+ apply tendsto_uniformly_tsum hu,
+ simp,
+ sorry,
+ sorry,
+ apply eventually_of_forall,
+ intros t r,
+ apply has_deriv_at.sum,
+ intros q w,
+ rw has_deriv_at_deriv_iff,
+ simp,
+
+end
+
+lemma has_fderiv_at_tsumd (x : ℍ):
+  has_deriv_at (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))
+    (∑' (n : ℕ), (deriv (λ z, complex.exp ( 2 *↑π * I * z * n)) x) ) x:=
+begin
+  have A : ∀ (x : ℂ ), tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, complex.exp ( 2 *↑π * I * z * n)) x)
+    at_top (𝓝 (∑' (n : ℕ), (λ z, complex.exp ( 2 *↑π * I * z * n)) x)),
+  { intro y,
+    apply summable.has_sum,
+    sorry },
+ apply has_deriv_at_of_tendsto_uniformly _ _ A,
+ use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, complex.exp ( 2 *↑π * I * z * i)) a) )),
+ have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))), by {sorry},
+ apply tendsto_uniformly_tsum hu,
+ simp,
+ sorry,
+ sorry,
+ apply eventually_of_forall,
+ intros t r,
+ apply has_deriv_at.sum,
+ intros q w,
+ rw has_deriv_at_deriv_iff,
+ simp,
+end
+
+lemma exp_series_ite_deriv'' (k : ℕ)  :
+  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n)) =
+   (∑' (n : ℕ), iterated_deriv k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n))  ) :=
+begin
+
+  /- induction k with k IH,
+  funext,
+  simp,
+  rw tsum_apply,
+  sorry,
+   simp_rw iterated_deriv_succ,
+   funext,
+   simp_rw deriv,
+   rw IH,
+   have hf :  ∀ n, differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
+ have := fderiv_tsum_apply _ hf,
+ simp at this,
+
+  { ext1 x,
+    simp_rw [iterated_fderiv_zero_eq_comp],
+    exact (continuous_multilinear_curry_fin0 𝕜 E F).symm.to_continuous_linear_equiv.map_tsum },
+  { have h'k : (k : ℕ∞) < N,
+      from lt_of_lt_of_le (with_top.coe_lt_coe.2 (nat.lt_succ_self _)) hk,
+    have A : summable (λ n, iterated_fderiv 𝕜 k (f n) 0),
+      from summable_of_norm_bounded (v k) (hv k h'k.le) (λ n, h'f k n 0 h'k.le),
+    simp_rw [iterated_fderiv_succ_eq_comp_left, IH h'k.le],
+    rw fderiv_tsum (hv _ hk) (λ n, (hf n).differentiable_iterated_fderiv h'k) _ A,
+    { ext1 x,
+      exact (continuous_multilinear_curry_left_equiv 𝕜 (λ (i : fin (k + 1)), E) F)
+        .to_continuous_linear_equiv.map_tsum },
+    { assume n x,
+      simpa only [iterated_fderiv_succ_eq_comp_left, linear_isometry_equiv.norm_map]
+        using h'f k.succ n x hk } }
+-/
+
+ext1 z,
+have H:= exp_series_ite_deriv' k,
+simp_rw iterated_deriv,
+have h1 := congr_fun H z,
+have h2 : iterated_fderiv ℂ k (λ (z : ℂ), ∑' (n : ℕ), exp (2 * ↑π * I * z * ↑n)) z (λ (i : fin k), 1) =
+  ((λ (z : ℂ), ∑' (n : ℕ), iterated_fderiv ℂ k (λ (s : ℂ), exp (2 * ↑π * I * s * ↑n)) z) z) (λ (i : fin k), 1),
+by {rw h1,},
+rw h2,
+simp [H],
+simp at h1,
+rw tsum_apply,
+simp_rw iterated_deriv,
+rw continuous_multilinear_map.ext_iff at h1,
+have h11 := h1 (λ (i : fin k), 1),
+have K := (continuous_multilinear_curry_left_equiv ℂ (λ (i : fin ((k)+1)), ℂ) ℂ)
+        .to_continuous_linear_equiv,
+
+simp_rw hkk at K,
+apply K,
+
+
+  /- induction k with k IH,
+ ext1 z,
+ simp,
+ sorry,
+ simp_rw iterated_deriv_succ,
+ rw IH,
+ ext1 z,
+
+ rw tsum_apply,
+  simp_rw deriv,
+ have hf :  ∀ (n : ℕ) , differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
+ have := fderiv_tsum_apply _ hf,
+ simp at *,
+
+ have H2:= congr_fun (this _ _) z,
+-/
 all_goals{sorry},
 end
 
-
+#exit
 lemma exp_series_ite_deriv (k : ℕ) :
   iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
   λ z, (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * z * n)) :=
