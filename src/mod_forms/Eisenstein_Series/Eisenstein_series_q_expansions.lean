@@ -12,6 +12,8 @@ open modular_form Eisenstein_series upper_half_plane topological_space set measu
 interval_integral metric filter function complex
 open_locale interval real nnreal ennreal topology big_operators nat
 
+local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
+
 def Eisenstein_series (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
 
 local notation `G[` k `]` :=  (Eisenstein_series k)
@@ -439,29 +441,33 @@ def uexp (n : ℕ) : ℍ → ℂ :=
 
 --EXPERIMENTAL THINGS
 
-lemma has_fderiv_at_tsum_uexp (x : ℂ):
+lemma has_fderiv_at_tsum_uexp (x : ℂ) (hx : x ∈ ℍ'.1):
   has_deriv_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
     (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) x:=
 begin
- have A : ∀ (x : ℂ ), tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, extend_by_zero (uexp n) z) x)
+ have A : ∀ (x : ℂ), x ∈ ℍ'.1 →  tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, extend_by_zero (uexp n) z) x)
     at_top (𝓝 (∑' (n : ℕ), (λ z, extend_by_zero (uexp n) z) x)),
-  { intro y,
+  { intros y hy,
     apply summable.has_sum,
     sorry },
- apply has_deriv_at_of_tendsto_uniformly _ _ A,
- use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, complex.exp ( 2 *↑π * I * z * i)) a) )),
+ apply has_deriv_at_of_tendsto_uniformly_on upper_half_plane_is_open _ _ A,
+ exact hx,
+ use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, extend_by_zero (uexp i) z) a) )),
  have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))), by {sorry},
- apply tendsto_uniformly_tsum hu,
+ apply tendsto_uniformly_on_tsum hu,
  simp,
  sorry,
  sorry,
  apply eventually_of_forall,
- intros t r,
+ intros t r hr,
  apply has_deriv_at.sum,
  intros q w,
  rw has_deriv_at_deriv_iff,
  simp,
-
+ have h1 : differentiable_on ℂ (λ z, extend_by_zero (uexp q) z) ℍ', by {sorry},
+ apply h1.differentiable_at,
+ simp,
+sorry,
 end
 
 /-
