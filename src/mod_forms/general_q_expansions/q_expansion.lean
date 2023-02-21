@@ -5,7 +5,7 @@ import analysis.complex.upper_half_plane.basic
 import analysis.complex.upper_half_plane.topology
 import number_theory.modular
 import group_theory.index
-import mod_forms.Eisen_is_holo
+import mod_forms.Eisenstein_Series.Eisen_is_holo
 
 /-!
 # q-expansions of periodic functions
