@@ -272,10 +272,7 @@ begin
   simp_rw H1,},
 end
 
-example (a b : ℂ) : complex.abs(a*b)= complex.abs(a) * complex.abs(b) :=
-begin
-exact map_mul abs a b,
-end
+
 
 
 lemma upbnd (z : ℍ) (d : ℤ) : (d^2 : ℝ) * rfunct(z )^2 ≤ complex.abs (z^2-d^2) :=
@@ -435,9 +432,41 @@ rw iterated_fderiv_tsum,
 all_goals{sorry},
 end
 
-def uexp (n : ℕ) : ℍ → ℂ :=
+def uexp (n : ℕ) : ℍ' → ℂ :=
 λ z, complex.exp ( 2 *↑π * I * z * n)
 
+
+
+lemma exp_upper_half_plane_lt_one (z : ℍ) : complex.abs (complex.exp ( 2 *↑π * I * z)) < 1 :=
+begin
+rw ←upper_half_plane.re_add_im,
+rw mul_add,
+rw exp_add,
+simp only [absolute_value.map_mul],
+have h1 : complex.abs (exp (2 * ↑π * I * ↑(z.re))) = complex.abs (exp ((2 * ↑π  * ↑(z.re)) * I )),
+  by {ring_nf},
+rw h1,
+norm_cast,
+have := abs_exp_of_real_mul_I (2 * π * z.re),
+rw this,
+simp only [of_real_mul, of_real_bit0, of_real_one, one_mul],
+have h2 :  complex.abs (exp (2 * ↑π * I * (↑(z.im) * I))) =
+  complex.abs (exp (2 * ↑π * (↑(z.im) * I^2))), by {ring_nf,},
+rw h2,
+simp only [I_sq, mul_neg, mul_one],
+norm_cast,
+simp only [real.abs_exp, real.exp_lt_one_iff, right.neg_neg_iff],
+apply mul_pos,
+apply real.two_pi_pos,
+exact z.2,
+end
+
+
+lemma exp_upper_half_plane_le (z : ℍ) (n : ℕ) : complex.abs (complex.exp ( 2 *↑π * I * z * n))
+  ≤ complex.abs (complex.exp ( -2 *↑π * I * n)) :=
+begin
+sorry,
+end
 
 --EXPERIMENTAL THINGS
 
@@ -453,21 +482,35 @@ begin
  apply has_deriv_at_of_tendsto_uniformly_on upper_half_plane_is_open _ _ A,
  exact hx,
  use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, extend_by_zero (uexp i) z) a) )),
- have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))), by {sorry},
+ have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))),
+ by {sorry},
  apply tendsto_uniformly_on_tsum hu,
  simp,
- sorry,
- sorry,
+ intros n x hx,
+ have er := ext_by_zero_eq' ℍ' (uexp n) x hx,
+ have dereq : (deriv (λ z, extend_by_zero (uexp n) z) x) =
+  (deriv (λ z, complex.exp ( 2 *↑π * I * z * n) ) x) , by {
+    apply filter.eventually_eq.deriv_eq,
+     have hh:= upper_half_plane_is_open.mem_nhds hx,
+    apply eventually_eq_of_mem hh,
+    simp_rw [eq_on, extend_by_zero, uexp],
+    simp,
+    intros y hy hhy,
+    contradiction,},
+   simp_rw dereq,
+   simp,
+   sorry,
+ exact complete_of_proper,
  apply eventually_of_forall,
  intros t r hr,
  apply has_deriv_at.sum,
  intros q w,
  rw has_deriv_at_deriv_iff,
  simp,
+ have hh:= upper_half_plane_is_open.mem_nhds hr,
  have h1 : differentiable_on ℂ (λ z, extend_by_zero (uexp q) z) ℍ', by {sorry},
  apply h1.differentiable_at,
- simp,
-sorry,
+ apply hh,
 end
 
 /-
@@ -998,29 +1041,6 @@ intro h,
 apply h.subtype,
 end
 
-lemma exp_upper_half_plane_lt_one (z : ℍ) : complex.abs (complex.exp ( 2 *↑π * I * z)) < 1 :=
-begin
-rw ←upper_half_plane.re_add_im,
-rw mul_add,
-rw exp_add,
-simp only [absolute_value.map_mul],
-have h1 : complex.abs (exp (2 * ↑π * I * ↑(z.re))) = complex.abs (exp ((2 * ↑π  * ↑(z.re)) * I )),
-  by {ring_nf},
-rw h1,
-norm_cast,
-have := abs_exp_of_real_mul_I (2 * π * z.re),
-rw this,
-simp only [of_real_mul, of_real_bit0, of_real_one, one_mul],
-have h2 :  complex.abs (exp (2 * ↑π * I * (↑(z.im) * I))) =
-  complex.abs (exp (2 * ↑π * (↑(z.im) * I^2))), by {ring_nf,},
-rw h2,
-simp only [I_sq, mul_neg, mul_one],
-norm_cast,
-simp only [real.abs_exp, real.exp_lt_one_iff, right.neg_neg_iff],
-apply mul_pos,
-apply real.two_pi_pos,
-exact z.2,
-end
 
 
 lemma summable_pow_mul_exp  {k : ℕ} (z : ℍ) :
