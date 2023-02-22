@@ -462,11 +462,9 @@ exact z.2,
 end
 
 
-lemma exp_upper_half_plane_le (z : ℍ) (n : ℕ) : complex.abs (complex.exp ( 2 *↑π * I * z * n))
-  ≤ complex.abs (complex.exp ( -2 *↑π * I * n)) :=
-begin
-sorry,
-end
+
+
+
 
 --EXPERIMENTAL THINGS
 
@@ -482,8 +480,8 @@ begin
  apply has_deriv_at_of_tendsto_uniformly_on upper_half_plane_is_open _ _ A,
  exact hx,
  use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, extend_by_zero (uexp i) z) a) )),
- have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * I * n))),
- by {sorry},
+ have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * complex.exp ( -2 *↑π * n))),
+ by {sorry}, --this is wrong, find a good bound
  apply tendsto_uniformly_on_tsum hu,
  simp,
  intros n x hx,
