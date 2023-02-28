@@ -604,11 +604,133 @@ apply cray n,
 end
 
 
+lemma has_deriv_at_tsum_fun  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
+   (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
+   (hu : ∀ K ⊆ s, is_compact K →
+    (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
+    (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
+  has_deriv_at (λ z, ∑' (n : ℕ), f n z)
+    (∑' (n : ℕ), (deriv (λ z, f n z) x) ) x:=
+begin
+ have A : ∀ (x : ℂ), x ∈ s→  tendsto (λ (t : finset ℕ), ∑ n in t, (λ z,f n z) x)
+    at_top (𝓝 (∑' (n : ℕ), (λ z, f n z) x)),
+  { intros y hy,
+    apply summable.has_sum,
+    simp,
+    apply hf y hy},
+ apply has_deriv_at_of_tendsto_locally_uniformly_on hs _ _ A,
+ exact hx,
+ use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, f i z) a) )),
+ rw tendsto_locally_uniformly_on_iff_forall_is_compact hs,
+ intros K hK1 hK2,
+ have HU := hu K hK1 hK2,
+  obtain ⟨u, hu1,hu2⟩:= HU,
+ apply tendsto_uniformly_on_tsum hu1,
+ intros n x hx,
+simp,
+apply hu2 n ⟨x, hx⟩,
+ exact complete_of_proper,
+ apply eventually_of_forall,
+ intros t r hr,
+ apply has_deriv_at.sum,
+ intros q w,
+ rw has_deriv_at_deriv_iff,
+ simp,
+ apply hf2 q ⟨r, hr⟩,
+end
+
+
+lemma has_deriv_within_at_tsum_fun  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
+   (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
+   (hu : ∀ K ⊆ s, is_compact K →
+    (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
+    (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
+  has_deriv_within_at (λ z, ∑' (n : ℕ), f n z)
+    (∑' (n : ℕ), (deriv (λ z, f n z) x) ) s x:=
+begin
+exact (has_deriv_at_tsum_fun f hs x hx hf hu hf2).has_deriv_within_at,
+end
+
+lemma has_deriv_within_tsum_uexp (x : ℍ') :
+  has_deriv_within_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
+    (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) ℍ' x:=
+begin
+exact (has_fderiv_at_tsum_uexp x.1 x.2).has_deriv_within_at,
+end
+
+lemma has_deriv_within_at_tsum_fun'  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
+   (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
+   (hu : ∀ K ⊆ s, is_compact K →
+    (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
+    (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
+  has_deriv_within_at (λ z, ∑' (n : ℕ), f n z)
+    (∑' (n : ℕ), (deriv_within (λ z, f n z) s x) ) s x:=
+begin
+have := has_deriv_within_at_tsum_fun f hs x hx hf hu hf2,
+convert this,
+simp,
+ext1 n,
+apply differentiable_at.deriv_within ,
+apply hf2 n ⟨x,hx⟩,
+apply (is_open.unique_diff_within_at hs hx),
+end
+
+lemma has_deriv_within_tsum_uexp' (x : ℍ') :
+  has_deriv_within_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
+    (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' x) ) ℍ' x:=
+begin
+have :=has_deriv_within_tsum_uexp x,
+convert this,
+simp,
+ext1 n,
+apply differentiable_at.deriv_within ,
+apply (malandro n).differentiable_at,
+have hh:= upper_half_plane_is_open.mem_nhds (x.2),
+apply hh,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2),
+end
+
 lemma deriv_at_tsum_uexp (x : ℂ) (hx : x ∈ ℍ'.1):
   deriv (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) x =
     (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) :=
 begin
 exact (has_fderiv_at_tsum_uexp x hx).deriv,
+end
+
+lemma deriv_tsum_fun'  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
+   (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
+   (hu : ∀ K ⊆ s, is_compact K →
+    (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
+    (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
+  deriv_within (λ z, ∑' (n : ℕ), f n z) s x =
+    (∑' (n : ℕ), (deriv_within (λ z, f n z) s x) ):=
+begin
+apply has_deriv_within_at.deriv_within (has_deriv_within_at_tsum_fun' f hs x hx hf hu hf2)
+ (is_open.unique_diff_within_at hs hx),
+end
+
+
+lemma deriv_within_tsum_uexp (x : ℍ') :
+  deriv_within (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' x =
+    (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' x) ) :=
+begin
+apply has_deriv_within_at.deriv_within (has_deriv_within_tsum_uexp' x)
+  (is_open.unique_diff_within_at upper_half_plane_is_open x.2),
+end
+
+
+lemma deriv_within_tsum_uexpa  :
+  deriv_within (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ'  =
+    (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' ) ) :=
+begin
+ext1 x,
+by_cases hx : x ∈ ℍ'.1,
+have := deriv_within_tsum_uexp ⟨x, hx⟩,
+simp at *,
+simp_rw this,
+apply symm,
+rw tsum_apply,
+all_goals{sorry},
 end
 
 /-
@@ -637,19 +759,65 @@ begin
 end
 -/
 
-lemma exp_series_ite_deriv_uexp (k : ℕ) (x : ℂ) (hx : x ∈ ℍ'.1)  :
+lemma iter_deriv_withn_exp (k n : ℕ) (y : ℍ') :
+ iterated_deriv_within k (extend_by_zero (uexp n)) upper_half_space y =
+  (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * y)  :=
+begin
+rw iterated_deriv_within,
+simp,
+rw ←exp_iter_deriv_apply k n y,
+simp,
+apply congr_fun,
+have := iterated_fderiv_within_of_is_open k upper_half_plane_is_open,
+rw eq_on at this,
+have h := this y.2,
+simp at *,
+rw ← h,
+have hL : ∀ y : ℂ, y∈ ℍ'.1 →  (extend_by_zero (uexp n))  y = complex.exp ( 2 *↑π * I * n * y), by {sorry},
+have := iterated_fderiv_within_congr
+(is_open.unique_diff_on upper_half_plane_is_open) hL y.2,
+simp at *,
+
+
+sorry,
+
+
+end
+
+lemma exp_series_ite_deriv_uexp (k : ℕ) (x : ℍ')  :
   iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' x =
    (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ),  extend_by_zero (uexp n) s) ℍ' x ) :=
 begin
-induction k with k IH,
+induction k with k IH generalizing x,
 
   simp,
 
+simp at *,
+
+rw iterated_deriv_within_succ,
+
+have HH: deriv_within (iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' ) ℍ' x =
+  deriv_within (λ z,
+  (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ),  extend_by_zero (uexp n) s) ℍ' z)) ℍ' x,
+ by {
+  apply deriv_within_congr,
+  apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+  intros y hy,
+  apply IH ⟨y,hy⟩,
+  apply IH x,},
 
 
-
-   simp_rw iterated_deriv_within_succ,
-   have h := deriv_at_tsum_uexp x hx,
+simp at *,
+simp_rw HH,
+rw deriv_tsum_fun',
+simp,
+apply tsum_congr,
+intro b,
+rw iterated_deriv_within_succ,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+exact upper_half_plane_is_open,
+exact x.2,
+intros y hy,
 
 sorry,
 
