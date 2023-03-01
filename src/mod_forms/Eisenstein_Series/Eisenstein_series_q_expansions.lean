@@ -438,7 +438,10 @@ def uexp (n : ℕ) : ℍ' → ℂ :=
 
 def funn (K: set ℂ) (hk1 : K ⊆ upper_half_space) (hk2 : is_compact K) : continuous_map K ℂ :={
   to_fun := (λ (r : K),  complex.exp ( 2 *↑π * I * r ))
+}
 
+def funn_n (K: set ℂ) (hk1 : K ⊆ upper_half_space) (hk2 : is_compact K) (n k : ℕ) : continuous_map K ℂ :={
+  to_fun := (λ (r : K), (2 * π * I * n)^k * complex.exp ( 2 *↑π * I * r ))
 }
 
 
@@ -540,8 +543,6 @@ begin
 
  rw tendsto_locally_uniformly_on_iff_forall_is_compact upper_half_plane_is_open,
  intros K hK1 hK2,
-  have HR2: ∀ (n : ℕ), continuous (λ (r : K),  complex.exp ( 2 *↑π * I * r * n)),
-  by {intro n, continuity,},
   haveI : compact_space K, by {rw ←is_compact_univ_iff, rw is_compact_iff_is_compact_univ at hK2, apply hK2, },
   have hg := bounded_continuous_function.mk_of_compact (funn K hK1 hK2),
   set r : ℝ := ‖bounded_continuous_function.mk_of_compact (funn K hK1 hK2) ‖,
@@ -774,13 +775,107 @@ have h := this y.2,
 simp at *,
 rw ← h,
 have hL : ∀ y : ℂ, y∈ ℍ'.1 →  (extend_by_zero (uexp n))  y = complex.exp ( 2 *↑π * I * n * y), by {sorry},
-have := iterated_fderiv_within_congr
+have := @iterated_fderiv_within_congr ℂ _ _ _ _ _ _ _ _ _ _ _ k
 (is_open.unique_diff_on upper_half_plane_is_open) hL y.2,
 simp at *,
+rw this,
+exact normed_field.to_normed_space,
+end
+
+lemma summable_iter_derv' (k : ℕ) (y : ℍ'):
+  summable (λ (n : ℕ), (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * y)) :=
+begin
+apply summable_of_summable_norm,
+simp,
+have hv1 : ∀ b : ℕ ,   (b : ℝ)^k * (complex.abs (complex.exp ( 2 *↑π * I * y)))^(b : ℕ) =
+ b^k * complex.abs (complex.exp ( 2 *↑π * I * b * y)), by {intro b,
+  rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf},
+simp_rw mul_pow,
+have h2ne : (2 : ℝ)^k ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
+simp_rw mul_assoc,
+rw ←(summable_mul_left_iff h2ne),
+rw ←(summable_mul_left_iff _),
+simp_rw ←mul_assoc,
+apply summable.congr _ hv1,
+apply summable_pow_mul_geometric_of_norm_lt_1,
+simp,
+apply exp_upper_half_plane_lt_one,
+exact topological_ring.mk,
+apply pow_ne_zero,
+simpa using real.pi_ne_zero,
+end
 
 
+lemma summable_iter_derv (k : ℕ) (y : ℍ'):
+  summable (λ (n : ℕ), iterated_deriv_within k (extend_by_zero (uexp n)) ℍ' y) :=
+begin
+apply summable.congr (summable_iter_derv' k y),
+intro b,
+funext,
+simp,
+apply (iter_deriv_withn_exp k b y).symm,
+end
+
+lemma iter_deriv_comp_bound (K : set ℂ) (hK1 : K ⊆ ℍ') (hK2 : is_compact K) (k : ℕ) :
+(∃ (u : ℕ → ℝ), ( summable u ∧
+∀ (n : ℕ) (r : K), (complex.abs (deriv (iterated_deriv_within k (extend_by_zero (uexp n)) ℍ') r)) ≤ u n )) :=
+begin
+  haveI : compact_space K, by {rw ←is_compact_univ_iff, rw is_compact_iff_is_compact_univ at hK2, apply hK2, },
+  have hg := bounded_continuous_function.mk_of_compact (funn K hK1 hK2),
+  set r : ℝ := ‖bounded_continuous_function.mk_of_compact (funn K hK1 hK2) ‖,
+  have hr : ‖ bounded_continuous_function.mk_of_compact (funn K hK1 hK2)‖ < 1, by {rw bounded_continuous_function.norm_lt_iff_of_compact,
+    intro x, rw bounded_continuous_function.mk_of_compact_apply, simp_rw funn,
+    simp only [continuous_map.coe_mk, norm_eq_abs], apply exp_upper_half_plane_lt_one ⟨x.1 ,(hK1 x.2)⟩, linarith, },
+
+have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
+
+  have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^k * r^n)),
+ by {
+  simp,
+  simp_rw mul_pow,
+  have h2ne : (2 : ℝ)^k ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
+simp_rw mul_assoc,
+rw ←(summable_mul_left_iff h2ne),
+rw ←(summable_mul_left_iff _),
+apply summable_pow_mul_geometric_of_norm_lt_1,
+simp at *,
+apply hr,
+exact topological_ring.mk,
+apply pow_ne_zero,
+simpa using real.pi_ne_zero,},
+
+
+/-
+refine ⟨λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n), hu,_⟩,
+intros n t,
+have h1:= iter_deriv_withn_exp (k+1) n (⟨t.1,hK1 t.2⟩),
+
+
+simp only [subtype.coe_mk, absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat,
+  abs_norm_eq_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg, subtype.val_eq_coe] at *,
+
+
+rw h1,
+simp,
+have ineqe : complex.abs (complex.exp (2 * π * I * n * t)) ≤ ‖ r ‖^n, by {
+  have hw1 : complex.abs (complex.exp (2 * π * I * n * t)) = complex.abs (complex.exp (2 * π * I * t))^n,
+  by { rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf,},
+  rw hw1,
+  apply le_of_pow',
+  apply complex.abs.nonneg,
+  simp only [norm_nonneg],
+  have := bounded_continuous_function.norm_coe_le_norm
+    (bounded_continuous_function.mk_of_compact (funn K hK1 hK2)) t,
+    simp at *,
+   exact this},
+apply mul_le_mul,
+simp,
+simp at ineqe,
+convert ineqe,
+apply complex.abs.nonneg,
+apply pow_nonneg (cray n),
+-/
 sorry,
-
 
 end
 
@@ -818,7 +913,9 @@ apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
 exact upper_half_plane_is_open,
 exact x.2,
 intros y hy,
-
+apply summable_iter_derv k ⟨y,hy⟩,
+intros K hK1 hK2,
+simp,
 sorry,
 
 end
