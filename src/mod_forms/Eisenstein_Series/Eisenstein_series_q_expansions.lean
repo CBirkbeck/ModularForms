@@ -1124,6 +1124,24 @@ intro b,
 apply exp_iter_deriv_within k b x.2,
 end
 
+lemma iter_der_within_add' (k : ℕ) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
+ iterated_deriv_within k (λ z : ℂ, c + f z) ℍ' x =  iterated_deriv_within k f ℍ' x :=
+begin
+simp,
+induction k with k IH,
+
+sorry,
+end
+
+#exit
+
+lemma iter_der_within_add (k : ℕ) (x : ℍ') :
+   iterated_deriv_within k (λ z, ↑π * I - (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
+   (2 *  ↑π * I)*∑' (n : ℕ), (2 *  ↑π * I)^k *complex.exp ( 2 *↑π * I * n * x) :=
+begin
+sorry,
+
+end
 
 lemma series_eql (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
