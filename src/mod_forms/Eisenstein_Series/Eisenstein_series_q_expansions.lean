@@ -53,7 +53,36 @@ simp,
 ring_exp,
 end
 
+lemma iterated_deriv_within_of_is_open (n m : ℕ)  :
+  eq_on (iterated_deriv_within n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) ℍ')
+    (iterated_deriv n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s))) ℍ' :=
+begin
+ induction n with n IH,
+  { assume x hx,
+    simp  },
+  { assume x hx,
+    rw [iterated_deriv_succ, iterated_deriv_within_succ],
+    dsimp,
+    rw deriv_within_of_open  upper_half_plane_is_open,
+    apply filter.eventually_eq.deriv_eq,
+    filter_upwards [upper_half_plane_is_open.mem_nhds hx],
+    apply IH,
+    exact hx,
+    apply is_open.unique_diff_within_at upper_half_plane_is_open hx,
 
+    }
+
+end
+
+lemma exp_iter_deriv_within (n m : ℕ)   :
+  eq_on (iterated_deriv_within n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) ℍ')
+  (λ t, (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * t)) ℍ':=
+begin
+apply eq_on.trans (iterated_deriv_within_of_is_open n m),
+rw eq_on,
+intros x hx,
+apply congr_fun (exp_iter_deriv n m),
+end
 
 lemma exp_iter_deriv_apply (n m : ℕ) (x : ℂ) :
   (iterated_fderiv ℂ n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s))) x (λ(i : fin n), 1) =
@@ -340,7 +369,7 @@ have h1 : (λ n : ℕ+, (1/((z : ℂ)-n)+1/(z+n))) = (λ (n : ℕ+), (2*z)*(1/(z
   funext,
   field_simp,
   rw one_div_add_one_div,
-  ring,
+  ring_nf,
   have h2 :=upp_half_not_ints z (n),
   simp  [h2] at *,
   rw sub_eq_zero,
@@ -422,15 +451,6 @@ begin
 sorry,
 end
 
-lemma exp_series_ite_deriv' (k : ℕ) :
-  iterated_fderiv ℂ k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
-   λ z, (∑' (n : ℕ), iterated_fderiv ℂ k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n)) z) :=
-begin
-
-rw iterated_fderiv_tsum,
-
-all_goals{sorry},
-end
 
 def uexp (n : ℕ) : ℍ' → ℂ :=
 λ z, complex.exp ( 2 *↑π * I * z * n)
@@ -486,7 +506,7 @@ simpa using real.pi_ne_zero,
 end
 
 
-
+/-
 lemma sum_aux2  : ∀ (z  : ℍ'),  summable (λ (n : ℕ),  uexp n z) :=
 begin
 intro z,
@@ -500,6 +520,7 @@ apply summable.congr _ hv1,
 simp,
 apply exp_upper_half_plane_lt_one z,
 end
+-/
 
 --EXPERIMENTAL THINGS
 lemma cray (n : ℕ) : 0 ≤ 2 * |π| * n :=
@@ -510,7 +531,7 @@ linarith,
 simp,
 apply nat.cast_nonneg,
 end
-
+/-
 lemma malandro (q : ℕ) : differentiable_on ℂ (λ z, extend_by_zero (uexp q) z) ℍ' :=
 begin
 have h : differentiable_on ℂ (λ z, complex.exp (2 * π * I * z * q)) ℍ', by {
@@ -527,48 +548,44 @@ lemma has_fderiv_at_tsum_uexp (x : ℂ) (hx : x ∈ ℍ'.1):
   has_deriv_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
     (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) x:=
 begin
- have A : ∀ (x : ℂ), x ∈ ℍ'.1 →  tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, extend_by_zero (uexp n) z) x)
-    at_top (𝓝 (∑' (n : ℕ), (λ z, extend_by_zero (uexp n) z) x)),
+  have A : ∀ (x : ℂ), x ∈ ℍ'.1 →  tendsto (λ (t : finset ℕ), ∑ n in t, (λ z, extend_by_zero (uexp n) z) x)
+  at_top (𝓝 (∑' (n : ℕ), (λ z, extend_by_zero (uexp n) z) x)),
   { intros y hy,
-    apply summable.has_sum,
-    apply summable.congr,
-    apply sum_aux2 ,
-    refine (⟨y, hy⟩ : ℍ'),
-    intro b,
-    simp,
-    simp_rw ext_by_zero_eq'  ℍ' (uexp b) y hy},
- apply has_deriv_at_of_tendsto_locally_uniformly_on upper_half_plane_is_open _ _ A,
- exact hx,
- use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, extend_by_zero (uexp i) z) a) )),
-
- rw tendsto_locally_uniformly_on_iff_forall_is_compact upper_half_plane_is_open,
- intros K hK1 hK2,
+  apply summable.has_sum,
+  apply summable.congr,
+  apply sum_aux2 ,
+  refine (⟨y, hy⟩ : ℍ'),
+  intro b,
+  simp,
+  simp_rw ext_by_zero_eq'  ℍ' (uexp b) y hy},
+  apply has_deriv_at_of_tendsto_locally_uniformly_on upper_half_plane_is_open _ _ A,
+  exact hx,
+  use (λ n : finset ℕ, λ  a, (∑ i in n, (deriv (λ z, extend_by_zero (uexp i) z) a) )),
+  rw tendsto_locally_uniformly_on_iff_forall_is_compact upper_half_plane_is_open,
+  intros K hK1 hK2,
   haveI : compact_space K, by {rw ←is_compact_univ_iff, rw is_compact_iff_is_compact_univ at hK2, apply hK2, },
   have hg := bounded_continuous_function.mk_of_compact (funn K hK1 hK2),
   set r : ℝ := ‖bounded_continuous_function.mk_of_compact (funn K hK1 hK2) ‖,
-  have hr : ‖ bounded_continuous_function.mk_of_compact (funn K hK1 hK2)‖ < 1, by {rw bounded_continuous_function.norm_lt_iff_of_compact,
-    intro x, rw bounded_continuous_function.mk_of_compact_apply, simp_rw funn,
-    simp only [continuous_map.coe_mk, norm_eq_abs], apply exp_upper_half_plane_lt_one ⟨x.1 ,(hK1 x.2)⟩, linarith, },
-
-have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
-
+  have hr : ‖ bounded_continuous_function.mk_of_compact (funn K hK1 hK2)‖ < 1,
+  by {rw bounded_continuous_function.norm_lt_iff_of_compact,
+  intro x, rw bounded_continuous_function.mk_of_compact_apply, simp_rw funn,
+  simp only [continuous_map.coe_mk, norm_eq_abs], apply exp_upper_half_plane_lt_one ⟨x.1 ,(hK1 x.2)⟩, linarith, },
+  have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
   have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n) * r^n)),
- by {apply sum_aux r hr hr2, },
- apply tendsto_uniformly_on_tsum hu,
- intros n x hx,
-
- have dereq : (deriv (λ z, extend_by_zero (uexp n) z) x) =
+  by {apply sum_aux r hr hr2, },
+  apply tendsto_uniformly_on_tsum hu,
+  intros n x hx,
+  have dereq : (deriv (λ z, extend_by_zero (uexp n) z) x) =
   (deriv (λ z, complex.exp ( 2 *↑π * I * z * n) ) x) , by {
-    apply filter.eventually_eq.deriv_eq,
-     have hh:= upper_half_plane_is_open.mem_nhds (hK1 hx),
-    apply eventually_eq_of_mem hh,
-    simp_rw [eq_on, extend_by_zero, uexp],
-    simp only [subtype.coe_mk, dite_eq_ite, ite_eq_left_iff],
-    intros y hy hhy,
-    contradiction,},
-simp_rw [dereq],
-
-have ineqe : complex.abs (complex.exp (2 * π * I * x * n)) ≤ ‖ r ‖^n, by {
+  apply filter.eventually_eq.deriv_eq,
+  have hh:= upper_half_plane_is_open.mem_nhds (hK1 hx),
+  apply eventually_eq_of_mem hh,
+  simp_rw [eq_on, extend_by_zero, uexp],
+  simp only [subtype.coe_mk, dite_eq_ite, ite_eq_left_iff],
+  intros y hy hhy,
+  contradiction,},
+  simp_rw [dereq],
+  have ineqe : complex.abs (complex.exp (2 * π * I * x * n)) ≤ ‖ r ‖^n, by {
   have hw1 : complex.abs (complex.exp (2 * π * I * x * n)) = complex.abs (complex.exp (2 * π * I * x))^n,
   by { rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf,},
   rw hw1,
@@ -576,34 +593,36 @@ have ineqe : complex.abs (complex.exp (2 * π * I * x * n)) ≤ ‖ r ‖^n, by 
   apply complex.abs.nonneg,
   simp only [norm_nonneg],
   have := bounded_continuous_function.norm_coe_le_norm
-    (bounded_continuous_function.mk_of_compact (funn K hK1 hK2)) (⟨x, hx⟩ : K),
-    simp at *,
-   exact this},
-simp only [deriv_cexp, differentiable_at.mul, differentiable_at_const, differentiable_at_id', deriv_mul_const_field',
-  deriv_const_mul_field', deriv_id'', mul_one, norm_eq_abs, absolute_value.map_mul, complex.abs_two, abs_of_real, abs_I,
-  abs_cast_nat, complex.abs_pow, abs_norm_eq_norm],
-rw mul_comm,
-apply mul_le_mul,
-simp only,
-simp only [bounded_continuous_function.norm_mk_of_compact, absolute_value.map_mul, complex.abs_two, abs_of_real, abs_I, mul_one,
-  abs_cast_nat, complex.abs_pow, abs_norm_eq_norm, deriv_cexp, differentiable_at.mul, differentiable_at_const,
-  differentiable_at_id', deriv_mul_const_field', deriv_const_mul_field', deriv_id'', norm_nonneg, norm_norm] at *,
-exact ineqe,
-apply complex.abs.nonneg,
-apply cray n,
- exact complete_of_proper,
- apply eventually_of_forall,
- intros t r hr,
- apply has_deriv_at.sum,
- intros q w,
- rw has_deriv_at_deriv_iff,
- simp,
- have hh:= upper_half_plane_is_open.mem_nhds hr,
- have h1 : differentiable_on ℂ (λ z, extend_by_zero (uexp q) z) ℍ', by {apply malandro q},
- apply h1.differentiable_at,
- apply hh,
+  (bounded_continuous_function.mk_of_compact (funn K hK1 hK2)) (⟨x, hx⟩ : K),
+  simp at *,
+  exact this},
+  simp only [deriv_cexp, differentiable_at.mul, differentiable_at_const, differentiable_at_id',
+  deriv_mul_const_field', deriv_const_mul_field', deriv_id'', mul_one, norm_eq_abs,
+  absolute_value.map_mul, complex.abs_two, abs_of_real, abs_I, abs_cast_nat, complex.abs_pow,
+  abs_norm_eq_norm],
+  rw mul_comm,
+  apply mul_le_mul,
+  simp only,
+  simp only [bounded_continuous_function.norm_mk_of_compact, absolute_value.map_mul,
+  complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat, complex.abs_pow, abs_norm_eq_norm,
+   deriv_cexp, differentiable_at.mul, differentiable_at_const, differentiable_at_id',
+   deriv_mul_const_field', deriv_const_mul_field', deriv_id'', norm_nonneg, norm_norm] at *,
+  exact ineqe,
+  apply complex.abs.nonneg,
+  apply cray n,
+  exact complete_of_proper,
+  apply eventually_of_forall,
+  intros t r hr,
+  apply has_deriv_at.sum,
+  intros q w,
+  rw has_deriv_at_deriv_iff,
+  simp,
+  have hh:= upper_half_plane_is_open.mem_nhds hr,
+  have h1 : differentiable_on ℂ (λ z, extend_by_zero (uexp q) z) ℍ', by {apply malandro q},
+  apply h1.differentiable_at,
+  apply hh,
 end
-
+-/
 
 lemma has_deriv_at_tsum_fun  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
    (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
@@ -652,20 +671,23 @@ begin
 exact (has_deriv_at_tsum_fun f hs x hx hf hu hf2).has_deriv_within_at,
 end
 
+/-
 lemma has_deriv_within_tsum_uexp (x : ℍ') :
   has_deriv_within_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
     (∑' (n : ℕ), (deriv (λ z, extend_by_zero (uexp n) z) x) ) ℍ' x:=
 begin
 exact (has_fderiv_at_tsum_uexp x.1 x.2).has_deriv_within_at,
 end
+-/
 
-lemma has_deriv_within_at_tsum_fun'  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
-   (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
-   (hu : ∀ K ⊆ s, is_compact K →
-    (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
-    (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
+lemma has_deriv_within_at_tsum_fun'  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ)
+  (hx  : x ∈ s)
+  (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
+  (hu : ∀ K ⊆ s, is_compact K →
+  (∃ (u : ℕ → ℝ), ( summable u ∧ ∀ (n : ℕ) (k : K), (complex.abs (deriv (f n) k)) ≤ u n )))
+  (hf2 : ∀ (n : ℕ) (r : s), differentiable_at ℂ (f n) r ):
   has_deriv_within_at (λ z, ∑' (n : ℕ), f n z)
-    (∑' (n : ℕ), (deriv_within (λ z, f n z) s x) ) s x:=
+  (∑' (n : ℕ), (deriv_within (λ z, f n z) s x) ) s x:=
 begin
 have := has_deriv_within_at_tsum_fun f hs x hx hf hu hf2,
 convert this,
@@ -676,6 +698,7 @@ apply hf2 n ⟨x,hx⟩,
 apply (is_open.unique_diff_within_at hs hx),
 end
 
+/-
 lemma has_deriv_within_tsum_uexp' (x : ℍ') :
   has_deriv_within_at (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z)
     (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' x) ) ℍ' x:=
@@ -697,7 +720,7 @@ lemma deriv_at_tsum_uexp (x : ℂ) (hx : x ∈ ℍ'.1):
 begin
 exact (has_fderiv_at_tsum_uexp x hx).deriv,
 end
-
+-/
 lemma deriv_tsum_fun'  (f : ℕ → ℂ → ℂ) {s : set ℂ} (hs : is_open s) (x : ℂ) (hx  : x ∈ s)
    (hf : ∀ (y : ℂ), y ∈ s → summable (λ (n : ℕ), f n y ))
    (hu : ∀ K ⊆ s, is_compact K →
@@ -710,7 +733,7 @@ apply has_deriv_within_at.deriv_within (has_deriv_within_at_tsum_fun' f hs x hx 
  (is_open.unique_diff_within_at hs hx),
 end
 
-
+/-
 lemma deriv_within_tsum_uexp (x : ℍ') :
   deriv_within (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' x =
     (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' x) ) :=
@@ -720,21 +743,6 @@ apply has_deriv_within_at.deriv_within (has_deriv_within_tsum_uexp' x)
 end
 
 
-lemma deriv_within_tsum_uexpa  :
-  deriv_within (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ'  =
-    (∑' (n : ℕ), (deriv_within (λ z, extend_by_zero (uexp n) z) ℍ' ) ) :=
-begin
-ext1 x,
-by_cases hx : x ∈ ℍ'.1,
-have := deriv_within_tsum_uexp ⟨x, hx⟩,
-simp at *,
-simp_rw this,
-apply symm,
-rw tsum_apply,
-all_goals{sorry},
-end
-
-/-
 lemma has_fderiv_at_tsumd (x : ℍ):
   has_deriv_at (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))
     (∑' (n : ℕ), (deriv (λ z, complex.exp ( 2 *↑π * I * z * n)) x) ) x:=
@@ -758,7 +766,7 @@ begin
  rw has_deriv_at_deriv_iff,
  simp,
 end
--/
+
 
 lemma iter_deriv_withn_exp (k n : ℕ) (y : ℍ') :
  iterated_deriv_within k (extend_by_zero (uexp n)) upper_half_space y =
@@ -774,13 +782,21 @@ rw eq_on at this,
 have h := this y.2,
 simp at *,
 rw ← h,
-have hL : ∀ y : ℂ, y∈ ℍ'.1 →  (extend_by_zero (uexp n))  y = complex.exp ( 2 *↑π * I * n * y), by {sorry},
+have hL : ∀ y : ℂ, y∈ ℍ'.1 →  (extend_by_zero (uexp n))  y = complex.exp ( 2 *↑π * I * n * y), by {
+  intros y hy,
+  simp_rw uexp,
+  have hhh :  2 *↑π * I * n * y =  2 *↑π * I * y * n, by {ring},
+  simp_rw hhh,
+ have := ext_by_zero_eq' ℍ' (λ t : ℍ', complex.exp ( 2 *↑π * I * t * n))  y hy,
+ simp at *,
+ exact this},
 have := @iterated_fderiv_within_congr ℂ _ _ _ _ _ _ _ _ _ _ _ k
 (is_open.unique_diff_on upper_half_plane_is_open) hL y.2,
 simp at *,
 rw this,
 exact normed_field.to_normed_space,
 end
+-/
 
 lemma summable_iter_derv' (k : ℕ) (y : ℍ'):
   summable (λ (n : ℕ), (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * y)) :=
@@ -805,7 +821,7 @@ apply pow_ne_zero,
 simpa using real.pi_ne_zero,
 end
 
-
+/-
 lemma summable_iter_derv (k : ℕ) (y : ℍ'):
   summable (λ (n : ℕ), iterated_deriv_within k (extend_by_zero (uexp n)) ℍ' y) :=
 begin
@@ -816,6 +832,88 @@ simp,
 apply (iter_deriv_withn_exp k b y).symm,
 end
 
+
+lemma der_iter_eq_der_aux (k n : ℕ) (r : ↥upper_half_space) :
+  differentiable_at ℂ (λ (z : ℂ), iterated_deriv_within k (extend_by_zero (uexp n)) upper_half_space z) ↑r :=
+begin
+have h1:= iter_deriv_withn_exp (k) n r,
+simp at *,
+have hh : differentiable_on ℂ (λ t, (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * t)) ℍ', by {
+  apply differentiable.differentiable_on, simp,},
+have h : differentiable_on ℂ  (iterated_deriv_within k (λ z, complex.exp (2 * π * I * n * z)) ℍ') ℍ', by {
+  apply hh.congr, intros x hx, have := (exp_iter_deriv_within k n) hx, exact this,},
+
+apply differentiable_on.differentiable_at,
+apply differentiable_on.congr  h,
+have := iter_deriv_withn_exp ,
+intros x hx,
+have h2:= this k n ⟨x, hx⟩,
+simp at h2,
+rw h2,
+apply symm,
+apply  (exp_iter_deriv_within k n) hx,
+apply upper_half_plane_is_open.mem_nhds r.2,
+end
+
+lemma der_iter_eq_der (k n : ℕ) (r : ↥upper_half_space) :
+ deriv (iterated_deriv_within k (extend_by_zero (uexp n)) ℍ') ↑r =
+ deriv_within (iterated_deriv_within k (extend_by_zero (uexp n)) ℍ' ) ℍ' ↑r :=
+begin
+simp,
+apply symm,
+apply differentiable_at.deriv_within,
+apply der_iter_eq_der_aux,
+apply is_open.unique_diff_on upper_half_plane_is_open ,
+apply r.2,
+end
+
+lemma der_iter_eq_der' (k n : ℕ) (r : ↥upper_half_space) :
+ deriv (iterated_deriv_within k (extend_by_zero (uexp n)) ℍ') ↑r =
+ iterated_deriv_within (k+1) (extend_by_zero (uexp n)) ℍ'  ↑r :=
+begin
+rw der_iter_eq_der k n r,
+rw iterated_deriv_within_succ,
+apply is_open.unique_diff_on upper_half_plane_is_open ,
+apply r.2,
+end
+-/
+
+lemma der_iter_eq_der_aux2 (k n : ℕ) (r : ↥upper_half_space) :
+  differentiable_at ℂ (λ (z : ℂ), iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) upper_half_space z) ↑r :=
+begin
+simp at *,
+have hh : differentiable_on ℂ (λ t, (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * t)) ℍ', by {
+  apply differentiable.differentiable_on, simp,},
+apply differentiable_on.differentiable_at,
+apply differentiable_on.congr  hh,
+intros x hx,
+apply exp_iter_deriv_within k n hx,
+apply upper_half_plane_is_open.mem_nhds r.2,
+end
+
+lemma der_iter_eq_der2 (k n : ℕ) (r : ↥upper_half_space) :
+ deriv (iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ') ↑r =
+ deriv_within (iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ' ) ℍ' ↑r :=
+begin
+simp,
+apply symm,
+apply differentiable_at.deriv_within,
+apply der_iter_eq_der_aux2,
+apply is_open.unique_diff_on upper_half_plane_is_open ,
+apply r.2,
+end
+
+lemma der_iter_eq_der2' (k n : ℕ) (r : ↥upper_half_space) :
+ deriv (iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ') ↑r =
+ iterated_deriv_within (k+1) (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ'  ↑r :=
+begin
+rw der_iter_eq_der2 k n r,
+rw iterated_deriv_within_succ,
+apply is_open.unique_diff_on upper_half_plane_is_open ,
+apply r.2,
+end
+
+/-
 lemma iter_deriv_comp_bound (K : set ℂ) (hK1 : K ⊆ ℍ') (hK2 : is_compact K) (k : ℕ) :
 (∃ (u : ℕ → ℝ), ( summable u ∧
 ∀ (n : ℕ) (r : K), (complex.abs (deriv (iterated_deriv_within k (extend_by_zero (uexp n)) ℍ') r)) ≤ u n )) :=
@@ -826,14 +924,12 @@ begin
   have hr : ‖ bounded_continuous_function.mk_of_compact (funn K hK1 hK2)‖ < 1, by {rw bounded_continuous_function.norm_lt_iff_of_compact,
     intro x, rw bounded_continuous_function.mk_of_compact_apply, simp_rw funn,
     simp only [continuous_map.coe_mk, norm_eq_abs], apply exp_upper_half_plane_lt_one ⟨x.1 ,(hK1 x.2)⟩, linarith, },
-
 have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
-
-  have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^k * r^n)),
+  have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n)),
  by {
   simp,
   simp_rw mul_pow,
-  have h2ne : (2 : ℝ)^k ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
+  have h2ne : (2 : ℝ)^(k+1) ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
 simp_rw mul_assoc,
 rw ←(summable_mul_left_iff h2ne),
 rw ←(summable_mul_left_iff _),
@@ -843,18 +939,14 @@ apply hr,
 exact topological_ring.mk,
 apply pow_ne_zero,
 simpa using real.pi_ne_zero,},
-
-
-/-
 refine ⟨λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n), hu,_⟩,
 intros n t,
+have go:= (der_iter_eq_der' k n ⟨t.1, hK1 t.2⟩),
+simp at *,
+simp_rw go,
 have h1:= iter_deriv_withn_exp (k+1) n (⟨t.1,hK1 t.2⟩),
-
-
 simp only [subtype.coe_mk, absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat,
   abs_norm_eq_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg, subtype.val_eq_coe] at *,
-
-
 rw h1,
 simp,
 have ineqe : complex.abs (complex.exp (2 * π * I * n * t)) ≤ ‖ r ‖^n, by {
@@ -874,23 +966,74 @@ simp at ineqe,
 convert ineqe,
 apply complex.abs.nonneg,
 apply pow_nonneg (cray n),
--/
-sorry,
+end -/
 
+lemma iter_deriv_comp_bound2 (K : set ℂ) (hK1 : K ⊆ ℍ') (hK2 : is_compact K) (k : ℕ) :
+(∃ (u : ℕ → ℝ), ( summable u ∧
+∀ (n : ℕ) (r : K),
+(complex.abs (deriv (iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ') r)) ≤ u n )) :=
+begin
+  haveI : compact_space K, by {rw ←is_compact_univ_iff, rw is_compact_iff_is_compact_univ at hK2, apply hK2, },
+  have hg := bounded_continuous_function.mk_of_compact (funn K hK1 hK2),
+  set r : ℝ := ‖bounded_continuous_function.mk_of_compact (funn K hK1 hK2) ‖,
+  have hr : ‖ bounded_continuous_function.mk_of_compact (funn K hK1 hK2)‖ < 1,
+  by {rw bounded_continuous_function.norm_lt_iff_of_compact,
+    intro x, rw bounded_continuous_function.mk_of_compact_apply, simp_rw funn,
+    simp only [continuous_map.coe_mk, norm_eq_abs],
+    apply exp_upper_half_plane_lt_one ⟨x.1 ,(hK1 x.2)⟩, linarith, },
+have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
+  have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n)),
+ by {
+  simp,
+  simp_rw mul_pow,
+  have h2ne : (2 : ℝ)^(k+1) ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
+simp_rw mul_assoc,
+rw ←(summable_mul_left_iff h2ne),
+rw ←(summable_mul_left_iff _),
+apply summable_pow_mul_geometric_of_norm_lt_1,
+simp at *,
+apply hr,
+exact topological_ring.mk,
+apply pow_ne_zero,
+simpa using real.pi_ne_zero,},
+refine ⟨λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n), hu,_⟩,
+intros n t,
+have go:= (der_iter_eq_der2' k n ⟨t.1, hK1 t.2⟩),
+simp at *,
+simp_rw go,
+have h1:= exp_iter_deriv_within (k+1) n (hK1 t.2),
+simp only [subtype.coe_mk, absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat,
+  abs_norm_eq_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg, subtype.val_eq_coe] at *,
+rw h1,
+simp,
+have ineqe : complex.abs (complex.exp (2 * π * I * n * t)) ≤ ‖ r ‖^n, by {
+  have hw1 : complex.abs (complex.exp (2 * π * I * n * t)) = complex.abs (complex.exp (2 * π * I * t))^n,
+  by { rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf,},
+  rw hw1,
+  apply le_of_pow',
+  apply complex.abs.nonneg,
+  simp only [norm_nonneg],
+  have := bounded_continuous_function.norm_coe_le_norm
+    (bounded_continuous_function.mk_of_compact (funn K hK1 hK2)) t,
+    simp at *,
+   exact this},
+apply mul_le_mul,
+simp,
+simp at ineqe,
+convert ineqe,
+apply complex.abs.nonneg,
+apply pow_nonneg (cray n),
 end
 
+/-
 lemma exp_series_ite_deriv_uexp (k : ℕ) (x : ℍ')  :
   iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' x =
    (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ),  extend_by_zero (uexp n) s) ℍ' x ) :=
 begin
 induction k with k IH generalizing x,
-
-  simp,
-
-simp at *,
-
+simp only [iterated_deriv_within_zero],
+simp only [subtype.coe_mk] at *,
 rw iterated_deriv_within_succ,
-
 have HH: deriv_within (iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' ) ℍ' x =
   deriv_within (λ z,
   (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ),  extend_by_zero (uexp n) s) ℍ' z)) ℍ' x,
@@ -900,12 +1043,10 @@ have HH: deriv_within (iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_
   intros y hy,
   apply IH ⟨y,hy⟩,
   apply IH x,},
-
-
-simp at *,
+simp only [subtype.coe_mk] at *,
 simp_rw HH,
 rw deriv_tsum_fun',
-simp,
+simp only,
 apply tsum_congr,
 intro b,
 rw iterated_deriv_within_succ,
@@ -915,123 +1056,76 @@ exact x.2,
 intros y hy,
 apply summable_iter_derv k ⟨y,hy⟩,
 intros K hK1 hK2,
-simp,
-sorry,
-
+simp only,
+apply iter_deriv_comp_bound K hK1 hK2 k,
+apply der_iter_eq_der_aux,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
 end
 
 
-lemma exp_series_ite_deriv'' (k : ℕ)  :
-  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n)) =
-   (∑' (n : ℕ), iterated_deriv k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n))  ) :=
+lemma exp_series_ite_deriv_uexp' (k : ℕ) (x : ℍ')  :
+  iterated_deriv_within k (λ z, ∑' (n : ℕ), extend_by_zero (uexp n) z) ℍ' x =
+   (∑' (n : ℕ), (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * x)) :=
 begin
+rw exp_series_ite_deriv_uexp k x,
+apply tsum_congr,
+intro b,
+apply iter_deriv_withn_exp ,
+end -/
 
-   induction k with k IH,
-  funext,
-  simp,
-  rw tsum_apply,
-  sorry,
-   simp_rw iterated_deriv_succ,
-   funext,
-   simp_rw deriv,
-   rw IH,
-   have hf :  ∀ n, differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
- have := fderiv_tsum_apply _ hf,
- simp at this,
-/-
-  { ext1 x,
-    simp_rw [iterated_fderiv_zero_eq_comp],
-    exact (continuous_multilinear_curry_fin0 𝕜 E F).symm.to_continuous_linear_equiv.map_tsum },
-  { have h'k : (k : ℕ∞) < N,
-      from lt_of_lt_of_le (with_top.coe_lt_coe.2 (nat.lt_succ_self _)) hk,
-    have A : summable (λ n, iterated_fderiv 𝕜 k (f n) 0),
-      from summable_of_norm_bounded (v k) (hv k h'k.le) (λ n, h'f k n 0 h'k.le),
-    simp_rw [iterated_fderiv_succ_eq_comp_left, IH h'k.le],
-    rw fderiv_tsum (hv _ hk) (λ n, (hf n).differentiable_iterated_fderiv h'k) _ A,
-    { ext1 x,
-      exact (continuous_multilinear_curry_left_equiv 𝕜 (λ (i : fin (k + 1)), E) F)
-        .to_continuous_linear_equiv.map_tsum },
-    { assume n x,
-      simpa only [iterated_fderiv_succ_eq_comp_left, linear_isometry_equiv.norm_map]
-        using h'f k.succ n x hk } }
--/
 
-/-
-ext1 z,
-have H:= exp_series_ite_deriv' k,
-simp_rw iterated_deriv,
-have h1 := congr_fun H z,
-have h2 : iterated_fderiv ℂ k (λ (z : ℂ), ∑' (n : ℕ), exp (2 * ↑π * I * z * ↑n)) z (λ (i : fin k), 1) =
-  ((λ (z : ℂ), ∑' (n : ℕ), iterated_fderiv ℂ k (λ (s : ℂ), exp (2 * ↑π * I * s * ↑n)) z) z) (λ (i : fin k), 1),
-by {rw h1,},
-rw h2,
-simp [H],
-simp at h1,
-rw tsum_apply,
-simp_rw iterated_deriv,
-rw continuous_multilinear_map.ext_iff at h1,
-have h11 := h1 (λ (i : fin k), 1),
-have K := (continuous_multilinear_curry_left_equiv ℂ (λ (i : fin ((k)+1)), ℂ) ℂ)
-        .to_continuous_linear_equiv,
-
-simp_rw hkk at K,
-apply K,
--/
-
-  /- induction k with k IH,
- ext1 z,
- simp,
- sorry,
- simp_rw iterated_deriv_succ,
- rw IH,
- ext1 z,
-
- rw tsum_apply,
-  simp_rw deriv,
- have hf :  ∀ (n : ℕ) , differentiable ℂ (iterated_deriv k (λ z, complex.exp ( 2 *↑π * I * z * n))), by {sorry},
- have := fderiv_tsum_apply _ hf,
- simp at *,
-
- have H2:= congr_fun (this _ _) z,
--/
-all_goals{sorry},
-end
-
-#exit
-lemma exp_series_ite_deriv (k : ℕ) :
-  iterated_deriv k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n))=
-  λ z, (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * z * n)) :=
+lemma exp_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ')  :
+  iterated_deriv_within k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
+   (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ),  complex.exp ( 2 *↑π * I * n * s)) ℍ' x ) :=
 begin
-funext,
-simp_rw iterated_deriv_eq_iterated_fderiv,
-
-have h1 := congr_fun (exp_series_ite_deriv' k) x,
-simp at h1,
-simp_rw h1,
-have h2 := λ n,  exp_iter_deriv_apply k n x,
-all_goals{sorry},
-/-
-rw iterated_fderiv_tsum,
-have h1 := λ n,  exp_iter_deriv_apply k n x,
-simp,
-have H : (∑' (n : ℕ), (2 *  ↑π * I*n)^k * complex.exp ( 2 *↑π * I * x * n))  =
-  ∑' (n : ℕ), (iterated_fderiv ℂ k (λ (s : ℂ), complex.exp ( 2 *↑π * I * s * n))) x (λ(i : fin k), 1),
-  by {congr,
-  funext,
-  apply symm,
-  have h0 : complex.exp ( 2 *↑π * I * n * x) = complex.exp ( 2 *↑π * I * x * n), by {ring_nf},
-  rw ←h0,
-  rw ←(h1 n),
-  sorry,
-   },
-rw H,
-simp,
-
-all_goals{sorry},-/
+induction k with k IH generalizing x,
+simp only [iterated_deriv_within_zero],
+simp only [subtype.coe_mk] at *,
+rw iterated_deriv_within_succ,
+have HH: deriv_within (iterated_deriv_within k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' ) ℍ' x =
+  deriv_within (λ z,
+  (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ), complex.exp ( 2 *↑π * I * n * s)) ℍ' z)) ℍ' x,
+ by {
+  apply deriv_within_congr,
+  apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+  intros y hy,
+  apply IH ⟨y,hy⟩,
+  apply IH x,},
+simp only [subtype.coe_mk] at *,
+simp_rw HH,
+rw deriv_tsum_fun',
+simp only,
+apply tsum_congr,
+intro b,
+rw iterated_deriv_within_succ,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+exact upper_half_plane_is_open,
+exact x.2,
+intros y hy,
+apply summable.congr (summable_iter_derv' k ⟨y,hy⟩ ),
+intro b,
+apply symm,
+apply exp_iter_deriv_within k b hy,
+intros K hK1 hK2,
+simp only,
+apply iter_deriv_comp_bound2 K hK1 hK2 k,
+apply der_iter_eq_der_aux2,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
 end
-#exit
 
-lemma series_eql (z : ℂ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
+
+lemma exp_series_ite_deriv_uexp'' (k : ℕ) (x : ℍ')  :
+  iterated_deriv_within k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
+   (∑' (n : ℕ), (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * x)) :=
+begin
+rw exp_series_ite_deriv_uexp2 k x,
+apply tsum_congr,
+intro b,
+apply exp_iter_deriv_within k b x.2,
+end
+
+
+lemma series_eql (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
 begin
 sorry,
@@ -1046,11 +1140,6 @@ begin
 
 sorry,
 end
-
-
-#exit
-
-
 
 
 
@@ -1573,7 +1662,28 @@ funext,
 simp_rw mul_assoc},
 end
 
+lemma a1 {k : ℕ} (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * ↑z * e * c)) :=
+begin
 
+have h2ne : (e : ℂ)^(k-1) ≠ 0, by {apply pow_ne_zero, simp,},
+rw ←(summable_mul_left_iff h2ne),
+
+have hv1 : ∀ (b : ℕ+),  (complex.exp ( 2 *↑π * I * z * e * b)) =
+  ( (complex.exp ( 2 *↑π * I * z * e)))^(b : ℕ), by {intro b,
+    rw ←exp_nat_mul, ring_nf},
+simp_rw hv1,
+apply nat_pos_tsum',
+simp,
+have hv2 : ∀ (b : ℕ+), complex.abs (complex.exp ( 2 *↑π * I * z * b)) =
+  (complex.abs (complex.exp ( 2 *↑π * I * z)))^(b : ℕ), by {intro b,
+  rw ←complex.abs_pow, congr, rw ←exp_nat_mul, ring_nf},
+simp at *,
+rw hv2 e,
+apply pow_lt_one,
+apply complex.abs.nonneg,
+apply exp_upper_half_plane_lt_one,
+simp,
+end
 
 lemma a2 {k : ℕ} (e : ℕ+)  (z : ℍ) : summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * c*  ↑z * e)) :=
 begin
