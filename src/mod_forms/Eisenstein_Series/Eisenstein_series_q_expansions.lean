@@ -1124,18 +1124,26 @@ intro b,
 apply exp_iter_deriv_within k b x.2,
 end
 
-lemma iter_der_within_add' (k : ℕ) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
+lemma iter_der_within_add' (k : ℕ) (hk : 0 < k) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
  iterated_deriv_within k (λ z : ℂ, c + f z) ℍ' x =  iterated_deriv_within k f ℍ' x :=
 begin
 simp,
 induction k with k IH,
+exfalso,
+simpa using hk,
+rw iterated_deriv_within_succ',
+have : (deriv_within (λ (z : ℂ), c + f z) upper_half_space)   = (deriv_within f upper_half_space) ,
+by {apply deriv_within_const_add, apply is_open.unique_diff_within_at upper_half_plane_is_open x.2},
+simp_rw this,
+rw ←iterated_deriv_within_succ',
+simp,
 
 sorry,
 end
 
 #exit
 
-lemma iter_der_within_add (k : ℕ) (x : ℍ') :
+lemma iter_der_within_add (k : ℕ+) (x : ℍ') :
    iterated_deriv_within k (λ z, ↑π * I - (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
    (2 *  ↑π * I)*∑' (n : ℕ), (2 *  ↑π * I)^k *complex.exp ( 2 *↑π * I * n * x) :=
 begin
