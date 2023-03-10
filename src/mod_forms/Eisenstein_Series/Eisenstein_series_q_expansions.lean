@@ -1124,32 +1124,144 @@ intro b,
 apply exp_iter_deriv_within k b x.2,
 end
 
-lemma iter_der_within_add' (k : ℕ) (hk : 0 < k) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
- iterated_deriv_within k (λ z : ℂ, c + f z) ℍ' x =  iterated_deriv_within k f ℍ' x :=
+lemma exp_series_ite_deriv_uexp''' (k : ℕ)   :
+  eq_on (iterated_deriv_within k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ')
+   (λ (x : ℂ), (∑' (n : ℕ), (2 *↑π * I * n)^k * complex.exp ( 2 *↑π * I * n * x))) ℍ' :=
+begin
+intros x hx,
+apply exp_series_ite_deriv_uexp'' k ⟨x,hx⟩,
+end
+
+lemma iter_der_eq_on_cong (f g : ℂ → ℂ) (k : ℕ) (S : set ℂ) (hs : is_open S)
+(hfg : eq_on f g S ) : eq_on (iterated_deriv_within k f S) (iterated_deriv_within k g S) S :=
+begin
+induction k with k IH generalising f g,
+simp only [iterated_deriv_within_zero],
+apply hfg,
+intros x hx,
+rw iterated_deriv_within_succ,
+rw iterated_deriv_within_succ,
+apply deriv_within_congr,
+apply is_open.unique_diff_within_at hs hx,
+apply IH,
+apply IH hx,
+all_goals {apply is_open.unique_diff_within_at hs hx},
+end
+
+
+lemma iter_der_within_const_neg (k : ℕ) (hk : 0 < k) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
+ iterated_deriv_within k (λ z : ℂ, c - f z) ℍ' x =  iterated_deriv_within k (λ z, - f z) ℍ' x :=
 begin
 simp,
 induction k with k IH,
 exfalso,
 simpa using hk,
 rw iterated_deriv_within_succ',
-have : (deriv_within (λ (z : ℂ), c + f z) upper_half_space)   = (deriv_within f upper_half_space) ,
-by {apply deriv_within_const_add, apply is_open.unique_diff_within_at upper_half_plane_is_open x.2},
-simp_rw this,
-rw ←iterated_deriv_within_succ',
-simp,
+rw iterated_deriv_within_succ',
+apply iter_der_eq_on_cong,
+apply upper_half_plane_is_open,
+intros y hy,
+rw deriv_within.neg,
+apply deriv_within_const_sub,
+repeat {apply is_open.unique_diff_within_at upper_half_plane_is_open hy},
+apply x.2,
+apply is_open.unique_diff_on upper_half_plane_is_open,
+apply x.2,
+apply is_open.unique_diff_on upper_half_plane_is_open,
+apply x.2,
+end
 
+lemma iter_der_within_const_mul (k : ℕ)  (x : ℍ') (c : ℂ) (f : ℂ → ℂ)
+  (hf : cont_diff_on ℂ k f ℍ') :
+ iterated_deriv_within k (c • f) ℍ' x =  c • (iterated_deriv_within k f ℍ' x) :=
+begin
+simp_rw iterated_deriv_within,
+rw iterated_fderiv_within_const_smul_apply,
+simp only [continuous_multilinear_map.smul_apply] at *,
+apply hf,
+apply is_open.unique_diff_on upper_half_plane_is_open,
+apply x.2,
+end
+
+lemma iter_der_within_const_mul' (k : ℕ)  (x : ℍ') (c : ℂ) (f : ℂ → ℂ)
+  (hf : cont_diff_on ℂ k f ℍ') :
+ iterated_deriv_within k (λ z, c * f z) ℍ' x =  c * (iterated_deriv_within k f ℍ' x) :=
+begin
+simpa using (iter_der_within_const_mul k x c f hf),
+
+end
+
+
+lemma iter_der_within_neg (k : ℕ)  (x : ℍ') (f : ℂ → ℂ)
+  (hf : cont_diff_on ℂ k f ℍ') :
+ iterated_deriv_within k (-f) ℍ' x =  - (iterated_deriv_within k f ℍ' x) :=
+begin
+rw neg_eq_neg_one_mul,
+nth_rewrite 1 neg_eq_neg_one_mul,
+rw ← smul_eq_mul,
+rw ← smul_eq_mul,
+apply iter_der_within_const_mul k x (-1),
+apply hf,
+end
+
+lemma iter_der_within_neg' (k : ℕ)  (x : ℍ') (f : ℂ → ℂ)
+  (hf : cont_diff_on ℂ k f ℍ') :
+ iterated_deriv_within k (λ z, -f z) ℍ' x =  - (iterated_deriv_within k f ℍ' x) :=
+begin
+convert iter_der_within_neg k x f hf,
+end
+
+lemma uexp_cont_diff_on (k n : ℕ) :
+cont_diff_on ℂ k (λ(z : ℂ), complex.exp ( 2 *↑π * I * n * z)) ℍ' :=
+begin
+apply cont_diff.cont_diff_on,
+apply cont_diff.cexp,
+apply cont_diff.mul,
+apply cont_diff_const,
+apply cont_diff_id,
+end
+
+lemma tsum_uexp_cont_diff_on (k : ℕ) :
+cont_diff_on ℂ k (λ(z : ℂ), ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' :=
+begin
+rw cont_diff_on_iff_continuous_on_differentiable_on,
+split,
+intros m hm,
+simp,
+have:= continuous_on.congr _  (exp_series_ite_deriv_uexp''' k),
+simp at this,
+apply this,
+
+apply continuous_on_tsum,
 sorry,
+
+end
+
+lemma iter_der_within_add (k : ℕ+) (x : ℍ') :
+   iterated_deriv_within k (λ z, ↑π * I - (2 *  ↑π * I) • ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
+   -(2 *  ↑π * I)*∑' (n : ℕ), (2 *  ↑π * I*n)^(k : ℕ) *complex.exp ( 2 *↑π * I * n * x) :=
+begin
+rw iter_der_within_const_neg k k.2 x,
+simp,
+have := iter_der_within_neg' k x (λ z, (2 *  ↑π * I) • ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)),
+simp at this,
+rw this,
+rw neg_eq_neg_one_mul,
+have t2:=  iter_der_within_const_mul' k x (2 *  ↑π * I)
+  (λ z,  ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)),
+simp at t2,
+rw t2,
+simp,
+have h3:= exp_series_ite_deriv_uexp'' k x,
+simp at h3,
+left,
+apply h3,
+apply tsum_uexp_cont_diff_on k,
+have := cont_diff_on.const_smul (2 *  ↑π * I) (tsum_uexp_cont_diff_on k),
+simpa using this,
 end
 
 #exit
-
-lemma iter_der_within_add (k : ℕ+) (x : ℍ') :
-   iterated_deriv_within k (λ z, ↑π * I - (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' x =
-   (2 *  ↑π * I)*∑' (n : ℕ), (2 *  ↑π * I)^k *complex.exp ( 2 *↑π * I * n * x) :=
-begin
-sorry,
-
-end
 
 lemma series_eql (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
