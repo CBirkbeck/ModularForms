@@ -97,7 +97,19 @@ apply  (pow_ne_zero (k+1) (upper_ne_int ⟨x, hx⟩ d)),
 apply is_open.unique_diff_within_at upper_half_plane_is_open hx,
 apply IH hx,
 repeat {apply is_open.unique_diff_within_at upper_half_plane_is_open hx},
+end
 
+lemma aut_iter_deriv' (d : ℤ) (k : ℕ) :
+  eq_on (iterated_deriv_within k (λ (z : ℂ), 1/(z - d)) ℍ')
+    (λ (t : ℂ),  (-1)^k*(k)! * (1/(t - d)^(k+1))) ℍ' :=
+begin
+intros x hx,
+
+have h1 : (λ z : ℂ, 1/(z-d)) = (λ z : ℂ, 1/(z + -d)), by {refl},
+rw h1,
+have h2: x-d= x+ -d, by {refl},
+simp_rw h2,
+simpa using aut_iter_deriv (-d : ℤ) k hx,
 end
 
 lemma iterated_deriv_within_of_is_open (n m : ℕ)  :
@@ -467,27 +479,62 @@ apply pow_pos,
 simp only [coe_coe, nat.cast_pos, pnat.pos],
 end
 
-lemma Eis_summ (k : ℕ) (hk : 3 ≤ k) (z : ℍ)  :
-  summable (λ (p : ℤ × ℤ), 1 / (((p.fst) : ℂ) * ↑z + ↑(p.snd)) ^ k) :=
+lemma aux_rie_sum (z : ℍ) (k : ℕ) (hk : 2 ≤ k) :
+ summable (λ (n : ℕ+), complex.abs (rfunct(z)^k* n^k)⁻¹) :=
 begin
-apply Eisenstein_series_is_summable _ _ hk,
+simp only [coe_coe, mul_inv_rev, absolute_value.map_mul, map_inv₀, complex.abs_pow, abs_cast_nat,
+abs_of_real],
+rw ← summable_mul_right_iff,
+have hk2 : 1 < (k : ℤ), by {linarith},
+have := int_Riemann_zeta_is_summmable k hk2,
+rw rie at this,
+simp only [int.cast_coe_nat, real.rpow_nat_cast, one_div] at this,
+apply this.subtype,
+simp,
+apply pow_ne_zero,
+have hr := (rfunct_pos z),
+norm_num,
+apply norm_num.ne_zero_of_pos _ hr,
 end
 
-lemma summablemente  (k : ℕ) (hk : 3 ≤ k) (z : ℍ):
-  summable (λ (d : ℤ), 1/((z : ℂ)-d)^k) :=
+
+lemma lhs_summable_2 (z : ℍ) (k : ℕ) (hk : 2 ≤ k) : summable (λ(n : ℕ+), (1/((z : ℂ)-n)^k)) :=
 begin
-  have H:=Eis_summ k hk z,
-  have H1 := summable.prod_factor H 1,
-  simp at H1,
-  have:= summable_neg (λ n, ((z+n)^k)⁻¹),
-  simp at this,
-  convert this H1,
-  funext,
-  simp,
-  congr,
+have := Eise_on_square_is_bounded k z,
+have h1 : summable (λ (n : ℕ+), complex.abs (rfunct(z)^k* n^k)⁻¹), by {exact aux_rie_sum z k hk},
+apply summable_of_norm_bounded _ h1,
+intros i,
+simp only [coe_coe, one_div, norm_eq_abs, map_inv₀, complex.abs_pow, mul_inv_rev,
+absolute_value.map_mul, abs_cast_nat, abs_of_real],
+have h2 := this (i : ℕ) (⟨1,-i⟩: ℤ × ℤ),
+simp only [coe_coe, square_mem, int.nat_abs_one, int.nat_abs_neg, int.nat_abs_of_nat,
+max_eq_right_iff, algebra_map.coe_one,one_mul, int.cast_neg, int.cast_coe_nat, complex.abs_pow,
+absolute_value.map_mul, abs_of_real, abs_cast_nat, mul_inv_rev] at h2,
+apply h2,
+exact pnat.one_le i,
+exact pnat.one_le i,
+exact complete_of_proper,
+
 end
 
+lemma lhs_summable_2' (z : ℍ) (k : ℕ) (hk : 2 ≤ k) : summable (λ(n : ℕ+), (1/((z : ℂ)+n)^k)) :=
+begin
+have := Eise_on_square_is_bounded k z,
+have h1 : summable (λ (n : ℕ+), complex.abs (rfunct(z)^k* n^k)⁻¹), by {exact aux_rie_sum z k hk},
+apply summable_of_norm_bounded _ h1,
+intros i,
+simp only [coe_coe, one_div, norm_eq_abs, map_inv₀, complex.abs_pow, mul_inv_rev,
+absolute_value.map_mul, abs_cast_nat, abs_of_real],
+have h2 := this (i : ℕ) (⟨1,i⟩: ℤ × ℤ),
+simp only [coe_coe, square_mem, int.nat_abs_one, int.nat_abs_neg, int.nat_abs_of_nat,
+max_eq_right_iff, algebra_map.coe_one,one_mul, int.cast_neg, int.cast_coe_nat, complex.abs_pow,
+absolute_value.map_mul, abs_of_real, abs_cast_nat, mul_inv_rev] at h2,
+apply h2,
+exact pnat.one_le i,
+exact pnat.one_le i,
+exact complete_of_proper,
 
+end
 
 
 lemma tsums_added (k : ℕ) (hk : 3 ≤ k)(z : ℍ ):
@@ -497,6 +544,7 @@ begin
 
 sorry,
 end
+
 
 
 def uexp (n : ℕ) : ℍ' → ℂ :=
@@ -892,7 +940,7 @@ all_goals {apply is_open.unique_diff_within_at hs hx},
 end
 
 
-lemma iter_deriv_within_add (k : ℕ) (hk : 0 < k) (x : ℍ') (f g : ℂ → ℂ)
+lemma iter_deriv_within_add (k : ℕ) (x : ℍ') (f g : ℂ → ℂ)
 (hf : cont_diff_on ℂ k f ℍ')  (hg : cont_diff_on ℂ k g ℍ') :
  iterated_deriv_within k (f + g) ℍ' x =  iterated_deriv_within k f ℍ' x +
   iterated_deriv_within k g ℍ' x :=
@@ -906,7 +954,6 @@ apply is_open.unique_diff_on upper_half_plane_is_open,
 apply x.2,
 
 end
-
 
 
 lemma iter_der_within_const_neg (k : ℕ) (hk : 0 < k) (x : ℍ') (c : ℂ) (f : ℂ → ℂ) :
@@ -971,6 +1018,22 @@ begin
 convert iter_der_within_neg k x f hf,
 end
 
+lemma iter_deriv_within_sub (k : ℕ) (x : ℍ') (f g : ℂ → ℂ)
+(hf : cont_diff_on ℂ k f ℍ')  (hg : cont_diff_on ℂ k g ℍ') :
+ iterated_deriv_within k (f - g) ℍ' x =  iterated_deriv_within k f ℍ' x -
+  iterated_deriv_within k g ℍ' x :=
+begin
+have h1 : f - g = f + (-g), by {refl},
+rw h1,
+rw iter_deriv_within_add k x,
+rw iter_der_within_neg  k x g hg,
+refl,
+apply hf,
+apply cont_diff_on.neg hg,
+end
+
+
+
 lemma uexp_cont_diff_on (k n : ℕ) :
 cont_diff_on ℂ k (λ(z : ℂ), complex.exp ( 2 *↑π * I * n * z)) ℍ' :=
 begin
@@ -979,6 +1042,20 @@ apply cont_diff.cexp,
 apply cont_diff.mul,
 apply cont_diff_const,
 apply cont_diff_id,
+end
+
+lemma aut_cont_diff_on (d : ℤ) (k : ℕ): cont_diff_on ℂ k (λ z : ℂ, 1/(z-d)) ℍ' :=
+begin
+simp,
+apply cont_diff_on.inv ,
+apply cont_diff_on.sub,
+apply cont_diff_on_id,
+apply cont_diff_on_const,
+intros x hx,
+have := upper_ne_int ⟨x, hx⟩ (-d),
+convert this,
+simp,
+refl,
 end
 
 lemma continuous_on_tsum'
@@ -1062,18 +1139,69 @@ have := cont_diff_on.const_smul (2 *  ↑π * I) (tsum_uexp_cont_diff_on k),
 simpa using this,
 end
 
+
+
+lemma iter_div_aut_add (d : ℤ) (k : ℕ) :
+ eq_on (iterated_deriv_within k (λ z : ℂ, 1/(z-d) + 1/(z+d)) ℍ')
+  ((λ (t : ℂ),  (-1)^k*(k)! * (1/(t - d)^(k+1))) +
+  (λ (t : ℂ),  (-1)^k*(k)! * (1/(t + d)^(k+1)))) ℍ' :=
+begin
+intros x hx,
+have h1 : (λ z : ℂ, 1/(z-d) + 1/(z+d))  = (λ z : ℂ, 1/(z-d)) + (λ (z : ℂ),  1/(z+d)), by {refl},
+rw h1,
+have:= iter_deriv_within_add k ⟨x, hx⟩ (λ z : ℂ, 1/(z-d)) (λ z : ℂ, 1/(z+d)),
+simp at *,
+rw this,
+have h2 := aut_iter_deriv d k hx,
+have h3:= aut_iter_deriv' d k hx,
+simp at *,
+rw [h2, h3],
+have h4:= aut_cont_diff_on d k,
+simp at h4,
+apply h4,
+have h5 := aut_cont_diff_on (-d) k,
+simp at h5,
+apply h5,
+end
+
+lemma summable_iter_aut  (k : ℕ) (z : ℍ):
+ summable (λ (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' z) :=
+begin
+have :=λ (d : ℕ+), (iter_div_aut_add d k z.2),
+simp only [coe_coe, subtype.coe_mk, int.cast_coe_nat, subtype.val_eq_coe,
+  pi.add_apply] at *,
+rw summable_congr this,
+by_cases hk : 1 ≤ k,
+apply summable.add,
+rw ←summable_mul_left_iff,
+apply lhs_summable_2 z (k+1),
+linarith,
+simp only [ne.def, neg_one_pow_mul_eq_zero_iff, nat.cast_eq_zero],
+apply nat.factorial_ne_zero ,
+rw ←summable_mul_left_iff,
+apply lhs_summable_2' z (k+1),
+linarith,
+simp only [ne.def, neg_one_pow_mul_eq_zero_iff, nat.cast_eq_zero],
+apply nat.factorial_ne_zero ,
+simp at hk,
+simp_rw hk,
+simp,
+simpa using (lhs_summable z),
+end
+
+
 lemma aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ')  :
-  iterated_deriv_within k (λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n)))) ℍ' x =
-   (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))-1/(z+(n)))) ℍ' x ) :=
+  iterated_deriv_within k (λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' x =
+   (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' x ) :=
 begin
 induction k with k IH generalizing x,
 simp only [iterated_deriv_within_zero],
 simp only [subtype.coe_mk] at *,
 rw iterated_deriv_within_succ,
 have HH:
-deriv_within (iterated_deriv_within k (λ (z : ℂ),∑' (n : ℕ+), (1/(z-(n))-1/(z+(n)))) ℍ' ) ℍ' x =
+deriv_within (iterated_deriv_within k (λ (z : ℂ),∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' ) ℍ' x =
 deriv_within (λ z,
-  (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))-1/(z+(n)))) ℍ' z)) ℍ' x,
+  (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' z)) ℍ' x,
  by {
   apply deriv_within_congr,
   apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
@@ -1092,6 +1220,14 @@ apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
 exact upper_half_plane_is_open,
 exact x.2,
 intros y hy,
+simpa using (summable_iter_aut k ⟨y, hy⟩),
+/-
+have :=λ (d : ℕ+), (iter_div_aut_sub d k hy),
+simp at this,
+rw summable_congr this,
+apply summable.sub,
+rw ←summable_mul_left_iff,
+have hs1:= summablemente_nat_pos (k+1),-/
 all_goals{sorry},
 
 /-apply summable.congr (summable_iter_derv' k ⟨y,hy⟩ ),
@@ -1107,8 +1243,9 @@ apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
 
 end
 
+#exit
 lemma aux_iter_der_tsum (k : ℕ) (hk : 3 ≤ k) (x : ℍ') :
-iterated_deriv_within k ((λ (z : ℂ), 1/z) +(λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))))) ℍ' x =
+iterated_deriv_within k ((λ (z : ℂ), 1/z) +(λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))))) ℍ' x =
 ((-1)^(k : ℕ) *(k : ℕ)!) * ∑' (n : ℤ), 1/((x : ℂ) + n)^(k +1 : ℕ) :=
 begin
 rw iter_deriv_within_add,
@@ -1124,7 +1261,7 @@ end
 #exit
 
 lemma series_eql (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
-  1/z + ∑' (n : ℕ+), (1/(z-(n))-1/(z+(n))) :=
+  1/z + ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))) :=
 begin
 sorry,
 end

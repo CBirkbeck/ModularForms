@@ -814,8 +814,8 @@ begin
 end
 
 
-lemma rfunctbound' (k : ℕ) (h : 3 ≤ k) (A B : ℝ) (hb : 0 < B) (z : upper_half_space_slice A B) (n : ℕ) :
-(8/(rfunct z)^k)* (rie (k-1) n)  ≤ (8/(rfunct (lbpoint A B hb) )^k)* (rie  (k-1) n) :=
+lemma rfunctbound' (k : ℕ) (A B : ℝ) (hb : 0 < B) (z : upper_half_space_slice A B)
+(n : ℕ) : (8/(rfunct z)^k)* (rie (k-1) n)  ≤ (8/(rfunct (lbpoint A B hb) )^k)* (rie (k-1) n) :=
 begin
   have h1:= rfunct_lower_bound_on_slice A B hb z,
   simp only [subtype.val_eq_coe] at h1,
@@ -918,7 +918,7 @@ begin
   exact this, },
   simp at *,
   have SC2:= le_trans ineq1 SC,
-  have rb := rfunctbound' k h A B hb a n,
+  have rb := rfunctbound' k A B hb a n,
   apply le_trans SC2 rb,
   apply_instance,
   apply_instance,
