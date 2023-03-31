@@ -40,6 +40,7 @@ refine (has_sum.tsum_eq _),
 sorry,
 end
 
+
 lemma exp_iter_deriv (n m : ℕ)  :
   iterated_deriv n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) =
   (λ t, (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * t)) :=
@@ -1187,6 +1188,31 @@ simp at hk,
 simp_rw hk,
 simp,
 simpa using (lhs_summable z),
+end
+
+lemma compact_in_slice (S : set  ℂ) (hs : S ⊆ ℍ') (hs2 : is_compact S) : ∃ (A B : ℝ), 0 < B ∧
+   (image (inclusion hs) ⊤)  ⊆ (upper_half_space_slice A B) :=
+begin
+have hh : is_compact (image (inclusion hs) ⊤), by {apply is_compact.image_of_continuous_on,
+ simp,
+ sorry, apply (continuous_inclusion hs).continuous_on, },
+
+have hb:=hh.bounded,
+let  t := (⟨complex.I, by {simp,} ⟩ : ℍ),
+have hb2:=  bounded.subset_ball_lt  hb 0 t,
+obtain ⟨r, hr, hr2⟩ := hb2,
+refine ⟨2*r, r, _⟩,
+split,
+apply hr,
+intros x hx,
+simp at hx,
+simp at hr2,
+have hr3 := hr2 hx,
+simp at hr3,
+simp,
+apply le_trans (abs_re_le_abs x),
+apply le_trans hr3,
+linarith,
 end
 
 

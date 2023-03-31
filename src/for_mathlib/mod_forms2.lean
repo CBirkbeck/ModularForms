@@ -37,6 +37,7 @@ section graded_ring
 namespace modular_form
 
 open modular_form
+open_locale topology manifold upper_half_plane
 
 variables (F : Type*) (Γ : subgroup SL(2, ℤ)) (k : ℤ)
 
@@ -223,5 +224,7 @@ lemma pet_self_is_invariant {k : ℤ} {Γ : subgroup SL(2, ℤ)}
 begin
   rw [pet_self_eq, pet_self_eq], congr' 1, exact pet_is_invariant f f hγ z,
 end
+
+
 
 end petersson_product
