@@ -32,7 +32,7 @@ jobs:
           access_token: ${{ github.token }}
 
   build:
-    name: Build flt-regular
+    name: Build Modularity
     runs-on: ubuntu-latest
     env:
       # number of commits to check for olean cache
