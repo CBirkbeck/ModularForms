@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Modularity Conjecture: Introduction</title>
+<link rel="next" href="sect0002.html" title="Bibliography" />
+<link rel="prev" href="index.html" title="The Modularity Conjecture" />
+<link rel="up" href="index.html" title="The Modularity Conjecture" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">The Modularity Conjecture</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class=" active current">
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Introduction</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Bibliography</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000002">1 Introduction</h1>
+<p>This is a blueprint for the full proof of the modularity conjecture: </p>
+<p>We begin by recalling the definition of an elliptic curve, which is a pair \((E,\mathcal{O})\) consisting of a smooth projective curve \(E\) of genus one and \(\mathcal{O}\) a point on \(E\). Now, every elliptic curve can be embedded as a smooth cubic curve in \(\mathbb {P}^2\) given by an equation of the form \(E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) and this is the basis for the current definition of an elliptic curve in mathlib, where roughly it is described by the above equation, with the extra condition that the discriminant of this cubic is invertible over the base ring. </p>
+<p><div class="definition_thmwrapper" id="defn:Ell_curve_ap">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.1</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:Ell_curve_ap">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) be the Weierstrass equation of an elliptic curve and for \(p\) a prime number, let \(n_p(E)\) denote the number of solutions to \(y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) in \(\mathbb {F}_p\). Then we define \(a_p(E):= p- n_p(E).\) </p>
+
+  </div>
+</div> </p>
+<p><div class="theorem_thmwrapper" id="thm:mod_conj_ap">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">1.2</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#thm:mod_conj_ap">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:Ell_curve_ap">Definition 1.1</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="theorem_thmcontent">
+  
+<p>Let \(E\) be an elliptic curve over \(\mathbb {Q}\). Then there exists \(N \in \mathbb {N}\) and a normalised cuspidal eigenform \(f \in S_{2}(\Gamma _0(N))\) such that for all primes \(p\) with \(p \nmid N\), we have \(a_p(E)=a_p(f)\) where \(f= \sum _n a_n(f)q^n\) is the \(q\)-expansion of \(f\). </p>
+
+  </div>
+</div> </p>
+
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <a href="index.html" title="The Modularity Conjecture"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="The Modularity Conjecture"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0002.html" title="Bibliography"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+</body>
+</html>
