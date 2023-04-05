@@ -3,31 +3,119 @@
 \section{Introduction}
 
 
-This is a blueprint for the full proof of the modularity conjecture:
+This is a blueprint for the full proof of the modularity conjecture. We are following \cite{cornell2013modular}.
 
  We begin by recalling the definition of an elliptic curve, which is a pair $(E,\mathcal{O})$ consisting of a smooth projective curve $E$ of genus one and $\mathcal{O}$ a point on $E$. Now, every elliptic curve can be embedded as a smooth cubic curve in $\mathbb{P}^2$ given by an equation of the form $E  : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ and this is the basis for the current definition of an elliptic curve in mathlib, where roughly it is described by the above equation, with the extra condition that the discriminant of this cubic is invertible over the base ring.
 
 \begin{definition}\label{defn:Ell_curve_ap}
-	\leanok
-	\lean{elliptic_curve.ap}
 	Let $E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ be the Weierstrass equation of an elliptic curve and for $p$ a prime number, let $n_p(E)$ denote the number of solutions to $y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ in $\mathbb{F}_p$. Then we define $a_p(E):= p- n_p(E).$
 \end{definition}
 
 
 %[Shimura--Taniyama--Weil conjecture: $a_p$ version]
 
-\begin{theorem}
+	\begin{theorem}
 	\label{thm:mod_conj_ap}
-	\lean{modularity_conjecture}
+	\lean{modularity_conjecture.modularity_conjecture}
 	\leanok
 	\uses{defn:Ell_curve_ap}
-
-	 Let $E$ be an elliptic curve over $\QQ$. Then there exists $N \in \mathbb{N}$ and a normalised
-	 cuspidal eigenform $f \in S_{2}(\Gamma_0(N))$ such that for all primes $p$ with $p \nmid N$, we have $a_p(E)=a_p(f)$ where $f= \sum_n a_n(f)q^n$ is the $q$-expansion of $f$.
+	
+	Let $E$ be an elliptic curve over $\QQ$. Then there exists $N \in \mathbb{N}$ and a normalised cuspidal eigenform $f \in S_{2}(\Gamma_0(N))$ such that for all primes $p$ with $p \nmid N$, we have $a_p(E)=a_p(f)$ where $f= \sum_n a_n(f)q^n$ is the $q$-expansion of $f$.
 \end{theorem}
 
+\begin{definition}\label{defn:ell_curve_reds}
+	Let $K$ be a number field. An elliptic curve $E/K$ has good, multiplicative or additive reductions depending on...
+\end{definition}
+
+\begin{definition}\label{defn:ell_curve_conductor}
+	\uses{defn:ell_curve_reds}
+	Let $K$ be a number field and $E/K$ an elliptic curve. Then the conductor of $E/K$ is $$N_{E/K} \prod_{\gothp} \gothp^{f_{\gothp}(E/K)}$$ where $f_{\gothp}(E/K)$ is $0,1,2$ depending on if $E$ has good, multiplicative or additive reduction at $\gothp$ (and in the last case $\gothp \nmid 6$). 
+
+\end{definition}
+
+\begin{definition}\label{defn:ell_curve_L_fn}
+	The $L$-function of an elliptic curve is defined as..
+\end{definition}
+
+\begin{definition}\label{defn:mod_form_L_fn}
+	The $L$-function of a modular form is...
+\end{definition}
 
 
+\begin{definition}\label{defn:L_fn_modularity}
+	\uses{defn:ell_curve_conductor, ,defn:mod_form_L_fn,defn:ell_curve_L_fn}
+	Let $E$ be an elliptic curve over $\QQ$ of conductor $N_E$ is \emph{modular} is there is a weight $2$ newform of level $\Gamma_0(N_E)$ and trivial character for which 
+	\[L(E,s)= L(f,s).\]
+	
+\end{definition}	
+
+\begin{theorem}\label{thm:eichler_shimura}
+	Let $2 \leq k$ and $\Gamma$ a congruence subgroup.
+	The is a Hecke equivaariant isomorphism $$H^1(\Gamma, V_{k-2}) \cong M_k(\Gamma) \oplus \overline{S_k}(\Gamma).$$
+\end{theorem}
+
+\begin{definition}\label{defn:mod_form_gal_rep}
+	\uses{thm:eichler_shimura}
+	Let $f$ be a weight two normalised newform of level $\Gamma_0(N)$ and character $\epsilon$. Then we can attach to $f$ a Galois representation by...
+\end{definition}
+
+\begin{definition}\label{defn:Tate_mod}
+	Let $E/\QQ$ be an elliptic curve  and $p$ a prime. The Tate module of $E$ is $$T_p(E) := \varprojlim E[p^n].$$
+\end{definition}
+
+\begin{lemma}
+	\label{lem:tate_mod_iso}
+	\uses{defn:Tate_mod}
+		Let $E/\QQ$ be an elliptic curve  and $p$ a prime. The $$T_p(E) \cong \ZZ_p^2.$$ 
+\end{lemma}
+
+\begin{definition}\label{defn:ell_curve_gal_rep}
+	\uses{lem:tate_mod_iso}
+	Let $E/\QQ$ be an elliptic curve. This define a $p$-adic Galois representation $\rho_{E,p} : G_\QQ \to \mathrm{GL}_2(\ZZ_p)$ as the one coming from the action of $G_{\QQ}$ on the Tate module $T_p(E)$.
+\end{definition}
+
+\begin{definition}\label{defn:unram_gal_rep}
+	A Galois representation is unramified if...
+\end{definition}
+
+\begin{definition}\label{defn:hecke_alg}
+	Let $0<N$ be an integer. Then the  Hecke algebra $\mathbb{T}'(N)$ is defined as...
+\end{definition}
+
+\begin{definition}\label{defn:ab_var}
+	An abelian variety is...
+\end{definition}
+
+\begin{definition}\label{defn:ab_var_mod_form}
+	\uses{defn:ab_var}
+	Let $f$ be a modular form of weight $2$. Then attached to $f$ is an abelian variety $A_f$ such that... 
+\end{definition}
+
+\begin{definition}\label{defn:mod_curve_0}
+	Let $0 < N$ be an integer. Let $X_0(N)$ denote the modular curve....
+\end{definition}
+
+\begin{definition}\label{defn:mod_gal_rep}
+	\uses{defn:unram_gal_rep,defn:hecke_alg, defn:ab_var_mod_form,defn:mod_curve_0,defn:mod_form_gal_rep }
+	Let $\rho: G_{\QQ} \to \mathrm{GL}_2(A)$ be a Galois representation over a coefficient ring $A$. Then $\rho$ is modular if there exists some integer $0 < N$ and a homomorphism $\pi: \mathbb{T}'(N) \to A$ such that $\rho$ is unramified outside $Np$ and for every $\ell \nmid pN$, we have $$\mathrm{Trace}(\rho (\mathrm{Fr}_\ell) )= \pi(T_\ell) \qquad
+	\mathrm{det}(\rho (\mathrm{Fr}_\ell) )= \pi(\langle \ell \rangle) \ell$$ 
+\end{definition}
+
+\begin{theorem}\label{equivs_modular}
+	\uses{defn:L_fn_modularity,thm:mod_conj_ap,defn:ell_curve_gal_rep,defn:mod_gal_rep,defn:ab_var_mod_form} 
+	Let $E/\QQ$ be an elliptic curve. Then $E$ is modular, equivalently:
+	\begin{enumerate}
+		\item Theorem \ref{thm:mod_conj_ap} holds for $E$.
+		\item For some prime $p$, $\rho_{E,p}$ is modular.
+		\item For every prime $p$, $\rho_{E,p}$ is modular.
+		\item There is a non-constant morphism $\pi : X_0(N_E) \to E$ of algebraic curves defined over $\QQ$.
+		\item $E$ is isogenous to the modular abelian variety $A_f$ associated to some weight $2$ newform $f$ of level $\Gamma_0(N_E)$.
+		
+	\end{enumerate}
+	
+	
+
+\end{theorem}	
 
 
 

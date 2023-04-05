@@ -45,7 +45,9 @@
 
 <div class="main-text">
 <h1 id="a0000000002">1 Introduction</h1>
-<p>This is a blueprint for the full proof of the modularity conjecture: </p>
+<p>This is a blueprint for the full proof of the modularity conjecture. We are following <span class="cite">
+	[
+</span>. </p>
 <p>We begin by recalling the definition of an elliptic curve, which is a pair \((E,\mathcal{O})\) consisting of a smooth projective curve \(E\) of genus one and \(\mathcal{O}\) a point on \(E\). Now, every elliptic curve can be embedded as a smooth cubic curve in \(\mathbb {P}^2\) given by an equation of the form \(E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) and this is the basis for the current definition of an elliptic curve in mathlib, where roughly it is described by the above equation, with the extra condition that the discriminant of this cubic is invertible over the base ring. </p>
 <p><div class="definition_thmwrapper" id="defn:Ell_curve_ap">
   <div class="definition_thmheading">
@@ -53,27 +55,13 @@
     Definition
     </span>
     <span class="definition_thmlabel">1.1</span>
-    ✓
     <div class="thm_icons">
     <a class="icon proof" href="sect0001.html#defn:Ell_curve_ap">#</a>
-    <button class="modal lean">L∃∀N</button>
-    <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-                <ul class="uses">
-        </ul>
-
-      </div>
-    </div>
 
   </div>
   </div>
   <div class="definition_thmcontent">
-  <p>  Let \(E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) be the Weierstrass equation of an elliptic curve and for \(p\) a prime number, let \(n_p(E)\) denote the number of solutions to \(y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) in \(\mathbb {F}_p\). Then we define \(a_p(E):= p- n_p(E).\) </p>
+  <p> Let \(E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) be the Weierstrass equation of an elliptic curve and for \(p\) a prime number, let \(n_p(E)\) denote the number of solutions to \(y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6\) in \(\mathbb {F}_p\). Then we define \(a_p(E):= p- n_p(E).\) </p>
 
   </div>
 </div> </p>
@@ -120,6 +108,439 @@
   <div class="theorem_thmcontent">
   
 <p>Let \(E\) be an elliptic curve over \(\mathbb {Q}\). Then there exists \(N \in \mathbb {N}\) and a normalised cuspidal eigenform \(f \in S_{2}(\Gamma _0(N))\) such that for all primes \(p\) with \(p \nmid N\), we have \(a_p(E)=a_p(f)\) where \(f= \sum _n a_n(f)q^n\) is the \(q\)-expansion of \(f\). </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ell_curve_reds">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.3</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ell_curve_reds">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Let \(K\) be a number field. An elliptic curve \(E/K\) has good, multiplicative or additive reductions depending on... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ell_curve_conductor">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.4</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ell_curve_conductor">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:ell_curve_reds">Definition 1.3</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(K\) be a number field and \(E/K\) an elliptic curve. Then the conductor of \(E/K\) is </p>
+<div class="displaymath" id="a0000000004">
+  \[ N_{E/K} \prod _{\mathfrak {p}} \mathfrak {p}^{f_{\mathfrak {p}}(E/K)} \]
+</div>
+<p> where \(f_{\mathfrak {p}}(E/K)\) is \(0,1,2\) depending on if \(E\) has good, multiplicative or additive reduction at \(\mathfrak {p}\) (and in the last case \(\mathfrak {p}\nmid 6\)). </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ell_curve_L_fn">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.5</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ell_curve_L_fn">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> The \(L\)-function of an elliptic curve is defined as.. </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:mod_form_L_fn">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.6</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:mod_form_L_fn">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> The \(L\)-function of a modular form is... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:L_fn_modularity">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.7</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:L_fn_modularity">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:ell_curve_conductor">Definition 1.4</a></li>
+          <li><a href="sect0001.html#defn:mod_form_L_fn">Definition 1.6</a></li>
+          <li><a href="sect0001.html#defn:ell_curve_L_fn">Definition 1.5</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(E\) be an elliptic curve over \(\mathbb {Q}\) of conductor \(N_E\) is <em>modular</em> is there is a weight \(2\) newform of level \(\Gamma _0(N_E)\) and trivial character for which </p>
+<div class="displaymath" id="a0000000005">
+  \[ L(E,s)= L(f,s). \]
+</div>
+
+  </div>
+</div> </p>
+<p><div class="theorem_thmwrapper" id="thm:eichler_shimura">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">1.8</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#thm:eichler_shimura">#</a>
+
+  </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p> Let \(2 \leq k\) and \(\Gamma \) a congruence subgroup. The is a Hecke equivaariant isomorphism </p>
+<div class="displaymath" id="a0000000006">
+  \[ H^1(\Gamma , V_{k-2}) \cong M_k(\Gamma ) \oplus \overline{S_k}(\Gamma ). \]
+</div>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:mod_form_gal_rep">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.9</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:mod_form_gal_rep">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#thm:eichler_shimura">Theorem 1.8</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(f\) be a weight two normalised newform of level \(\Gamma _0(N)\) and character \(\epsilon \). Then we can attach to \(f\) a Galois representation by... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:Tate_mod">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.10</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:Tate_mod">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Let \(E/\mathbb {Q}\) be an elliptic curve and \(p\) a prime. The Tate module of \(E\) is </p>
+<div class="displaymath" id="a0000000007">
+  \[ T_p(E) := \varprojlim E[p^n]. \]
+</div>
+
+  </div>
+</div> </p>
+<p><div class="lemma_thmwrapper" id="lem:tate_mod_iso">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">1.11</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#lem:tate_mod_iso">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:Tate_mod">Definition 1.10</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>  Let \(E/\mathbb {Q}\) be an elliptic curve and \(p\) a prime. The </p>
+<div class="displaymath" id="a0000000008">
+  \[ T_p(E) \cong \mathbb {Z}_p^2. \]
+</div>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ell_curve_gal_rep">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.12</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ell_curve_gal_rep">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#lem:tate_mod_iso">Lemma 1.11</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(E/\mathbb {Q}\) be an elliptic curve. This define a \(p\)-adic Galois representation \(\rho _{E,p} : G_\mathbb {Q}\to \mathrm{GL}_2(\mathbb {Z}_p)\) as the one coming from the action of \(G_{\mathbb {Q}}\) on the Tate module \(T_p(E)\). </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:unram_gal_rep">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.13</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:unram_gal_rep">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> A Galois representation is unramified if... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:hecke_alg">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.14</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:hecke_alg">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Let \(0{\lt}N\) be an integer. Then the Hecke algebra \(\mathbb {T}'(N)\) is defined as... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ab_var">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.15</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ab_var">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> An abelian variety is... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:ab_var_mod_form">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.16</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:ab_var_mod_form">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:ab_var">Definition 1.15</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(f\) be a modular form of weight \(2\). Then attached to \(f\) is an abelian variety \(A_f\) such that... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:mod_curve_0">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.17</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:mod_curve_0">#</a>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Let \(0 {\lt} N\) be an integer. Let \(X_0(N)\) denote the modular curve.... </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="defn:mod_gal_rep">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">1.18</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#defn:mod_gal_rep">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:unram_gal_rep">Definition 1.13</a></li>
+          <li><a href="sect0001.html#defn:hecke_alg">Definition 1.14</a></li>
+          <li><a href="sect0001.html#defn:ab_var_mod_form">Definition 1.16</a></li>
+          <li><a href="sect0001.html#defn:mod_curve_0">Definition 1.17</a></li>
+          <li><a href="sect0001.html#defn:mod_form_gal_rep">Definition 1.9</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  Let \(\rho : G_{\mathbb {Q}} \to \mathrm{GL}_2(A)\) be a Galois representation over a coefficient ring \(A\). Then \(\rho \) is modular if there exists some integer \(0 {\lt} N\) and a homomorphism \(\pi : \mathbb {T}'(N) \to A\) such that \(\rho \) is unramified outside \(Np\) and for every \(\ell \nmid pN\), we have </p>
+<div class="displaymath" id="a0000000009">
+  \[ \mathrm{Trace}(\rho (\mathrm{Fr}_\ell ) )= \pi (T_\ell ) \qquad \mathrm{det}(\rho (\mathrm{Fr}_\ell ) )= \pi (\langle \ell \rangle ) \ell  \]
+</div>
+
+  </div>
+</div> </p>
+<p><div class="theorem_thmwrapper" id="equivs_modular">
+  <div class="theorem_thmheading">
+    <span class="theorem_thmcaption">
+    Theorem
+    </span>
+    <span class="theorem_thmlabel">1.19</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="sect0001.html#equivs_modular">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="sect0001.html#defn:L_fn_modularity">Definition 1.7</a></li>
+          <li><a href="sect0001.html#thm:mod_conj_ap">Theorem 1.2</a></li>
+          <li><a href="sect0001.html#defn:ell_curve_gal_rep">Definition 1.12</a></li>
+          <li><a href="sect0001.html#defn:mod_gal_rep">Definition 1.18</a></li>
+          <li><a href="sect0001.html#defn:ab_var_mod_form">Definition 1.16</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="theorem_thmcontent">
+  <p>  Let \(E/\mathbb {Q}\) be an elliptic curve. Then \(E\) is modular, equivalently: </p>
+<ol class="enumerate">
+  <li><p>Theorem <a href="sect0001.html#thm:mod_conj_ap">1.2</a> holds for \(E\). </p>
+</li>
+  <li><p>For some prime \(p\), \(\rho _{E,p}\) is modular. </p>
+</li>
+  <li><p>For every prime \(p\), \(\rho _{E,p}\) is modular. </p>
+</li>
+  <li><p>There is a non-constant morphism \(\pi : X_0(N_E) \to E\) of algebraic curves defined over \(\mathbb {Q}\). </p>
+</li>
+  <li><p>\(E\) is isogenous to the modular abelian variety \(A_f\) associated to some weight \(2\) newform \(f\) of level \(\Gamma _0(N_E)\). </p>
+</li>
+</ol>
 
   </div>
 </div> </p>
