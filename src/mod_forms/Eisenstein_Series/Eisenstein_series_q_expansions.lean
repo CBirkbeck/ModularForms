@@ -10,7 +10,7 @@ noncomputable theory
 
 open modular_form Eisenstein_series upper_half_plane topological_space set measure_theory
 interval_integral metric filter function complex
-open_locale interval real nnreal ennreal topology big_operators nat
+open_locale interval real nnreal ennreal topology big_operators nat classical
 
 local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
 
@@ -1190,6 +1190,13 @@ simp,
 simpa using (lhs_summable z),
 end
 
+def map_to_ball (x : ℍ') : set ℍ' :=
+begin
+have h1 := closed_ball_in_slice x,
+let a:= this.some,
+
+end
+
 lemma compact_in_slice (S : set  ℂ) (hs : S ⊆ ℍ') (hs2 : is_compact S) : ∃ (A B : ℝ), 0 < B ∧
    (image (inclusion hs) ⊤)  ⊆ (upper_half_space_slice A B) :=
 begin
@@ -1210,11 +1217,13 @@ simp at hr2,
 have hr3 := hr2 hx,
 simp at hr3,
 simp,
+have hg : complex.abs ((x : ℂ) - (t : ℂ)) ≤ r, by {sorry},
+
 apply le_trans (abs_re_le_abs x),
 apply le_trans hr3,
 linarith,
 end
-
+#exit
 
 lemma aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ')  :
   iterated_deriv_within k (λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' x =
