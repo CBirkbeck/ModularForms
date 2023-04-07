@@ -4,7 +4,7 @@ import analysis.complex.upper_half_plane.basic
 import mod_forms.Riemann_zeta_fin
 import analysis.calculus.iterated_deriv
 import analysis.calculus.series
-
+import mod_forms.Eisenstein_Series.Eisenstein_series_q_expansions
 
 noncomputable theory
 
@@ -61,4 +61,59 @@ have hhf := hs hz,
 simp at hhf,
 rw mem_uhs _ at hhf,
 apply hhf.le,
+end
+
+lemma der_of_iter_der (s : ℍ'.1) (k : ℕ) (n : ℕ+):
+    (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
+    upper_half_space z) s) =   (-1)^(k+1)*(k+1)! * (1/(s - n)^(k+2)) +
+  (-1)^(k+1)*(k+1)! * (1/(s + n)^(k+2)) :=
+begin
+ have h: (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
+    upper_half_space z) s) =
+    (deriv_within (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
+    upper_half_space z) ℍ' s), by {apply apply differentiable_at.deriv_within,sorry},
+rw h,
+simp,
+rw ←iterated_deriv_within_succ,
+have h2 :=iter_div_aut_add n (k+1) s.2,
+simp at h2,
+exact h2,
+apply is_open.unique_diff_on upper_half_plane_is_open ,
+apply s.2,
+end
+
+lemma aut_bound_on_comp (K : set ℂ) (hk : K ⊆ ℍ'.1) (hk2 : is_compact K) (k : ℕ) :
+  ∃ (u : ℕ+ → ℝ), summable u ∧ ∀ (n : ℕ+) (s : K),
+  complex.abs (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
+    upper_half_space z) s) ≤ u n :=
+begin
+  by_cases h1 : set.nonempty K,
+  have H:= compact_in_slice' K h1 hk hk2,
+  obtain ⟨ A, B, hB, hAB⟩ := H,
+  refine ⟨ (λ (a : ℕ+), ((-1)^k*(k)!)/(rfunct(lbpoint A B hB))^(k+1) ), _,_⟩,
+  sorry,
+
+
+
+
+
+
+
+
+
+
+  sorry,
+  simp at *,
+  refine ⟨ (λ x, 0), _,_ ⟩,
+  apply summable_zero,
+  intro n ,
+  rw not_nonempty_iff_eq_empty at h1,
+  intros r,
+  exfalso,
+  have hr:= r.2,
+  simp_rw h1 at hr,
+  simp at hr,
+  apply hr,
+  --have H:= compact_in_slice' K hk hk2
+
 end
