@@ -5,7 +5,6 @@ import mod_forms.Riemann_zeta_fin
 import analysis.calculus.iterated_deriv
 import analysis.calculus.series
 
-
 noncomputable theory
 
 open modular_form Eisenstein_series upper_half_plane topological_space set measure_theory
