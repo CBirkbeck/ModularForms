@@ -41,7 +41,8 @@ have H1 := map_to_ball x,
 obtain ⟨ε, Ba, h1, h2, A, B, hab, hb⟩ := H1,
 refine ⟨A,B,_⟩,
 intros z hz,
-have h3 : z ∈ metric.ball x ε, by {convert hz, }
+have h3 : z ∈ metric.ball x ε, by {convert hz, sorry,},
+sorry,
 end
 
 lemma mem_uhs (x : ℂ) : x ∈ ℍ'.1 ↔ 0 < x.im :=
@@ -78,6 +79,34 @@ sorry,
 sorry,
 end
 
+lemma compact_in_slice' (S : set  ℂ) (hne : set.nonempty S) (hs : S ⊆ ℍ') (hs2 : is_compact S) :
+  ∃ (A B : ℝ), 0 < B ∧ (image (inclusion hs) ⊤)  ⊆ (upper_half_space_slice A B) :=
+begin
+have hcts:  continuous_on (λ t, complex.im t) S, by {
+apply continuous.continuous_on, continuity,},
+have := is_compact.exists_forall_le hs2 hne hcts,
+obtain ⟨b, hb, HB⟩:= this,
+have hh : is_compact (image (inclusion hs) ⊤), by {apply is_compact.image_of_continuous_on,
+ simp, exact is_compact_iff_is_compact_univ.mp hs2, apply (continuous_inclusion hs).continuous_on, },
+let  t := (⟨complex.I, by {simp,} ⟩ : ℍ),
+have hb2:=  bounded.subset_ball_lt  hh.bounded 0 t,
+obtain ⟨r, hr, hr2⟩ := hb2,
+refine ⟨2*r, b.im,_ ⟩,
+split,
+have hbim := hs hb,
+simp only [subtype.coe_mk] at hbim,
+rw mem_uhs b at hbim,
+exact hbim,
+
+intros z hz,
+simp at *,
+split,
+have hr3 := hr2 hz,
+simp at hr3,
+apply le_trans (abs_re_le_abs z),
+  have:= complex.abs.sub_le (z : ℂ) (t : ℂ) 0,
+end
+
 lemma compact_in_slice (S : set  ℂ) (hs : S ⊆ ℍ') (hs2 : is_compact S) : ∃ (A B : ℝ), 0 < B ∧
    (image (inclusion hs) ⊤)  ⊆ (upper_half_space_slice A B) :=
 begin
@@ -102,8 +131,8 @@ have hr3 := hr2 hx,
 simp at hr3,
 simp,
 have hg : complex.abs ((x : ℂ) - (t : ℂ)) ≤ r, by {sorry},
-
-apply le_trans (abs_re_le_abs x),
-apply le_trans hr3,
-linarith,
+sorry,
+--apply le_trans (abs_re_le_abs x),
+--apply le_trans hr3,
+--linarith,
 end

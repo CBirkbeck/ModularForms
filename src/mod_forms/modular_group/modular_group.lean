@@ -9,7 +9,7 @@ import algebra.hom.group_action
 import linear_algebra.matrix
 import linear_algebra.matrix.general_linear_group
 import data.complex.basic
-
+import mod_forms.modular_group.mat_m
 
 --import .matrix_groups
 
@@ -32,32 +32,7 @@ universe u
 @[reducible]
 def SL2Z := special_linear_group (fin 2) ℤ
 
-
-@[derive decidable_eq]
-def  integral_matrices_with_determinant (m : ℤ ) :={ A : matrix (fin 2) (fin 2) ℤ  // A.det = m }
-
-variable (m: ℤ)
-
-instance coe_matrix : has_coe (integral_matrices_with_determinant m) (matrix (fin 2) (fin 2) ℤ) :=
-⟨λ A, A.val⟩
-
-instance coe_fun : has_coe_to_fun (integral_matrices_with_determinant m) (λ _, fin 2 → fin 2 → ℤ) :=
-{coe := λ A, A.val }
-
-def to_lin' (A : integral_matrices_with_determinant m) := matrix.to_lin' A
-
-namespace integral_matrices_with_determinant
-
-lemma ext_iff (A B :  integral_matrices_with_determinant m) : A = B ↔ (∀ i j, A i j = B i j) :=
-iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix.ext⟩
-
-@[ext] lemma ext (A B : integral_matrices_with_determinant m) : (∀ i j, A i j = B i j) → A = B :=
-begin
-rw ext_iff,
-simp,
-end
-
-end  integral_matrices_with_determinant
+variables (m : ℤ)
 
 def N': matrix  (fin 2) (fin 2 ) ℤ:= ![![-1, 0], ![0, -1]]
 
@@ -130,7 +105,7 @@ split, refl, split, refl,split, refl, refl,
 end
 
 
-lemma valor_mat_m (A : integral_matrices_with_determinant m):
+lemma valor_mat_m (A : integral_matrices_with_determinant (fin 2) m):
 A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
 begin
 split, refl, split, refl,split, refl, refl,
@@ -161,26 +136,26 @@ rw ← str A,
 rw det_onee,ring,
 end
 
-lemma det_m (M: integral_matrices_with_determinant m): (M 0 0 * M 1 1 - M 1 0 * M 0 1)=m:=
+lemma det_m (M: integral_matrices_with_determinant (fin 2) m): (M 0 0 * M 1 1 - M 1 0 * M 0 1)=m:=
 begin
  have H:= det_of_22 M.1, simp [valor_mat_m] at *, have m2:=M.2, simp at m2, rw m2 at H,
  have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw cg, exact H.symm,
 end
 
 
-lemma det_m''' (M: integral_matrices_with_determinant m) (h: M 1 0 = 0): M 0 0 * M 1 1=m:=
+lemma det_m''' (M: integral_matrices_with_determinant (fin 2) m) (h: M 1 0 = 0): M 0 0 * M 1 1=m:=
 begin
 have:=det_m _ M,  rw h at this, simp at this,exact this,
 end
 
-lemma det_m' (M: integral_matrices_with_determinant m): M 0 0 * M 1 1 - M 1 0 * M 0 1= M.val.det:=
+lemma det_m' (M: integral_matrices_with_determinant (fin 2) m): M 0 0 * M 1 1 - M 1 0 * M 0 1= M.val.det:=
 begin
 have:=det_of_22 M.1, simp [valor_mat_m],simp  at this,
  have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw cg, exact this.symm,
 end
 
 
-lemma det_m2 (M: integral_matrices_with_determinant m): M.1 0 0 * M.1 1 1 - M.1 1 0 * M.1 0 1= M.val.det:=
+lemma det_m2 (M: integral_matrices_with_determinant (fin 2) m): M.1 0 0 * M.1 1 1 - M.1 1 0 * M.1 0 1= M.val.det:=
 begin
 have:= det_m' _ M, simp [valor_mat_m] at *, exact this,
 end
@@ -235,7 +210,7 @@ begin
   rw Ni, simp_rw Sr,  ext i j,fin_cases i; fin_cases j, simp [valorsl], simp [valorsl], simp [valorsl], simp [valorsl],
 end
 
-lemma vale (A : integral_matrices_with_determinant m): A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
+lemma vale (A : integral_matrices_with_determinant (fin 2) m): A 0 0 = A.1 0 0 ∧ A 0 1 = A.1 0 1 ∧ A 1 0 = A.1 1 0 ∧ A 1 1 = A.1 1 1  :=
 begin
 split, refl, split, refl,split, refl, refl,
 end
@@ -317,54 +292,48 @@ begin
 simp only [valorsl], rw Ainv_is_inv, rw Ainv,simp_rw ainv',simp only [valorsl, cons_val_one, head_cons],
 end
 
-def SL2Z_M (m : ℤ) : SL2Z → integral_matrices_with_determinant m → integral_matrices_with_determinant m :=
+def SL2Z_M (m : ℤ) : SL2Z → integral_matrices_with_determinant (fin 2) m → integral_matrices_with_determinant (fin 2) m :=
 λ A B, ⟨A.1 ⬝ B.1, by erw [det_mul, A.2, B.2, one_mul]⟩
 
-lemma one_smull  : ∀ (M: integral_matrices_with_determinant m ),  SL2Z_M m (1: SL2Z) M= M :=
+lemma one_smull  : ∀ (M: integral_matrices_with_determinant (fin 2) m ),  SL2Z_M m (1: SL2Z) M= M :=
 begin
 rw SL2Z_M,
 simp,
 end
 
-lemma mul_smull : ∀ (A B : SL2Z ), ∀ (M: integral_matrices_with_determinant m ), SL2Z_M m (A * B ) M= SL2Z_M m A (SL2Z_M m B M):=
+lemma mul_smull : ∀ (A B : SL2Z ), ∀ (M: integral_matrices_with_determinant (fin 2) m ), SL2Z_M m (A * B ) M= SL2Z_M m A (SL2Z_M m B M):=
 begin
 simp [SL2Z_M],
 intros A B M,
 simp [matrix.mul_assoc],
 end
 
-instance (m: ℤ )  :  mul_action  (SL2Z) (integral_matrices_with_determinant m):=
-{ smul := SL2Z_M (m : ℤ),
-  one_smul := one_smull (m: ℤ ),
-  mul_smul := mul_smull (m:ℤ ) }
-section
 
-variables  (A : SL2Z) (M : integral_matrices_with_determinant m)
+variables  (A : SL2Z) (M : integral_matrices_with_determinant (fin 2) m)
 
-@[simp] lemma smul_is_mul (A : SL2Z) (M : integral_matrices_with_determinant m): (A • M).1 =A * M :=
+@[simp] lemma smul_is_mul (A : SL2Z) (M : integral_matrices_with_determinant (fin 2) m): (A • M).1 =A * M :=
 begin
 simp [SL2Z_M],
-refl,
 end
 
-lemma SLEQ:  SL2Z = integral_matrices_with_determinant 1 :=
+lemma SLEQ:  SL2Z = integral_matrices_with_determinant (fin 2) 1 :=
 begin
 refl,
 end
 
-instance : has_coe (integral_matrices_with_determinant 1) SL2Z :=
+instance : has_coe (integral_matrices_with_determinant  (fin 2)  1) SL2Z :=
 ⟨ λ a, ⟨a.1, a.2⟩⟩
 
 
 
-lemma smul_is_mul_1 (A : SL2Z) (M : integral_matrices_with_determinant 1): ((A • M) : SL2Z) =A * (M : SL2Z) :=
+lemma smul_is_mul_1 (A : SL2Z) (M : integral_matrices_with_determinant  (fin 2)  1): ((A • M) : SL2Z) =A * (M : SL2Z) :=
 begin
 simp [SL2Z_M],
 
 end
 
-lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_determinant m):
- ((A • M) : (integral_matrices_with_determinant m)) = N ↔  N 0 0= A 0 0 * M 0 0 + A 0 1 * M 1 0 ∧
+lemma m_a_b (m : ℤ) (hm : m ≠ 0) (A : SL2Z) (M N : integral_matrices_with_determinant (fin 2) m):
+ ((A • M) : (integral_matrices_with_determinant (fin 2) m)) = N ↔  N 0 0= A 0 0 * M 0 0 + A 0 1 * M 1 0 ∧
  N 0 1= A 0 0 * M 0 1 + A 0 1 * M 1 1 ∧
  N 1 0= A 1 0 * M 0 0 + A 1 1 * M 1 0 ∧
  N 1 1= A 1 0 * M 0 1 + A 1 1 * M 1 1 :=
@@ -453,21 +422,22 @@ end
 
 namespace integral_matrices_with_determinant
 
-variables  ( B : integral_matrices_with_determinant m)
+variables  ( B : integral_matrices_with_determinant (fin 2) m)
 
-def mi (m: ℤ) (M: integral_matrices_with_determinant m) : (matrix (fin 2) (fin 2) ℤ) := ![![-M 0 0,  - M 0 1], ![-M 1 0 , -M 1 1]]
+def mi (m: ℤ) (M: integral_matrices_with_determinant (fin 2) m) : (matrix (fin 2) (fin 2) ℤ) := ![![-M 0 0,  - M 0 1], ![-M 1 0 , -M 1 1]]
 
-lemma fff (m: ℤ) (M: integral_matrices_with_determinant m): (mi m M).det = m:=
+lemma fff (m: ℤ) (M: integral_matrices_with_determinant (fin 2) m): (mi m M).det = m:=
 
 begin
 rw mi, rw det_of_22, simp, have:=det_m m M, simp [valor_mat_m] at *,
 have cg : M.1 1 0* M.1 0 1 =  M.1 0 1* M.1 1 0, by {ring,}, simp at cg, rw ← cg,exact this,
 end
 
-def MATINV (m : ℤ) : integral_matrices_with_determinant m → integral_matrices_with_determinant m :=
+def MATINV (m : ℤ) : integral_matrices_with_determinant (fin 2) m → integral_matrices_with_determinant (fin 2) m :=
 λ A , ⟨mi m  A, by apply fff⟩
 
-instance (m : ℤ) : has_neg (integral_matrices_with_determinant m) :=
+/-
+instance (m : ℤ) : has_neg (integral_matrices_with_determinant (fin 2) m) :=
 ⟨λ A, MATINV m A ⟩
 
 @[simp] lemma neg_a : (-B) 0 0 = -B 0 0 := rfl
@@ -478,7 +448,7 @@ instance (m : ℤ) : has_neg (integral_matrices_with_determinant m) :=
 begin
 ext i j, fin_cases i; fin_cases j,simp,simp, simp,simp,
 end
-
+-/
 
 end integral_matrices_with_determinant
 
@@ -565,5 +535,4 @@ have:=A.2, rw this, simp, rw ← coe_coe, rw ← coe_coe, simp,
 end
 
 end SL2Z
-end
 end
