@@ -16,7 +16,7 @@ This is a blueprint for the full proof of the modularity conjecture. We are foll
 
 	\begin{theorem}
 	\label{thm:mod_conj_ap}
-	\lean{modularity_conjecture.modularity_conjecture}
+	\lean{modularity_conjecture}
 	\leanok
 	\uses{defn:Ell_curve_ap}
 	
@@ -95,14 +95,81 @@ This is a blueprint for the full proof of the modularity conjecture. We are foll
 	Let $0 < N$ be an integer. Let $X_0(N)$ denote the modular curve....
 \end{definition}
 
+Fix a prime $p$.
+
+\begin{definition}\label{defn:coef_ring}
+	A coefficient ring $A$ is a complete noetherian local ring with finite residue field of characteristic $p$.
+	
+\end{definition}
+
 \begin{definition}\label{defn:mod_gal_rep}
-	\uses{defn:unram_gal_rep,defn:hecke_alg, defn:ab_var_mod_form,defn:mod_curve_0,defn:mod_form_gal_rep }
+	\uses{defn:unram_gal_rep,defn:hecke_alg, defn:ab_var_mod_form,defn:mod_curve_0,defn:mod_form_gal_rep,defn:coef_ring }
 	Let $\rho: G_{\QQ} \to \mathrm{GL}_2(A)$ be a Galois representation over a coefficient ring $A$. Then $\rho$ is modular if there exists some integer $0 < N$ and a homomorphism $\pi: \mathbb{T}'(N) \to A$ such that $\rho$ is unramified outside $Np$ and for every $\ell \nmid pN$, we have $$\mathrm{Trace}(\rho (\mathrm{Fr}_\ell) )= \pi(T_\ell) \qquad
 	\mathrm{det}(\rho (\mathrm{Fr}_\ell) )= \pi(\langle \ell \rangle) \ell$$ 
 \end{definition}
 
+\begin{definition}\label{defn:semi_stable_ell_curve}
+	An elliptic curve is semistable if....
+	
+\end{definition}	
+
+\begin{definition}\label{defn:gal_rep_irred}
+	A Galois representation is irreducible if...
+\end{definition}	
+
+
+
+
+\begin{lemma}\label{lem:lem7.8}
+		\uses{defn:semi_stable_ell_curve, defn:L_fn_modularity,defn:gal_rep_irred}
+Let $E/\QQ$ be a semistable elliptic curve and suppose $\ov{\rho}_{E,p}$ is both modular and irreducible for some prime $3 \leq p$. Then $E$ is modular.
+
+\end{lemma}	
+	
+	\begin{theorem}\label{thm:thm7.9}
+	
+	Let $E$ be an arbitrary elliptic curve and suppose $\ov{\rho}_{E,3}$ is irreducible. Then  $\ov{\rho}_{E,3}$ is modular.
+		
+	\end{theorem}
+	
+		\begin{theorem}\label{thm:thm7.10}
+		
+		Let $E$ be a semistable elliptic curve and suppose $\ov{\rho}_{E,5}$ is irreducible. Then there is another semistable elliptic curve $E'/\QQ$ for which:
+		\begin{enumerate}
+			\item $\ov{\rho}_{E',3}$ is irreducible and;
+			\item $\ov{\rho}_{E',5} \cong \ov{\rho}_{E,5}$.
+		\end{enumerate}
+		
+	\end{theorem}
+	
+	\begin{theorem}\label{thm:thm7.11}
+	Let $E/\QQ$ be a semistable elliptic curve. Then at least one of the representations  $\ov{\rho}_{E,3}$ or $\ov{\rho}_{E,5}$ is irreducible.
+	
+\end{theorem}	
+
+\begin{theorem}\label{thm:wiles_thm}
+	\uses{lem:lem7.8, thm:thm7.9, thm:thm7.10, thm:thm7.11}
+	Every semi-stable elliptic curve over $\QQ$ is modular.
+
+\end{theorem}
+
+\begin{proof}
+Let $E/\QQ$ be a semi-stable elliptic curve. If  $\ov{\rho}_{E,3}$ is irreducible	then by \ref{thm:thm7.9} it is modular and hence by \ref{lem:lem7.8} $E$ is modular.  If $\ov{\rho}_{E,3}$ is not irreducible, then by \ref{thm:thm7.11}, $\ov{\rho}_{E,5}$ is irreducible. Now using \ref{thm:thm7.10}, we find another semistable elliptic curve $E'$ such that $\ov{\rho}_{E',3}$ is irreducible and hence $E'$ is modular. Therefore $\ov{\rho}_{E',5}$ is modular, making $\ov{\rho}_{E,5}$ modular and hence $E$ is modular. 
+	
+\end{proof}
+
+
+\begin{definition}\label{defn:gal_rep_cts}
+	A Galois representation is continuous if...
+\end{definition}	
+
+\begin{theorem}\label{thm:BCDT_thm_B}
+	\uses{defn:gal_rep_irred,defn:gal_rep_cts}
+	If $\ov{\rho}: G_{\QQ} \to \mathrm{GL}_2(\FF_5)$ is an irreducible continuous representation with cyclotomic determinant, then $\ov{\rho}$ is modular.
+\end{theorem}
+
 \begin{theorem}\label{equivs_modular}
-	\uses{defn:L_fn_modularity,thm:mod_conj_ap,defn:ell_curve_gal_rep,defn:mod_gal_rep,defn:ab_var_mod_form} 
+	\uses{thm:mod_conj_ap,defn:ell_curve_gal_rep,defn:mod_gal_rep,defn:ab_var_mod_form,thm:wiles_thm,thm:wiles_thm, thm:BCDT_thm_B} 
 	Let $E/\QQ$ be an elliptic curve. Then $E$ is modular, equivalently:
 	\begin{enumerate}
 		\item Theorem \ref{thm:mod_conj_ap} holds for $E$.
