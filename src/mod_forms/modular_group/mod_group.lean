@@ -130,25 +130,25 @@ end
 @[simp] lemma SLnZ_M_a (A: SL2Z) (M: integral_matrices_with_determinant (fin 2) m) :
  (A • M) 0 0= A 0 0 * M 0 0 + A 0 1 * M 1 0 :=
 begin
-simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
+simp [integral_matrices_with_determinante.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
 @[simp] lemma SLnZ_M_b (A: SL2Z) (M: integral_matrices_with_determinant (fin 2) m) :
 (A • M) 0 1= A 0 0 * M 0 1 + A 0 1 * M 1 1 :=
 begin
-simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
+simp [integral_matrices_with_determinante.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
 @[simp] lemma SLnZ_M_c (A: SL2Z) (M: integral_matrices_with_determinant (fin 2) m) :
 (A • M) 1 0= A 1 0 * M 0 0 + A 1 1 * M 1 0 :=
 begin
-simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
+simp [integral_matrices_with_determinante.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
 @[simp] lemma SLnZ_M_d (A: SL2Z) (M: integral_matrices_with_determinant (fin 2) m)  :
  (A • M) 1 1= A 1 0 * M 0 1 + A 1 1 * M 1 1 :=
 begin
-simp [integral_matrices_with_determinant.SLnZ_M, add_mul, mul_add, mul_assoc],
+simp [integral_matrices_with_determinante.SLnZ_M, add_mul, mul_add, mul_assoc],
 end
 
 

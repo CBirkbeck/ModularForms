@@ -420,7 +420,7 @@ end
 
 
 
-namespace integral_matrices_with_determinant
+namespace integral_matrices_with_determinante
 
 variables  ( B : integral_matrices_with_determinant (fin 2) m)
 
@@ -440,6 +440,7 @@ def MATINV (m : ℤ) : integral_matrices_with_determinant (fin 2) m → integral
 instance (m : ℤ) : has_neg (integral_matrices_with_determinant (fin 2) m) :=
 ⟨λ A, MATINV m A ⟩
 
+
 @[simp] lemma neg_a : (-B) 0 0 = -B 0 0 := rfl
 @[simp] lemma neg_b : (-B) 0 1 = -B 0 1 := rfl
 @[simp] lemma neg_c : (-B) 1 0 = -B 1 0  := rfl
@@ -450,7 +451,7 @@ ext i j, fin_cases i; fin_cases j,simp,simp, simp,simp,
 end
 -/
 
-end integral_matrices_with_determinant
+end integral_matrices_with_determinante
 
 namespace SL2Z
 

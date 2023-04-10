@@ -12,10 +12,11 @@ interval_integral metric filter function complex
 open_locale interval real nnreal ennreal topology big_operators nat classical
 
 local notation `ℍ'`:=(⟨upper_half_plane.upper_half_space, upper_half_plane_is_open⟩: open_subs)
+/-
 
-def Eisenstein_series (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
+def Eisenstein_series2 (k : ℤ) := if h : 3 ≤ k then (Eisenstein_series_is_modular_form k h) else 0
 
-local notation `G[` k `]` :=  (Eisenstein_series k)
+local notation `G[` k `]` :=  (Eisenstein_series2 k)
 
 def Eisenstein_4 := 60 • G[4]
 
@@ -24,6 +25,7 @@ def Eisenstein_6 := 140 • G[6]
 local notation `E₄` := Eisenstein_4
 
 local notation `E₆` := Eisenstein_6
+-/
 
 open_locale direct_sum big_operators
 
@@ -1188,7 +1190,6 @@ simp_rw hk,
 simp,
 simpa using (lhs_summable z),
 end
-
 
 #exit
 
