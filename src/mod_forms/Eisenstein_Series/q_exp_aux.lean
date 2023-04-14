@@ -63,6 +63,50 @@ rw mem_uhs _ at hhf,
 apply hhf.le,
 end
 
+lemma diff_on_aux (s : ℍ') (k : ℕ) (n : ℕ+):
+  differentiable_on ℂ  ((λ (t : ℂ),  (-1 : ℂ)^k*(k)! * (1/(t - n)^(k+1))) +
+  (λ (t : ℂ),  (-1)^k*(k)! * (1/(t + n)^(k+1)))) ℍ' :=
+begin
+apply differentiable_on.add,
+apply differentiable_on.const_mul,
+apply differentiable_on.div,
+apply differentiable_on_const,
+apply differentiable_on.pow,
+simp only [subtype.coe_mk, differentiable_on_sub_const_iff],
+apply differentiable_on_id,
+intros x hx,
+apply pow_ne_zero,
+have := upper_ne_int ⟨x, hx⟩ (-n : ℤ),
+simp at *,
+exact this,
+apply differentiable_on.const_mul,
+apply differentiable_on.div,
+apply differentiable_on_const,
+apply differentiable_on.pow,
+simp only [subtype.coe_mk, differentiable_on_add_const_iff],
+apply differentiable_on_id,
+intros x hx,
+apply pow_ne_zero,
+have := upper_ne_int ⟨x, hx⟩ (n : ℤ),
+simp at *,
+exact this,
+end
+
+lemma diff_at_aux (s : ℍ') (k : ℕ) (n : ℕ+) : differentiable_at ℂ
+  (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - ↑n)⁻¹ + (z + ↑n)⁻¹) upper_half_space z) ↑s :=
+begin
+ have := iter_div_aut_add n k,
+ apply differentiable_on.differentiable_at,
+ apply differentiable_on.congr (diff_on_aux s k n),
+ intros r hr,
+ have ht := this hr,
+ simp at *,
+ apply ht,
+ apply is_open.mem_nhds,
+ apply upper_half_plane_is_open,
+ apply s.2,
+end
+
 lemma der_of_iter_der (s : ℍ'.1) (k : ℕ) (n : ℕ+):
     (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
     upper_half_space z) s) =   (-1)^(k+1)*(k+1)! * (1/(s - n)^(k+2)) +
@@ -71,7 +115,10 @@ begin
  have h: (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
     upper_half_space z) s) =
     (deriv_within (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
-    upper_half_space z) ℍ' s), by {apply apply differentiable_at.deriv_within,sorry},
+    upper_half_space z) ℍ' s), by {apply symm, apply differentiable_at.deriv_within,
+    apply diff_at_aux,
+    apply is_open.unique_diff_on upper_half_plane_is_open ,
+    apply s.2,},
 rw h,
 simp,
 rw ←iterated_deriv_within_succ,
@@ -92,6 +139,10 @@ begin
   obtain ⟨ A, B, hB, hAB⟩ := H,
   refine ⟨ (λ (a : ℕ+), ((-1)^k*(k)!)/(rfunct(lbpoint A B hB))^(k+1) ), _,_⟩,
   sorry,
+  intros n s,
+  have hr := der_of_iter_der ⟨s.1, hk s.2⟩  k n,
+  simp at *,
+  rw hr,
 
 
 
