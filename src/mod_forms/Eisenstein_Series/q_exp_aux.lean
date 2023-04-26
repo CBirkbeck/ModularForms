@@ -293,3 +293,57 @@ begin
   simp at hr,
   apply hr,
 end
+
+
+lemma aut_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ')  :
+  iterated_deriv_within k (λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' x =
+   (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' x ) :=
+begin
+induction k with k IH generalizing x,
+simp only [iterated_deriv_within_zero],
+simp only [subtype.coe_mk] at *,
+rw iterated_deriv_within_succ,
+have HH:
+deriv_within (iterated_deriv_within k (λ (z : ℂ),∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' ) ℍ' x =
+deriv_within (λ z,
+  (∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' z)) ℍ' x,
+ by {
+  apply deriv_within_congr,
+  apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+  intros y hy,
+  apply IH ⟨y,hy⟩,
+  apply IH x,},
+simp only [subtype.coe_mk] at *,
+simp_rw HH,
+simp,
+rw deriv_tsum_fun',
+simp only,
+apply tsum_congr,
+intro b,
+rw iterated_deriv_within_succ,
+apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
+exact upper_half_plane_is_open,
+exact x.2,
+intros y hy,
+simpa using (summable_iter_aut k ⟨y, hy⟩),
+intros K hK hK2,
+apply aut_bound_on_comp K hK hK2 k,
+intros n r,
+apply diff_at_aux r k n,
+apply is_open.unique_diff_within_at upper_half_plane_is_open,
+exact x.2,
+end
+
+lemma aux_iter_der_tsum (k : ℕ) (hk : 3 ≤ k) (x : ℍ') :
+iterated_deriv_within k ((λ (z : ℂ), 1/z) +(λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))))) ℍ' x =
+((-1)^(k : ℕ) *(k : ℕ)!) * ∑' (n : ℤ), 1/((x : ℂ) + n)^(k +1 : ℕ) :=
+begin
+rw iter_deriv_within_add,
+have h1 := aut_iter_deriv 0 k x.2,
+simp at *,
+rw h1,
+have := aut_series_ite_deriv_uexp2 k x,
+simp at *,
+rw this,
+all_goals{sorry},
+end
