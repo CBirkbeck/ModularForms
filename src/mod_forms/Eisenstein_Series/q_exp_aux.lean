@@ -129,6 +129,123 @@ apply is_open.unique_diff_on upper_half_plane_is_open ,
 apply s.2,
 end
 
+lemma rfunct_abs_pos (z : ℍ') : 0  < |(rfunct(z))| :=
+begin
+have := rfunct_pos z,
+simp,
+linarith,
+
+end
+
+
+lemma sub_bound (s : ℍ'.1)  (A B : ℝ) (hB : 0 < B) (hs : s ∈ upper_half_space_slice A B)
+(k : ℕ) (n : ℕ+) : complex.abs ((-1)^(k+1)*(k+1)! * (1/(s - n)^(k+2)))
+ ≤  complex.abs (((k+1)!)/(rfunct(lbpoint A B hB))^(k+2))* ((rie (k+2)) n) :=
+begin
+simp only [nat.factorial_succ, nat.cast_mul, nat.cast_add, algebra_map.coe_one, coe_coe, one_div,
+absolute_value.map_mul, complex.abs_pow, absolute_value.map_neg, absolute_value.map_one, one_pow,
+abs_cast_nat, one_mul, map_inv₀, map_div₀, abs_of_real],
+rw div_eq_mul_inv,
+simp_rw mul_assoc,
+rw mul_le_mul_left,
+rw mul_le_mul_left,
+have hk : 1 ≤ k+2, by {linarith},
+have := Eise_on_square_is_bounded'' (k+2) s n hk ⟨1,-(n : ℤ) ⟩,
+simp only [int.nat_abs, coe_coe, square_mem, int.nat_abs_one, int.nat_abs_neg, int.nat_abs_of_nat, max_eq_right_iff,
+  algebra_map.coe_one, one_mul, int.cast_neg, int.cast_coe_nat, complex.abs_pow, absolute_value.map_mul, abs_of_real,
+  abs_cast_nat, mul_inv_rev] at this,
+have hn : 1 ≤ (n : ℕ), by { have hn2:= n.2, norm_cast, exact pnat.one_le n, },
+have ht := this hn,
+apply le_trans ht,
+simp_rw rie,
+rw div_eq_mul_inv,
+nth_rewrite 1 mul_comm,
+simp,
+norm_cast,
+rw mul_le_mul_left,
+rw inv_le_inv,
+apply pow_le_pow_of_le_left,
+apply (rfunct_abs_pos _).le,
+have hss := rfunct_lower_bound_on_slice A B hB ⟨s, hs⟩,
+rw abs_of_pos (rfunct_pos _),
+rw abs_of_pos (rfunct_pos _),
+apply hss,
+apply pow_pos (rfunct_abs_pos _),
+apply pow_pos (rfunct_abs_pos _),
+rw inv_pos,
+norm_cast,
+apply pow_pos,
+linarith,
+norm_cast,
+apply nat.factorial_pos,
+simp only [absolute_value.pos_iff, ne.def],
+norm_cast,
+linarith,
+end
+
+lemma add_bound (s : ℍ'.1)  (A B : ℝ) (hB : 0 < B) (hs : s ∈ upper_half_space_slice A B)
+(k : ℕ) (n : ℕ+) : complex.abs ((-1)^(k+1)*(k+1)! * (1/(s + n)^(k+2)))
+ ≤  complex.abs (((k+1)!)/(rfunct(lbpoint A B hB))^(k+2))* ((rie (k+2)) n) :=
+begin
+simp only [nat.factorial_succ, nat.cast_mul, nat.cast_add, algebra_map.coe_one, coe_coe, one_div,
+absolute_value.map_mul, complex.abs_pow, absolute_value.map_neg, absolute_value.map_one, one_pow,
+abs_cast_nat, one_mul, map_inv₀, map_div₀, abs_of_real],
+rw div_eq_mul_inv,
+simp_rw mul_assoc,
+rw mul_le_mul_left,
+rw mul_le_mul_left,
+have hk : 1 ≤ k+2, by {linarith},
+have := Eise_on_square_is_bounded'' (k+2) s n hk ⟨1,(n : ℤ) ⟩,
+simp only [int.nat_abs, coe_coe, square_mem, int.nat_abs_one, int.nat_abs_neg, int.nat_abs_of_nat, max_eq_right_iff,
+  algebra_map.coe_one, one_mul, int.cast_neg, int.cast_coe_nat, complex.abs_pow, absolute_value.map_mul, abs_of_real,
+  abs_cast_nat, mul_inv_rev] at this,
+have hn : 1 ≤ (n : ℕ), by { have hn2:= n.2, norm_cast, exact pnat.one_le n, },
+have ht := this hn,
+apply le_trans ht,
+simp_rw rie,
+rw div_eq_mul_inv,
+nth_rewrite 1 mul_comm,
+simp,
+norm_cast,
+rw mul_le_mul_left,
+rw inv_le_inv,
+apply pow_le_pow_of_le_left,
+apply (rfunct_abs_pos _).le,
+have hss := rfunct_lower_bound_on_slice A B hB ⟨s, hs⟩,
+rw abs_of_pos (rfunct_pos _),
+rw abs_of_pos (rfunct_pos _),
+apply hss,
+apply pow_pos (rfunct_abs_pos _),
+apply pow_pos (rfunct_abs_pos _),
+rw inv_pos,
+norm_cast,
+apply pow_pos,
+linarith,
+norm_cast,
+apply nat.factorial_pos,
+simp only [absolute_value.pos_iff, ne.def],
+norm_cast,
+linarith,
+end
+
+
+lemma upper_bnd_summable  (A B : ℝ) (hB : 0 < B) (k : ℕ) :
+summable (λ (a : ℕ+), 2 * complex.abs (((k+1)!)/(rfunct(lbpoint A B hB))^(k+2))* ((rie (k+2)) a)) :=
+begin
+rw ←summable_mul_left_iff,
+have hk : 1 < (k : ℝ) + 2, by {norm_cast, linarith,},
+have := Riemann_zeta_is_summmable (k + 2) hk,
+apply summable.subtype this,
+simp only [ nat.cast_mul, nat.cast_add, algebra_map.coe_one, map_div₀, complex.abs_pow, abs_of_real, ne.def,
+  mul_eq_zero, bit0_eq_zero, one_ne_zero, div_eq_zero_iff, absolute_value.eq_zero, nat.cast_eq_zero, pow_eq_zero_iff,
+  nat.succ_pos', abs_eq_zero, false_or],
+apply not_or,
+apply nat.factorial_ne_zero,
+have hr := rfunct_pos (lbpoint A B hB),
+linarith,
+end
+
+
 lemma aut_bound_on_comp (K : set ℂ) (hk : K ⊆ ℍ'.1) (hk2 : is_compact K) (k : ℕ) :
   ∃ (u : ℕ+ → ℝ), summable u ∧ ∀ (n : ℕ+) (s : K),
   complex.abs (deriv (λ (z : ℂ), iterated_deriv_within k (λ (z : ℂ), (z - (n : ℂ))⁻¹ + (z + n)⁻¹)
@@ -137,24 +254,34 @@ begin
   by_cases h1 : set.nonempty K,
   have H:= compact_in_slice' K h1 hk hk2,
   obtain ⟨ A, B, hB, hAB⟩ := H,
-  refine ⟨ (λ (a : ℕ+), ((-1)^k*(k)!)/(rfunct(lbpoint A B hB))^(k+1) ), _,_⟩,
-  sorry,
+  refine ⟨ (λ (a : ℕ+), 2 * complex.abs (((k+1)!)/(rfunct(lbpoint A B hB))^(k+2))* ((rie (k+2)) a) ), _,_⟩,
+  exact upper_bnd_summable A B hB k,
   intros n s,
   have hr := der_of_iter_der ⟨s.1, hk s.2⟩  k n,
-  simp at *,
+  simp only [coe_coe,  nat.cast_mul, nat.cast_add, algebra_map.coe_one,
+  top_eq_univ, image_univ, range_inclusion, subtype.val_eq_coe, subtype.coe_mk, one_div] at *,
   rw hr,
-
-
-
-
-
-
-
-
-
-
-  sorry,
-  simp at *,
+  apply le_trans (complex.abs.add_le _ _),
+  simp_rw mul_assoc,
+  rw two_mul,
+  apply add_le_add,
+  have he1:= sub_bound ⟨s.1, hk s.2⟩ A B hB _ k n,
+  simp_rw div_eq_mul_inv at *,
+  simp only [nat.cast_mul, nat.cast_add, algebra_map.coe_one, subtype.val_eq_coe, subtype.coe_mk, coe_coe,
+  one_mul, absolute_value.map_mul, complex.abs_pow, absolute_value.map_neg, absolute_value.map_one, one_pow,
+  abs_cast_nat, map_inv₀, abs_of_real] at *,
+  exact he1,
+  apply hAB,
+  simp only [subtype.val_eq_coe, mem_set_of_eq, subtype.coe_mk, subtype.coe_prop],
+  have he1:= add_bound ⟨s.1, hk s.2⟩ A B hB _ k n,
+  simp_rw div_eq_mul_inv at *,
+  simp only [nat.cast_mul, nat.cast_add, algebra_map.coe_one, subtype.val_eq_coe, subtype.coe_mk, coe_coe,
+  one_mul, absolute_value.map_mul, complex.abs_pow, absolute_value.map_neg, absolute_value.map_one, one_pow,
+  abs_cast_nat, map_inv₀, abs_of_real] at *,
+  exact he1,
+  apply hAB,
+  simp only [subtype.val_eq_coe, mem_set_of_eq, subtype.coe_mk, subtype.coe_prop],
+  simp only [slice_mem, abs_of_real, ge_iff_le, nat.factorial_succ, nat.cast_mul, nat.cast_add, algebra_map.coe_one] at *,
   refine ⟨ (λ x, 0), _,_ ⟩,
   apply summable_zero,
   intro n ,
@@ -165,6 +292,4 @@ begin
   simp_rw h1 at hr,
   simp at hr,
   apply hr,
-  --have H:= compact_in_slice' K hk hk2
-
 end
