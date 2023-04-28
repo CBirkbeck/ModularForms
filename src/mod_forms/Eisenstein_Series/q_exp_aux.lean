@@ -334,16 +334,101 @@ apply is_open.unique_diff_within_at upper_half_plane_is_open,
 exact x.2,
 end
 
+
+
+
+lemma tsum_ider_der_eq (k : ℕ) (x : ℍ') :
+∑' (n : ℕ+), iterated_deriv_within k (λ (z : ℂ), (1/(z-(n))+1/(z+(n)))) ℍ' x = ∑' (n : ℕ+),
+ ((-1 : ℂ)^k*(k)! * (1/(x - n)^(k+1)) + (-1)^k*(k)! * (1/(x + n)^(k+1))) :=
+begin
+apply tsum_congr,
+intros b,
+have h2 := iter_div_aut_add b k x.2,
+simpa using h2,
+end
+
+lemma auxp_series_ite_deriv_uexp''' (k : ℕ)   :
+  eq_on (iterated_deriv_within k (λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ')
+   (λ (x : ℂ),  ∑' (n : ℕ+),
+ ((-1 : ℂ)^k*(k)! * (1/(x - n)^(k+1)) + (-1)^k*(k)! * (1/(x + n)^(k+1)))) ℍ' :=
+begin
+intros x hx,
+have := aut_series_ite_deriv_uexp2 k ⟨x,hx⟩,
+simp at *,
+rw this,
+have h2:= tsum_ider_der_eq k ⟨x, hx⟩,
+simpa using h2,
+end
+
+
+
+lemma tsum_aexp_cont_diff_on (k : ℕ) :
+cont_diff_on ℂ k (λ(z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n)))) ℍ' :=
+begin
+apply  cont_diff_on_of_differentiable_on_deriv,
+intros m hm,
+have h1:= (auxp_series_ite_deriv_uexp'''  m),
+apply differentiable_on.congr _ (h1),
+intros x hx,
+apply has_deriv_within_at.differentiable_within_at,
+apply has_deriv_within_at_tsum_fun _ (upper_half_plane_is_open),
+apply hx,
+intros y hy,
+apply summable_iter_derv' m ⟨y, hy⟩,
+intros K hK1 hK2,
+have := iter_deriv_comp_bound3 K hK1 hK2 (m+1),
+obtain ⟨u, hu, hu2⟩ := this,
+refine ⟨u, hu, _⟩,
+intros n r,
+have HU2 := hu2 n r,
+simp,
+apply le_trans _ HU2,
+apply le_of_eq,
+ring_exp,
+intros n r,
+apply differentiable.differentiable_at,
+simp only [differentiable.mul, differentiable_const, differentiable.cexp, differentiable_id'],
+exact at_top_ne_bot,
+end
+
+
+
 lemma aux_iter_der_tsum (k : ℕ) (hk : 3 ≤ k) (x : ℍ') :
 iterated_deriv_within k ((λ (z : ℂ), 1/z) +(λ (z : ℂ), ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))))) ℍ' x =
 ((-1)^(k : ℕ) *(k : ℕ)!) * ∑' (n : ℤ), 1/((x : ℂ) + n)^(k +1 : ℕ) :=
 begin
 rw iter_deriv_within_add,
 have h1 := aut_iter_deriv 0 k x.2,
-simp at *,
+simp only [one_div, subtype.coe_mk, coe_coe, algebra_map.coe_zero, add_zero, subtype.val_eq_coe] at *,
 rw h1,
 have := aut_series_ite_deriv_uexp2 k x,
-simp at *,
+simp only [coe_coe, one_div, subtype.coe_mk] at *,
 rw this,
+have h2:=tsum_ider_der_eq k x,
+simp only [coe_coe, one_div, subtype.coe_mk] at h2,
+rw h2,
+rw int_tsum_pnat,
+simp only [algebra_map.coe_zero, add_zero, coe_coe, int.cast_coe_nat, int.cast_neg],
+rw tsum_add,
+rw tsum_mul_left,
+rw tsum_mul_left,
+rw mul_add,
+rw mul_add,
+--ring_nf,
+sorry,
+rw ← summable_mul_left_iff,
+have hk2 : 2 ≤ k+1, by {linarith},
+simpa using (lhs_summable_2 x (k+1) hk2),
+simp only [nat.factorial_ne_zero, ne.def, neg_one_pow_mul_eq_zero_iff, nat.cast_eq_zero, not_false_iff],
+rw ← summable_mul_left_iff,
+have hk2 : 2 ≤ k+1, by {linarith},
+simpa using (lhs_summable_2' x (k+1) hk2),
+simp only [nat.factorial_ne_zero, ne.def, neg_one_pow_mul_eq_zero_iff, nat.cast_eq_zero, not_false_iff],
+have hk3 : 3 ≤ k+1, by {linarith},
+have := summable_factor (-1 : ℤ) x (k+1) hk3,
+simpa using this,
+have := aut_cont_diff_on 0 k,
+simpa using this,
+
 all_goals{sorry},
 end

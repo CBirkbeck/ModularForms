@@ -1196,9 +1196,6 @@ end
 
 
 
-
-#exit
-
 lemma series_eql (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))) :=
 begin
@@ -1353,11 +1350,13 @@ end
 lemma summable_factor (n : ℤ) (z : ℍ)  (k : ℕ) (hk : 3 ≤ k) :
   summable (λ (d : ℤ), ((-((n : ℂ)*z) +d)^k)⁻¹) :=
 begin
-have H := Eis_summ k hk z,
+have H := Eisenstein_series_is_summable k z hk,
 have H2:= H.prod_factor (-n),
+rw Eise at H2,
 simp at *,
 exact H2,
 end
+
 
 lemma q_exp_iden_2 (k : ℕ) (hk : 3 ≤ k) (hk2: even k) (z : ℍ):
 ∑' (x : ℤ × ℤ),  1/(((x.1 : ℂ)*z+x.2)^k) = 2 * (Riemann_zeta k) +
@@ -1413,9 +1412,10 @@ ring_nf,
 convert even.neg_pow hk2 ((z : ℂ)* n + d),
 ring,
 apply summable_factor n z k hk,
-have h1 := Eis_summ k hk z,
+have h1 := Eisenstein_series_is_summable k z hk,
+
 apply prod_sum _ h1,
-apply Eis_summ k hk z,
+apply Eisenstein_series_is_summable k z hk,
 end
 
 def sigma_fn (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, d^k
@@ -1450,9 +1450,9 @@ linarith,
 end
 
 lemma eisen_iden (k : ℕ) (hk : 3 ≤  (k : ℤ)) (hk2 : even k) (z : ℍ):
-(Eisenstein_series k) z = Eisenstein_series_of_weight_ k  z :=
+(Eisenstein_series2 k) z = Eisenstein_series_of_weight_ k  z :=
 begin
-simp_rw Eisenstein_series,
+simp_rw Eisenstein_series2,
 simp [hk],
 rw Eisenstein_series_is_modular_form,
 simp_rw Eisenstein_is_slash_inv,
@@ -1823,7 +1823,7 @@ end
 
 
 lemma Eisen_q_exp (k : ℕ) (hk : 3 ≤ (k : ℤ)) (hk2 : even k) (z : ℍ) :
-  (Eisenstein_series k) z =  2* (Riemann_zeta k) +
+  (Eisenstein_series2 k) z =  2* (Riemann_zeta k) +
   2 * ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+),  (sigma_fn (k-1) (n))*(complex.exp ( 2 *↑π * I * z * n)) :=
 begin
 rw eisen_iden k hk hk2,
