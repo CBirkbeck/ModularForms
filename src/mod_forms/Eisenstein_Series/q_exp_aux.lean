@@ -360,6 +360,22 @@ have h2:= tsum_ider_der_eq k ⟨x, hx⟩,
 simpa using h2,
 end
 
+lemma summable_3 (m : ℕ) (y : ℍ') : summable (λ (n : ℕ+), (-1 : ℂ) ^ m * ↑m! * (1 / (y - ↑n) ^ (m + 1)) +
+(-1) ^ m * ↑m! * (1 / (y + ↑n) ^ (m + 1))) :=
+begin
+by_cases hm : m = 0,
+simp_rw hm,
+simp,
+have := lhs_summable y,
+simpa using this,
+have hm2 : 2 ≤ m + 1, by { have : 1 ≤ m, by {apply nat.one_le_iff_ne_zero.mpr hm} , linarith,},
+simp_rw ←mul_add,
+rw ←summable_mul_left_iff,
+apply summable.add,
+apply lhs_summable_2 y (m+1) hm2,
+apply lhs_summable_2' y (m+1) hm2,
+simp [nat.factorial_ne_zero],
+end
 
 
 lemma tsum_aexp_cont_diff_on (k : ℕ) :
@@ -374,8 +390,11 @@ apply has_deriv_within_at.differentiable_within_at,
 apply has_deriv_within_at_tsum_fun _ (upper_half_plane_is_open),
 apply hx,
 intros y hy,
-apply summable_iter_derv' m ⟨y, hy⟩,
+apply summable_3 m ⟨y, hy⟩,
 intros K hK1 hK2,
+
+all_goals{sorry},
+/-
 have := iter_deriv_comp_bound3 K hK1 hK2 (m+1),
 obtain ⟨u, hu, hu2⟩ := this,
 refine ⟨u, hu, _⟩,
@@ -389,6 +408,7 @@ intros n r,
 apply differentiable.differentiable_at,
 simp only [differentiable.mul, differentiable_const, differentiable.cexp, differentiable_id'],
 exact at_top_ne_bot,
+-/
 end
 
 
