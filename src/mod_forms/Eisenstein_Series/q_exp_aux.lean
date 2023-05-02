@@ -60,6 +60,7 @@ apply this hk,
 end
 
 
+
 lemma series_eql' (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))) :=
 begin
