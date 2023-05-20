@@ -42,8 +42,10 @@ def is_normalised_eigenform {N : ℕ} {k : ℤ}
 (f : cusp_form (Gamma0 N) k) : Prop :=
 (a_[1] f) = 1 ∧
 ∀ (m n : ℕ) (hmn : m.coprime n), ((a_[n * m] f) = (a_[n] f) * (a_[m] f)) ∧
-∀ (p r : ℕ) (hp : p.prime ) (hr : 2 ≤ r),
-(a_[p^r] f) = (a_[p] f) * (a_[p^(r-1)] f) - (p^(k-1)) * (a_[p^(r-2)] f)
+∀ (p r : ℕ) (hp : p.prime ) (hr : 2 ≤ r) (HpN:  (N : zmod p ) ≠ 0 ),
+(a_[p^r] f) = (a_[p] f) * (a_[p^(r-1)] f) - (p^(k-1)) * (a_[p^(r-2)] f) ∧
+∀ (p r : ℕ) (hp : p.prime ) (hr : 2 ≤ r) (HpN:  (N : zmod p ) = 0 ),
+(a_[p^r] f) = (a_[p] f) ^r
 
 
 theorem modularity_conjecture (E : elliptic_curve ℚ) : ∃ (N : ℕ)
