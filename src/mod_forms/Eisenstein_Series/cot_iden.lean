@@ -1,5 +1,6 @@
 import data.complex.exponential
 import mod_forms.Eisenstein_Series.Eisen_is_holo
+import mod_forms.Eisenstein_Series.exp_summable_lemmas
 
 noncomputable theory
 
@@ -38,30 +39,6 @@ have h3 : complex.exp ( 2 *↑π * I * z) = complex.exp ( 2 *↑π * z * I), by 
 ring,},
 simp_rw h3,
 apply exp_ne_zero,
-end
-
-lemma exp_upper_half_plane_lt_one (z : ℍ) : complex.abs (complex.exp ( 2 *↑π * I * z)) < 1 :=
-begin
-rw ←upper_half_plane.re_add_im,
-rw mul_add,
-rw exp_add,
-simp only [absolute_value.map_mul],
-have h1 : complex.abs (exp (2 * ↑π * I * ↑(z.re))) = complex.abs (exp ((2 * ↑π  * ↑(z.re)) * I )),
-  by {ring_nf},
-rw h1,
-norm_cast,
-have := abs_exp_of_real_mul_I (2 * π * z.re),
-rw this,
-simp only [of_real_mul, of_real_bit0, of_real_one, one_mul],
-have h2 :  complex.abs (exp (2 * ↑π * I * (↑(z.im) * I))) =
-  complex.abs (exp (2 * ↑π * (↑(z.im) * I^2))), by {ring_nf,},
-rw h2,
-simp only [I_sq, mul_neg, mul_one],
-norm_cast,
-simp only [real.abs_exp, real.exp_lt_one_iff, right.neg_neg_iff],
-apply mul_pos,
-apply real.two_pi_pos,
-exact z.2,
 end
 
 lemma div_one_sub_exp (z : ℍ) : 1/ (1- complex.exp ( 2 *↑π * I * z)) =
@@ -155,4 +132,13 @@ have hh : ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
 rw hh,
 rw this,
 ring,
+end
+
+
+lemma cot_series_rep (z : ℍ) : ↑π * cot (↑π* z) - 1/z =
+ ∑' (n : ℕ+), (1/(z-n)+1/(z+n)) :=
+begin
+apply symm,
+refine (has_sum.tsum_eq _),
+sorry,
 end
