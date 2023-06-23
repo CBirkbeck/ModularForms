@@ -4,7 +4,11 @@ import analysis.complex.upper_half_plane.basic
 import mod_forms.Riemann_zeta_fin
 import analysis.calculus.iterated_deriv
 import analysis.calculus.series
-import mod_forms.Eisenstein_Series.Eisenstein_series_q_expansions
+import mod_forms.Eisenstein_Series.cot_iden
+import mod_forms.Eisenstein_Series.tsum_lemmas
+import mod_forms.Eisenstein_Series.auxp_lemmas
+import mod_forms.Eisenstein_Series.exp_summable_lemmas
+--import mod_forms.Eisenstein_Series.Eisenstein_series_q_expansions
 
 noncomputable theory
 
@@ -64,7 +68,10 @@ end
 lemma series_eql' (z : ℍ) :   ↑π * I- (2 *  ↑π * I)* ∑' (n : ℕ), complex.exp ( 2 *↑π * I * z * n) =
   1/z + ∑' (n : ℕ+), (1/(z-(n))+1/(z+(n))) :=
 begin
-sorry,
+rw ←pi_cot_q_exp z,
+have h := cot_series_rep z,
+rw sub_eq_iff_eq_add' at h,
+exact h,
 end
 
 
@@ -99,7 +106,7 @@ apply congr_arg,
 ring,
 end
 
-lemma q_exp_iden' (k : ℕ) (hk : 3 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
+lemma q_exp_iden (k : ℕ) (hk : 3 ≤ k ) (z : ℍ):  ∑' (d : ℤ), 1/((z : ℂ) + d)^k =
   ((-2 *  ↑π * I)^k/(k-1)!) * ∑' (n : ℕ+), ((n)^(k-1)) *  complex.exp ( 2 *↑π * I * z* n) :=
 begin
 have := q_exp_iden'' k hk z.2,
