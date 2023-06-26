@@ -143,7 +143,7 @@ sorry,
 end
 
 
-def log_deriv (f : ℂ → ℂ) := deriv f / f
+def log_deriv (f : ℂ  → ℂ) := deriv f / f
 
 lemma cot_log_derv_sin (z : ℍ) : cot (π *z) = ((deriv sin) (π * z))/ sin (π * z) :=
 begin
@@ -151,7 +151,65 @@ rw cot,
 simp,
 end
 
+lemma log_derv_eq_derv_log (f : ℂ  → ℂ) (x : ℂ) (hf : f x ≠ 0): (log_deriv f) x =
+(deriv (complex.log)) (f x) :=
+begin
+sorry,
+end
 
+
+
+lemma log_deriv_one : log_deriv 1 = 0 :=
+begin
+sorry,
+end
+
+lemma log_derv_mul (f g: ℂ → ℂ) (x : ℂ) (hfg : f x * g x ≠ 0) (hdf : differentiable_at ℂ f x)
+ (hdg : differentiable_at ℂ g x) :
+log_deriv (λz, f z * g z) x= log_deriv(f) x + log_deriv (g) x:=
+begin
+simp_rw log_deriv,
+simp,
+rw deriv_mul hdf hdg,
+have h1 := (mul_ne_zero_iff.1 hfg).1,
+have h2 := (mul_ne_zero_iff.1 hfg).2,
+field_simp,
+apply mul_comm,
+end
+
+lemma log_derv_prod {α : Type*} (s : finset  α) (f : α → ℂ → ℂ) (t : ℂ) (hf : ∀ x ∈ s, f x t ≠ 0)
+   (hd : ∀ x ∈ s, differentiable_at ℂ (f x) t) :
+  log_deriv (∏ i in s, f i) t = ∑ i in s, log_deriv (f i) t :=
+begin
+  induction s using finset.cons_induction_on with a s ha ih,
+  { simp [log_deriv_one] },
+  { rw [finset.forall_mem_cons] at hf,
+    simp [ih hf.2], rw finset.prod_insert, rw finset.sum_insert, sorry, sorry, sorry,
+   -- apply log_derv_mul,
+   }
+end
+
+lemma log_derv_diff (f : ℂ → ℂ) (s : set ℂ) (hs : is_open s) (hf : differentiable_on ℂ f s) (x : s)
+ (hf2 : ∀ x ∈ s, f x ≠ 0) : differentiable_on ℂ (log_deriv f) s :=
+begin
+rw log_deriv,
+apply differentiable_on.div,
+all_goals{sorry},
+
+
+end
+
+
+lemma tendsto_euler_log_derv_sin_prodd (x : ℍ):
+  tendsto  ( (λ n:ℕ,  log_deriv  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) x))
+  at_top (𝓝 $ log_deriv (complex.sin) (π * x)) :=
+begin
+sorry,
+
+end
+
+
+--lemma logder (f : ℕ → ℂ → ℂ) (x a : ℂ) (hx : f x ≠ 0) (hf : tendsto f at_top (𝓝 a))
 
 lemma tendsto_euler_log_sin_prod' (z : ℍ) :
   tendsto  (complex.log ∘  (λ n:ℕ, (↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))))
@@ -162,6 +220,83 @@ swap,
 apply tendsto_euler_sin_prod,
 apply tendsto_map,
 end
+
+lemma clog_der11 (f : ℂ → ℂ) {f' x : ℂ} (h₁ : has_deriv_at f f' x)  (h₂ : f x ≠ 0)
+ (h3 : (f x).re < 0 ∧ (f x).im = 0) :
+ has_deriv_within_at (λ t, log (complex.abs (f t))) (f' / f x) {z : ℂ | 0 ≤ x.im} x :=
+begin
+have h1 : 0 < complex.abs (f x).re ∨ complex.abs(f x).im ≠ 0, by {sorry},
+have h2: has_deriv_within_at (λ y, (complex.abs (f y) : ℂ)) (complex.abs f')  {z : ℂ | 0 ≤ x.im} x, by {sorry},
+have h4:= has_deriv_within_at.clog h2 ,
+
+sorry,
+end
+
+lemma clog_der1 (f : ℂ → ℂ) {f' x : ℂ} (h₁ : has_deriv_at f f' x)  (h₂ : f x ≠ 0)
+ (h3 : (f x).re < 0 ∧ (f x).im = 0) :
+ has_deriv_within_at (λ t, log (f t)) (f' / f x) {z : ℂ | 0 ≤ x.im} x :=
+begin
+rw has_deriv_within_at_iff_tendsto,
+have h1:= tendsto_log_nhds_within_im_nonneg_of_re_neg_of_im_zero h3.1 h3.2,
+
+have h23 := clog_der11 f h₁ h₂ h3,
+rw has_deriv_within_at_iff_tendsto at h23,
+apply tendsto.congr' _ h23,
+
+
+end
+
+lemma clog_der (f : ℂ → ℂ) {f' x : ℂ} (h₁ : has_deriv_at f f' x)  (h₂ : f x ≠ 0) :
+ has_deriv_at (λ t, log (f t)) (f' / f x) x :=
+begin
+
+by_cases 0 ≤  (f x).re ∨ (f x).im ≠ 0,
+sorry,
+--apply has_deriv_at.clog h₁ h,
+rw decidable.not_or_iff_and_not at h,
+simp at h,
+have h1:= tendsto_log_nhds_within_im_nonneg_of_re_neg_of_im_zero h.1 h.2,
+have h2:= tendsto_log_nhds_within_im_neg_of_re_neg_of_im_zero h.1 h.2,
+have hh :  has_deriv_within_at (λ t, log (f t)) (f' / f x) {z : ℂ | 0 ≤ x.im} x, by {sorry},
+
+
+
+
+end
+
+
+lemma has_strict_deriv_at_logg {x : ℂ} (h : x ≠ 0) :
+  has_strict_deriv_at log x⁻¹ x :=
+begin
+by_cases 0 ≤ x.re ∨ x.im ≠ 0,
+sorry,
+rw decidable.not_or_iff_and_not at h,
+simp at h,
+
+end
+
+
+lemma der_log_sin_eq_cott (x : ℍ') : has_deriv_at (complex.log ∘ (λ z, sin (π * z)) ) ((π : ℂ) * cot(π * x))  x:=
+begin
+rw has_deriv_at_iff_tendsto,
+simp,
+sorry,
+end
+
+
+lemma tendsto_der_euler_log_sin_prod' (z : ℍ) :
+  tendsto  (deriv complex.log ∘  (λ n:ℕ, (↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))))
+  at_top (𝓝 $ deriv complex.log (complex.sin (π * z)))  :=
+begin
+apply tendsto.comp,
+swap,
+apply tendsto_euler_sin_prod,
+apply continuous_at.tendsto,
+rw ← log_derv_eq_derv_log,
+
+sorry,
+end
+
 
 lemma tendsto_euler_log_sin_prod (z : ℍ)
 (hz : 0 < (complex.sin (π * z)).re ∨ (complex.sin (π * z)).im ≠ 0 ) :
@@ -174,6 +309,31 @@ apply tendsto_euler_sin_prod,
 apply continuous_at.tendsto,
 apply continuous_at_clog,
 apply hz,
+end
+
+lemma tendsto_euler_log_sin_prodd (z : ℍ):
+  tendsto  (complex.log ∘  (λ n:ℕ, (↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))))
+  at_top (𝓝 $ complex.log (complex.sin (π * z))) :=
+begin
+apply tendsto.comp,
+swap,
+apply tendsto_euler_sin_prod,
+apply continuous_at.tendsto,
+by_cases 0 ≤ (complex.sin (π * z)).re ∨ (complex.sin (π * z)).im ≠ 0,
+sorry,
+--apply continuous_at_clog h,
+apply continuous_within_at.continuous_at,
+apply continuous_within_at_log_of_re_neg_of_im_zero,
+rw decidable.not_or_iff_and_not at h,
+simp at h,
+apply h.1,
+rw decidable.not_or_iff_and_not at h,
+simp at h,
+apply h.2,
+rw decidable.not_or_iff_and_not at h,
+simp at h,
+rw mem_nhds_subtype_iff_nhds_within,
+
 end
 
 lemma tendsto_euler_log_sin_prod'' (z : ℍ)
