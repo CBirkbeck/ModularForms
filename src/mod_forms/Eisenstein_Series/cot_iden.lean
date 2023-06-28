@@ -2,6 +2,7 @@ import data.complex.exponential
 import mod_forms.Eisenstein_Series.Eisen_is_holo
 import mod_forms.Eisenstein_Series.exp_summable_lemmas
 import analysis.special_functions.trigonometric.euler_sine_prod
+import analysis.complex.locally_uniform_limit
 
 noncomputable theory
 
@@ -152,7 +153,7 @@ simp,
 end
 
 lemma log_derv_eq_derv_log (f : ℂ  → ℂ) (x : ℂ) (hf : f x ≠ 0): (log_deriv f) x =
-(deriv (complex.log)) (f x) :=
+(deriv ((complex.log) ∘ f) x) :=
 begin
 sorry,
 end
@@ -166,7 +167,7 @@ end
 
 lemma log_derv_mul (f g: ℂ → ℂ) (x : ℂ) (hfg : f x * g x ≠ 0) (hdf : differentiable_at ℂ f x)
  (hdg : differentiable_at ℂ g x) :
-log_deriv (λz, f z * g z) x= log_deriv(f) x + log_deriv (g) x:=
+log_deriv (λz, f z * g z) x = log_deriv(f) x + log_deriv (g) x:=
 begin
 simp_rw log_deriv,
 simp,
@@ -199,15 +200,83 @@ all_goals{sorry},
 
 end
 
+lemma log_deriv_congr (f g : ℂ → ℂ)  (hfg : f = g) : log_deriv f = log_deriv g :=
+begin
+apply congr,
+refl,
+exact hfg,
+end
+
+lemma log_deriv_comp (f g : ℂ → ℂ) (x : ℂ) (hf : differentiable_at ℂ f (g x) )
+(hg : differentiable_at ℂ g x) : log_deriv (f ∘ g) x = ((log_deriv f) (g x)) * deriv g x :=
+begin
+simp_rw log_deriv,
+simp,
+rw (deriv.comp _ hf hg),
+simp_rw mul_comm,
+apply mul_assoc,
+end
+
+
+lemma log_deriv_of_sin_pi_mul (z : ℍ) (n : ℕ): log_deriv (complex.sin ∘  (λt, π * t)) =
+log_deriv (λ x,  π * x * (∏ j in finset.range n, (1 - x ^ 2 / (j + 1) ^ 2)) *
+(∫ y in 0..π/2, complex.cos (2 * x * y) * real.cos y ^ (2 * n)) / ↑∫ y in 0..π/2, real.cos y ^ (2 * n))  :=
+begin
+apply log_deriv_congr,
+ext1,
+apply euler_sine.sin_pi_mul_eq x n,
+end
+
+lemma log_deriv_sine (z : ℍ): log_deriv (complex.sin ∘  (λt, π * t)) z = π * cot(π * z) :=
+begin
+rw log_deriv_comp,
+simp,
+rw log_deriv,
+simp,
+rw cot,
+apply mul_comm,
+simp,
+simp,
+end
+
+--lemma log_of_prod  (z : ℍ) (n : ℕ) :
+ --log_deriv (λ x,  π * x * (∏ j in finset.range n, (1 - x ^ 2 / (j + 1) ^ 2))) =
+
+lemma log_der_tendsto (f : ℕ → ℂ → ℂ) (g : ℂ → ℂ) (x : ℍ') (hF : tendsto_locally_uniformly_on f g at_top ℍ')
+  (hf : ∀ᶠ (n : ℕ) in at_top, differentiable_on ℂ (f n) ℍ') (hg : g x ≠0 ):
+tendsto (λ n : ℕ, (log_deriv (f n) x)) at_top (𝓝 ((log_deriv g) x)) :=
+begin
+--have := continuous_at.tendsto,
+--rw tendsto_at_top_nhds,
+simp_rw log_deriv,
+apply tendsto.div,
+swap,
+apply hF.tendsto_at,
+apply x.2,
+have := (hF.deriv) _ _,
+have hf2 := this.tendsto_at,
+apply hf2,
+apply x.2,
+apply hf,
+apply upper_half_plane_is_open,
+apply hg,
+end
 
 lemma tendsto_euler_log_derv_sin_prodd (x : ℍ):
   tendsto  ( (λ n:ℕ,  log_deriv  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) x))
-  at_top (𝓝 $ log_deriv (complex.sin) (π * x)) :=
+  at_top (𝓝 $ log_deriv (complex.sin ∘ (λ t, π * t)) x) :=
 begin
+--rw metric.tendsto_at_top,
+--simp,
+have := log_der_tendsto
+  ( (λ n:ℕ,  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) ))
+  (complex.sin ∘ (λ t, π * t)) (x) ,
+apply this,
+
 sorry,
 
 end
-
+#exit
 
 --lemma logder (f : ℕ → ℂ → ℂ) (x a : ℂ) (hx : f x ≠ 0) (hf : tendsto f at_top (𝓝 a))
 
@@ -231,6 +300,7 @@ have h4:= has_deriv_within_at.clog h2 ,
 
 sorry,
 end
+
 
 lemma clog_der1 (f : ℂ → ℂ) {f' x : ℂ} (h₁ : has_deriv_at f f' x)  (h₂ : f x ≠ 0)
  (h3 : (f x).re < 0 ∧ (f x).im = 0) :
@@ -286,13 +356,13 @@ end
 
 lemma tendsto_der_euler_log_sin_prod' (z : ℍ) :
   tendsto  (deriv complex.log ∘  (λ n:ℕ, (↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))))
-  at_top (𝓝 $ deriv complex.log (complex.sin (π * z)))  :=
+  at_top (𝓝 $ deriv (complex.log  ∘ complex.sin) (π * z))  :=
 begin
 apply tendsto.comp,
 swap,
 apply tendsto_euler_sin_prod,
 apply continuous_at.tendsto,
-rw ← log_derv_eq_derv_log,
+
 
 sorry,
 end
