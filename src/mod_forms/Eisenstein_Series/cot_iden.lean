@@ -3,6 +3,7 @@ import mod_forms.Eisenstein_Series.Eisen_is_holo
 import mod_forms.Eisenstein_Series.exp_summable_lemmas
 import analysis.special_functions.trigonometric.euler_sine_prod
 import analysis.complex.locally_uniform_limit
+import analysis.special_functions.trigonometric.bounds
 
 noncomputable theory
 
@@ -262,6 +263,332 @@ apply upper_half_plane_is_open,
 apply hg,
 end
 
+
+/-! ## Integration against `cos x ^ n`
+The next few lemmas can be interpreted as stating that the distribution on `[0, π/2]` given by
+integrating against `cos x ^ n` converges, after a suitable normalisation, to a Dirac distribution
+at 0. -/
+
+/-- If `f` has continuous derivative `f'` on `[a, b]`, then it satisfies a Lipschitz continuity
+condition at `a`. (This is a simple special case of
+`convex.lipschitz_on_with_of_nnnorm_has_deriv_within_le`.) -/
+lemma norm_sub_le_mul_of_cont_diff {f f' : ℝ → ℂ} {a b : ℝ} (hab : a ≤ b)
+  (hfd : ∀ (x:ℝ), x ∈ Icc a b → has_deriv_within_at f (f' x) (Icc a b) x)
+  (hfc : continuous_on f' (Icc a b)) :
+  ∃ (M : ℝ), ∀ (x : ℝ), x ∈ Icc a b → ‖f x - f a‖ ≤ M * (x - a) :=
+begin
+  obtain ⟨M, hM⟩ := is_compact.exists_bound_of_continuous_on is_compact_Icc hfc,
+  have hM' : 0 ≤ M := le_trans (norm_nonneg _) (hM a (left_mem_Icc.mpr hab)),
+  refine ⟨M, _⟩,
+  have := convex.lipschitz_on_with_of_nnnorm_has_deriv_within_le (convex_Icc a b) hfd _,
+  show nnreal, exact ‖M‖₊,
+  { intros x hx,
+    specialize this hx (left_mem_Icc.mpr hab),
+    simp_rw edist_eq_coe_nnnorm_sub at this,
+    rw [←ennreal.coe_mul, ennreal.coe_le_coe, ←nnreal.coe_le_coe, coe_nnnorm] at this,
+    convert this,
+    { rw [coe_nnnorm, real.norm_of_nonneg hM'] },
+    { rw [coe_nnnorm, real.norm_of_nonneg (by linarith [hx.1] : 0 ≤ x - a)] } },
+  { intros x hx,
+    rw ←nnreal.coe_le_coe,
+    simp_rw coe_nnnorm,
+    convert hM x hx,
+    exact real.norm_of_nonneg hM' }
+end
+
+/-- Bound for the integral of `x / (x ^ 2 + 1) ^ t`, for `t < 2`. -/
+lemma integral_div_rpow_sq_add_one_le {t : ℝ} (y : ℝ) (ht : 2 < t) :
+  ∫ (u : ℝ) in 0..y, u / (u ^ 2 + 1) ^ (t / 2) ≤ 1 / (t - 2) :=
+begin
+  calc ∫ u in 0..y, u / (u ^ 2 + 1) ^ (t / 2) = ∫ u in 0..y, u * (u ^ 2 + 1) ^ (-t / 2) :
+    begin
+      refine integral_congr (λ u hu, _),
+      dsimp only,
+      rw [div_eq_mul_inv, ←real.rpow_neg (add_nonneg (sq_nonneg u) zero_le_one), neg_div],
+    end
+  ... = ((1 + y ^ 2) ^ (-t / 2 + 1) / (2 * (-t / 2 + 1)) - 1 / (2 * (-t / 2 + 1))) :
+    begin
+      conv in (_ ^ 2 + _) { rw add_comm },
+      rw [integral_mul_rpow_one_add_sq (by linarith : -t / 2 ≠ -1), zero_pow zero_lt_two,
+        add_zero, real.one_rpow],
+    end
+  ... = (1 / (t - 2) - (1 + y ^ 2) ^ (-t / 2 + 1) / (t - 2)) :
+    begin
+      have : ∀ u:ℝ, u / (2 * (-t / 2 + 1)) = -u / (t - 2),
+      { intro u,
+        rw [mul_add, mul_one, ←mul_div_assoc, mul_div_cancel_left, neg_div, ←div_neg],
+        congr' 1, ring,
+        exact two_ne_zero },
+      simp_rw this,
+      rw [sub_eq_add_neg _ ((-1 : ℝ) / _), ←neg_div, neg_neg, add_comm _ (1 / (t - 2)),
+        neg_div, ←sub_eq_add_neg],
+    end
+  ... ≤ 1 / (t - 2) :
+    begin
+      apply sub_le_self,
+      refine div_nonneg (real.rpow_nonneg_of_nonneg _ _) _,
+      linarith [sq_nonneg y],
+      linarith,
+    end
+end
+
+/-- If `f` is integrable on `[0, π/2]`, and `f x` satisfies a Lipschitz-continuity condition at `0`,
+then the integral `∫ x in 0..π/2, f x * cos x ^ n` differs from `f 0 * ∫ x in 0..π/2, cos x ^ n` by
+an `O(1 / n)` error. -/
+lemma abs_integral_mul_cos_pow_sub_le
+  {f : ℝ → ℂ} (hfi : interval_integrable f volume 0 (π/2))
+  {M : ℝ} (hm : ∀ (x : ℝ), x ∈ Icc (0:ℝ) (π/2) → ‖f x - f 0‖ ≤ M * x) {n : ℕ} (hn : 2 < n) :
+  ‖(∫ (x:ℝ) in 0..π/2, f x * real.cos x ^ n) - f 0 * (∫ (x:ℝ) in 0..π/2, real.cos x ^ n)‖
+  ≤ M / (n - 2) :=
+begin
+  have m_nn : 0 ≤ M,
+  { replace hm := (norm_nonneg _).trans (hm (π/2) (right_mem_Icc.mpr real.pi_div_two_pos.le)),
+    rwa mul_nonneg_iff_left_nonneg_of_pos real.pi_div_two_pos at hm, },
+  rw [sub_eq_add_neg, ←neg_mul, ←integral_const_mul, ←interval_integral.integral_add],
+  swap, { apply hfi.mul_continuous_on (continuous.continuous_on _),
+    sorry,},
+  swap, { apply continuous.interval_integrable, sorry,
+    --exact continuous_const.mul ((complex.continuous_of_real.comp continuous_cos).pow n)
+    },
+  refine (norm_integral_le_integral_norm real.pi_div_two_pos.le).trans _,
+  -- Bound the LHS above by the integral of (M * x) / (x ^ 2 + 1) ^ (n / 2).
+  -- (This creates several integrability side-goals.)
+  refine (integral_mono_on real.pi_div_two_pos.le _ _ _).trans _,
+  { exact λ x:ℝ, M * x / (x ^ 2 + 1) ^ (n / 2 : ℝ) },
+  { refine (interval_integrable.add _ _).norm,
+    { apply hfi.mul_continuous_on (continuous.continuous_on _), sorry,
+     -- exact (complex.continuous_of_real.comp continuous_cos).pow n
+     },
+    { apply continuous.interval_integrable, sorry,
+      --exact continuous_const.mul ((complex.continuous_of_real.comp continuous_cos).pow n)
+      } },
+  { apply continuous_on.interval_integrable,
+    refine continuous_at.continuous_on (λ x hx, _),
+    have : 0 < x ^ 2 + 1 := by { linarith [sq_nonneg x], },
+    apply continuous_at.div,
+    { exact continuous_at_id.const_mul _ },
+    { apply continuous_at.rpow_const,
+      { apply continuous.continuous_at,
+        exact (continuous_pow 2).add continuous_const },
+      { left, exact this.ne' } },
+    { exact (real.rpow_pos_of_pos this _).ne', } },
+  { intros x hx,
+    have a1 : 0 ≤ real.cos x,
+    { refine real.cos_nonneg_of_mem_Icc ⟨_, _⟩; linarith [real.pi_div_two_pos, hx.1, hx.2] },
+    have a2 : 0 < x ^ 2 + 1 := by linarith [sq_nonneg x],
+    have a3 : real.cos x ≤ 1 / real.sqrt (x ^ 2 + 1),
+    { refine real.cos_le_one_div_sqrt_sq_add_one _ _; linarith [real.pi_div_two_pos, hx.1, hx.2] },
+    rw [neg_mul, ←sub_eq_add_neg, ←sub_mul, norm_mul],
+    refine le_trans (mul_le_mul_of_nonneg_right (hm x hx) (norm_nonneg _)) _,
+    refine mul_le_mul_of_nonneg_left _ (mul_nonneg m_nn hx.1),
+    rw [norm_pow, complex.norm_eq_abs, complex.abs_of_nonneg a1],
+    convert pow_le_pow_of_le_left a1 a3 n,
+    rw [←real.inv_rpow a2.le, ←real.rpow_nat_cast _ n],
+    nth_rewrite 1 (by { field_simp, ring } : (n:ℝ) = 2 * (n / 2 : ℝ)),
+    rw [real.rpow_mul (one_div_nonneg.mpr $ real.sqrt_nonneg _), one_div, real.inv_rpow (real.sqrt_nonneg _) 2],
+    nth_rewrite 3 ←nat.cast_two,
+    rw [real.rpow_nat_cast _ 2, real.sq_sqrt a2.le] },
+  simp_rw [←mul_div, integral_const_mul],
+  refine mul_le_mul_of_nonneg_left _ m_nn,
+  rw ←one_div,
+  refine integral_div_rpow_sq_add_one_le _ (_ : 2 < (n:ℝ)),
+  rwa [←nat.cast_two, nat.cast_lt],
+end
+
+lemma le_integral_cos_pow (n : ℕ) :
+  real.sqrt (π / 2 / (n + 1)) ≤ ∫ (x:ℝ) in 0..π/2, real.cos x ^ n :=
+begin
+  /-
+
+  have nn : 0 < (n : ℝ) + 1 := by linarith [(nat.cast_nonneg _ : 0 ≤ (n:ℝ))],
+  rw [euler_sine.integral_cos_pow_eq, ←div_le_iff' (by simp : 0 < (1 / 2 : ℝ)), ←div_mul, div_one],
+  convert euler_sine.le_integral_sin_pow n,
+  rw [←sq_eq_sq (mul_nonneg (sqrt_nonneg _) zero_le_two) (sqrt_nonneg _), mul_pow,
+    sq_sqrt (div_pos pi_div_two_pos nn).le, sq_sqrt (div_pos two_pi_pos nn).le],
+  field_simp [nn.ne'],
+  ring,
+  -/
+  sorry,
+end
+
+lemma abs_integral_mul_cos_pow_div_sub_le
+  {f : ℝ → ℂ} (hfi : interval_integrable f volume 0 (π/2))
+  {M : ℝ} (hm : ∀ (x : ℝ), x ∈ Icc (0:ℝ) (π/2) → ‖f x - f 0‖ ≤ M * x) {n : ℕ} (hn : 2 < n) :
+  ‖(∫ (x:ℝ) in 0..π/2, f x * real.cos x ^ n) / (∫ (x:ℝ) in 0..π/2, real.cos x ^ n) - f 0‖
+  ≤ M / (n - 2) * real.sqrt (2 * (n + 1) / π) :=
+begin
+  have : ‖(∫ (x:ℝ) in 0..π/2, f x * real.cos x ^ n) / (∫ (x:ℝ) in 0..π/2, real.cos x ^ n) - f 0‖
+    ≤ M / (n - 2) / (∫ (x:ℝ) in 0..π/2, real.cos x ^ n),
+  { rw [le_div_iff (euler_sine.integral_cos_pow_pos n), ←real.norm_of_nonneg (euler_sine.integral_cos_pow_pos n).le,
+    real.norm_eq_abs, ←complex.abs_of_real, ←complex.norm_eq_abs, ←norm_mul,
+    ←interval_integral.integral_of_real],
+    have : ∫ (x : ℝ) in 0..π/2, ((real.cos x ^ n : ℝ) : ℂ) = ∫ (x : ℝ) in 0..π/2, ((real.cos x : ℝ) : ℂ) ^ n,
+    { simp_rw complex.of_real_pow },
+    rw [this, sub_mul],
+    convert abs_integral_mul_cos_pow_sub_le hfi hm hn,
+    apply div_mul_cancel,
+    rw [←this, interval_integral.integral_of_real, complex.of_real_ne_zero],
+    exact (euler_sine.integral_cos_pow_pos n).ne' },
+  refine this.trans _,
+  have m_nn : 0 ≤ M,
+  { replace hm := (norm_nonneg _).trans (hm (π/2) (right_mem_Icc.mpr real.pi_div_two_pos.le)),
+    rwa mul_nonneg_iff_left_nonneg_of_pos real.pi_div_two_pos at hm, },
+  conv_lhs { rw div_eq_mul_inv },
+  refine mul_le_mul_of_nonneg_left _ (div_nonneg m_nn _),
+  swap, { rw [sub_nonneg, ←nat.cast_two, nat.cast_le], exact hn.le },
+  rw inv_le,
+  { convert le_integral_cos_pow n,
+    { rw ←real.sqrt_inv,
+      congr' 1,
+      rw [inv_div, div_div] } },
+  { apply euler_sine.integral_cos_pow_pos },
+  { apply real.sqrt_pos_of_pos,
+    refine div_pos (mul_pos (zero_lt_two' ℝ) _) real.pi_pos,
+    rw [←nat.cast_add_one, nat.cast_pos],
+    linarith }
+end
+
+lemma auc (a b  : ℂ) : a*b-a = a*(b-1) :=
+begin
+exact (mul_sub_one a b).symm,
+
+end
+
+lemma auss  : tendsto_uniformly (λ n: ℕ, λ z : ℂ,  (∫ x in 0..π/2,
+  complex.cos (2 * z * x) * real.cos x ^ (2 * n)) / ↑∫ x in 0..π/2, real.cos x ^ (2 * n)) 1 at_top :=
+begin
+rw tendsto_uniformly_iff,
+simp_rw pi.one_apply,
+simp,
+simp_rw dist_eq_norm,
+sorry,
+end
+
+variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
+
+section has_prod
+variables [comm_monoid α] [topological_space α]
+
+def has_prod (f : ℕ → β  → α) (a : β → α) : Prop := tendsto (λ n : ℕ, ∏ b in finset.range n, f b) at_top (𝓝 a)
+
+def prodable (f : ℕ → β → α) : Prop := ∃a, has_prod f a
+
+@[irreducible] def tprod {β} (f : ℕ → β → α) := if h : prodable f then classical.some h else 1
+
+notation `∏'` binders `, ` r:(scoped:67 f, tprod f) := r
+
+noncomputable theory
+
+lemma prodable.has_prod {f : ℕ → β → α} (ha : prodable f) : has_prod f (∏'b, f b) :=
+by simp [ha, tprod]; exact classical.some_spec ha
+
+lemma prod_be_exp (f : ℕ → ℂ) (s : finset ℕ) : (∏ i in s,  (1 + complex.abs (f i))) ≤
+real.exp ( ∑ i in s, complex.abs (f i) ) :=
+begin
+rw real.exp_sum,
+apply finset.prod_le_prod,
+intros i hi,
+apply add_nonneg,
+linarith,
+apply complex.abs.nonneg,
+intros i hi,
+rw add_comm,
+apply real.add_one_le_exp_of_nonneg (complex.abs.nonneg _),
+end
+
+lemma unif_prod_bound (F : ℕ → ℂ → ℂ)
+  (hb : ∃ (T : ℝ), ∀ (x : ℂ),  ∑' (n : ℕ), complex.abs (F n x) ≤ T)
+   (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
+  ∃ (C : ℝ), ∀ (s : finset ℕ) (x : ℂ),
+  (∏ i in s,  (1 + complex.abs (F i x))) ≤ C :=
+begin
+obtain ⟨T, ht⟩:= hb,
+have HB : ∀ (s : finset ℕ) (a : ℂ), ∑ i in s, complex.abs (F i a) ≤  ( ∑' (n : ℕ), complex.abs (F n a)),
+by {intros n a,
+    apply sum_le_tsum,
+    intros b hb,
+    apply complex.abs.nonneg,
+    apply hs a},
+refine ⟨real.exp (T),_⟩,
+intros n x,
+apply le_trans (prod_be_exp _ _),
+simp,
+apply le_trans (HB n x),
+exact ht x,
+end
+
+
+
+
+
+lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly
+  (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
+  (hp : prodable (λ n : ℕ, λ x : ℂ, complex.abs (F n x) )):
+  tendsto_uniformly_on  (λ (n : ℕ), (λ (a : ℂ), ∏ i in (finset.range n),  complex.abs (F i a)+ 1 ))
+   ( ( ∏' (n : ℕ), λ (a : ℂ), 1  + complex.abs (F n a))) filter.at_top K:=
+begin
+apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
+rw uniform_cauchy_seq_on_iff,
+intros ε hε,
+
+sorry,
+intros x K,
+have := hp.has_prod,
+rw has_prod at this,
+simp at *,
+
+sorry,
+--apply this,
+end
+
+
+lemma tendsto_locally_uniformly_euler_sin_prod (z : ℂ) (r : ℝ):
+  tendsto_uniformly_on
+  (λ n:ℕ, λ z : ℂ, ↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))
+  (complex.sin ∘ (λ t, π * t)) at_top  (ball z r):=
+begin
+have := tendsto_euler_sin_prod z,
+rw metric.tendsto_at_top at this,
+have hh := auss,
+apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
+rw uniform_cauchy_seq_on_iff,
+intros ε hε,
+/-
+rw tendsto_uniformly_iff at *,
+
+
+set c : ℝ  := complex.abs (↑π * z * (∏ j in finset.range 3, (1 - z ^ 2 / (j + 1) ^ 2))),
+intros ε hε,
+have he : 0 < ε/c, by {sorry},
+have hh2 := hh (ε/c) he,
+simp at *,
+obtain ⟨aa, H⟩ := hh2,
+set a : ℕ := max 3 aa,
+refine ⟨a,_⟩,
+intros b hb x,
+rw (euler_sine.sin_pi_mul_eq x b),
+simp,
+simp_rw dist_eq_norm at *,
+
+/-
+have A: tendsto_uniformly (λ n : ℕ, λ z : ℂ,
+(∫ x in 0..π/2, complex.cos (2 * z * x) * real.cos x ^ (2 * n)) / ↑∫ x in 0..π/2, real.cos x ^ (2 * n))
+1 at_top,
+by {sorry},
+have B : tendsto_uniformly  (λ n:ℕ, λ z : ℂ, ↑π * z * (∏ j in finset.range b, (1 - z ^ 2 / (j + 1) ^ 2)))
+ (λ z : ℂ, ↑π * z * (∏ j in finset.range b, (1 - z ^ 2 / (j + 1) ^ 2))) at_top, by {sorry},
+haveI : group ℂ, by {sorry},
+have C:= tendsto_uniformly.mul A B,
+-/
+
+-/
+sorry,
+
+end
+
+
+
 lemma tendsto_euler_log_derv_sin_prodd (x : ℍ):
   tendsto  ( (λ n:ℕ,  log_deriv  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) x))
   at_top (𝓝 $ log_deriv (complex.sin ∘ (λ t, π * t)) x) :=
@@ -273,7 +600,7 @@ have := log_der_tendsto
   (complex.sin ∘ (λ t, π * t)) (x) ,
 apply this,
 
-sorry,
+all_goals {sorry},
 
 end
 #exit
