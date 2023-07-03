@@ -674,7 +674,6 @@ have := hp.has_prod,
 rw has_prod at this,
 simp at *,
 
-
 sorry,
 --apply this,
 end
@@ -721,7 +720,7 @@ have C:= tendsto_uniformly.mul A B,
 
 -/
 sorry,
-
+sorry,
 end
 
 
