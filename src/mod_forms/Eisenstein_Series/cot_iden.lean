@@ -496,10 +496,25 @@ rw add_comm,
 apply real.add_one_le_exp_of_nonneg (complex.abs.nonneg _),
 end
 
-lemma unif_prod_bound (F : ℕ → ℂ → ℂ)
-  (hb : ∃ (T : ℝ), ∀ (x : ℂ),  ∑' (n : ℕ), complex.abs (F n x) ≤ T)
+lemma prod_le_prod_abs (f : ℕ → ℂ) (n : ℕ)  : complex.abs ((∏ i in finset.range (n + 1), (f i) + 1) - 1) ≤
+  (∏ i in finset.range (n + 1), (complex.abs (f i) + 1)) - 1 :=
+begin
+induction n with h,
+
+simp,
+have H : h.succ+1 = (h + 1).succ , by {sorry},
+simp_rw H,
+simp,
+simp_rw finset.prod_range_succ,
+sorry,
+end
+
+
+
+lemma unif_prod_bound (F : ℕ → ℂ → ℂ) (K : set ℂ)
+  (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
    (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
-  ∃ (C : ℝ), ∀ (s : finset ℕ) (x : ℂ),
+  ∃ (C : ℝ), 0 ≤ C  ∧  ∀ (s : finset ℕ) (x : ℂ), x ∈ K →
   (∏ i in s,  (1 + complex.abs (F i x))) ≤ C :=
 begin
 obtain ⟨T, ht⟩:= hb,
@@ -509,34 +524,156 @@ by {intros n a,
     intros b hb,
     apply complex.abs.nonneg,
     apply hs a},
-refine ⟨real.exp (T),_⟩,
-intros n x,
+have hexp : 0 ≤ real.exp(T), by {have := (real.exp_pos T), apply this.le},
+refine ⟨real.exp (T),  _, ⟩ ,
+simp [hexp],
+intros n x hx,
 apply le_trans (prod_be_exp _ _),
 simp,
 apply le_trans (HB n x),
-exact ht x,
+exact ht x hx,
+end
+
+lemma fin_prod_le_exp_sum (F : ℕ → ℂ → ℂ)
+  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
+  ∀ (s : finset ℕ) (x : ℂ),
+  (∏ i in s,  (1 + complex.abs (F i x))) ≤ real.exp ( ∑' i : ℕ, complex.abs (F i x) ) :=
+begin
+have HB : ∀ (s : finset ℕ) (a : ℂ), ∑ i in s, complex.abs (F i a) ≤  ( ∑' (n : ℕ), complex.abs (F n a)),
+by {intros n a,
+    apply sum_le_tsum,
+    intros b hb,
+    apply complex.abs.nonneg,
+    apply hs a},
+intros s x,
+apply le_trans (prod_be_exp _ _),
+simp,
+apply HB s x,
+end
+
+lemma tsum_unif  (F : ℕ → ℂ → ℂ)  (hf :  tendsto_uniformly
+  (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
+  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
+  ∀ ε : ℝ , 0 < ε → ∃ (N : ℕ), ∀ (n : ℕ) (x : ℂ), N ≤ n → complex.abs (∑' i : ℕ, complex.abs (F (i + N) x)) < ε  :=
+begin
+sorry,
+
 end
 
 
+lemma abs_tsum_of_poss (F : ℕ → ℂ → ℝ ) (h : ∀ (n : ℕ) (c : ℂ), 0 ≤ F n c) : ∀ x : ℂ,
+ |(∑'(i : ℕ), F i x) | = ∑' (i : ℕ), F i x :=
+begin
+intro x,
+simp only [abs_eq_self],
+apply tsum_nonneg,
+intro b,
+apply h b x,
+end
 
 
+lemma abs_tsum_of_pos (F: ℕ → ℂ → ℂ) : ∀ (x : ℂ) (N : ℕ),
+  complex.abs ((∑' (i : ℕ), complex.abs (F (i + N) x)) : ℂ) = ∑' (i : ℕ), complex.abs (F (i + N) x) :=
+begin
+intros x N,
+have := abs_tsum_of_poss (λ n : ℕ, λ x : ℂ, complex.abs (F (n + N) x)) _ x,
+rw ←this,
+simp,
+rw ←abs_of_real _,
+congr,
+rw tsum_coe,
+intros n c,
+apply complex.abs.nonneg,
+end
+
+
+lemma tsum_unifo  (F : ℕ → ℂ → ℂ)  (hf :  tendsto_uniformly
+  (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
+  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
+  ∀ ε : ℝ, 0 < ε → ∃ (N : ℕ), ∀ (n m: ℕ) (x : ℂ), N ≤ n ∧ N ≤ m ∧ m ≤ n →
+  (∏ i in finset.Ico (m) (n),  (1 + complex.abs (F i x))) ≤ ε  :=
+begin
+intros ε hε,
+have hl : 0 < real.log(ε), by {sorry},
+have H2:= tsum_unif  F hf hs (real.log(ε)) hl,
+obtain ⟨N, hN⟩:= H2,
+use N,
+intros n m x h,
+have HN2:= hN n x h.1,
+apply le_trans (prod_be_exp _ _),
+rw ←real.exp_lt_exp at HN2,
+rw (real.exp_log hε) at HN2,
+apply le_trans _ (HN2.le),
+simp,
+have hss : summable (λ n : ℕ, ( (complex.abs (F (n + N) x))) ), by {sorry},
+have := (abs_tsum _ (hss)),
+rw (abs_tsum_of_pos F x N),
+have := sum_add_tsum_nat_add N (hs x),
+sorry,
+
+end
+
+lemma reggs (c e: ℝ) (ha : 0 ≤ c) (he : 0 < e): c * (e/c - 1) < e :=
+begin
+by_cases hc : c ≠ 0,
+rw mul_sub,
+rw mul_div_cancel' ,
+simp,
+exact (ne.symm hc).lt_of_le ha,
+exact hc,
+simp at hc,
+rw hc,
+simp,
+exact he,
+end
 
 lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly
   (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
   ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
-  (hp : prodable (λ n : ℕ, λ x : ℂ, complex.abs (F n x) )):
-  tendsto_uniformly_on  (λ (n : ℕ), (λ (a : ℂ), ∏ i in (finset.range n),  complex.abs (F i a)+ 1 ))
-   ( ( ∏' (n : ℕ), λ (a : ℂ), 1  + complex.abs (F n a))) filter.at_top K:=
+  (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
+  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) ))
+  (hp : prodable (λ n : ℕ, λ x : ℂ,  (1 + F n x) )):
+  tendsto_uniformly_on  (λ (n : ℕ), (λ (a : ℂ), ∏ i in (finset.range n),  (1 + F i a) ))
+   ( ( ∏' (n : ℕ), λ (a : ℂ), (1  + F n a))) filter.at_top K:=
 begin
 apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
 rw uniform_cauchy_seq_on_iff,
 intros ε hε,
+have H := tsum_unifo F hf hs,
+have H2 := unif_prod_bound F K hb hs,
+obtain ⟨C, hCp, hC⟩:= H2,
+
+have hec : 0 < (ε/(C)), by {sorry},
+have hd : ∃ (δ : ℝ), 0 < δ  ∧ δ < ε ∧ δ < 1, by {sorry,},
+have HH := H (ε/(C)) hec,
+obtain ⟨N, HN⟩:= HH,
+refine  ⟨N,_⟩,
+intros n hn m hm x hx,
+have hCm := hC (finset.range (m)) x,
+rw dist_eq_norm,
+simp only [norm_eq_abs],
+by_cases hmn:  m ≤ n,
+rw ←finset.prod_range_mul_prod_Ico _ hmn,
+rw ←mul_sub_one,
+simp only [absolute_value.map_mul, abs_prod],
+have A : ∏ (i : ℕ) in finset.range m, complex.abs(1 + F i x) ≤ C, by {sorry},
+have B: complex.abs((∏ (i : ℕ) in  (finset.Ico m n), (1 + (F i x))) -1) ≤ ε/C - 1, by {sorry},
+have AB := mul_le_mul A B _ hCp,
+apply lt_of_le_of_lt AB,
+apply reggs _ _ hCp hε,
+
+apply complex.abs.nonneg,
 
 sorry,
+
+
 intros x K,
 have := hp.has_prod,
 rw has_prod at this,
 simp at *,
+
 
 sorry,
 --apply this,
