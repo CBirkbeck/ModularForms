@@ -629,14 +629,14 @@ simp,
 exact he,
 end
 
-lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly
+lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (g : ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly
   (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
   ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
   (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
   (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) ))
-  (hp : prodable (λ n : ℕ, λ x : ℂ,  (1 + F n x) )):
+  (hp : ∀ x : ℂ, x ∈ K → tendsto (λ (n : ℕ), ( ∏ i in (finset.range n),  (1 + F i x) )) at_top (𝓝 (g x))):
   tendsto_uniformly_on  (λ (n : ℕ), (λ (a : ℂ), ∏ i in (finset.range n),  (1 + F i a) ))
-   ( ( ∏' (n : ℕ), λ (a : ℂ), (1  + F n a))) filter.at_top K:=
+   ( g ) filter.at_top K:=
 begin
 apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
 rw uniform_cauchy_seq_on_iff,
@@ -665,32 +665,39 @@ apply lt_of_le_of_lt AB,
 apply reggs _ _ hCp hε,
 
 apply complex.abs.nonneg,
+simp at hmn,
+rw ←finset.prod_range_mul_prod_Ico _ hmn.le,
+rw ←mul_one_sub,
+simp only [absolute_value.map_mul, abs_prod],
+have A : ∏ (i : ℕ) in finset.range n, complex.abs(1 + F i x) ≤ C, by {sorry},
+have B: complex.abs(1 - (∏ (i : ℕ) in  (finset.Ico n m), (1 + (F i x)))) ≤ ε/C - 1, by {sorry},
+have AB := mul_le_mul A B _ hCp,
+apply lt_of_le_of_lt AB,
+apply reggs _ _ hCp hε,
 
-sorry,
+apply complex.abs.nonneg,
 
 
-intros x K,
-have := hp.has_prod,
-rw has_prod at this,
-simp at *,
-
-sorry,
+exact hp,
 --apply this,
 end
 
 
-lemma tendsto_locally_uniformly_euler_sin_prod (z : ℂ) (r : ℝ):
+lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℂ) (r : ℝ):
   tendsto_uniformly_on
-  (λ n:ℕ, λ z : ℂ, ↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))
-  (complex.sin ∘ (λ t, π * t)) at_top  (ball z r):=
+  (λ n:ℕ, λ z : ℂ,  (∏ j in finset.range n, (1 + - z ^ 2 / (j + 1) ^ 2)))
+  (λ t, (complex.sin (π * t))/ ↑π * t) at_top  (ball z r):=
 begin
+apply sum_prod_unif_conv _ (λ t, (complex.sin (π * t))/ ↑π * t) (ball z r),
+
+/-
 have := tendsto_euler_sin_prod z,
 rw metric.tendsto_at_top at this,
 have hh := auss,
 apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
 rw uniform_cauchy_seq_on_iff,
 intros ε hε,
-/-
+
 rw tendsto_uniformly_iff at *,
 
 
