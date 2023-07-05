@@ -551,14 +551,34 @@ simp,
 apply HB s x,
 end
 
-lemma tsum_unif  (F : ℕ → ℂ → ℂ)  (hf :  tendsto_uniformly
-  (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
-  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
-  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
-  ∀ ε : ℝ , 0 < ε → ∃ (N : ℕ), ∀ (n : ℕ) (x : ℂ), N ≤ n → complex.abs (∑' i : ℕ, complex.abs (F (i + N) x)) < ε  :=
-begin
-sorry,
 
+
+lemma tsum_unif  (F : ℕ → ℂ → ℂ) (K : set ℂ)  (hf :  tendsto_uniformly_on
+  (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top K)
+  (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
+  ∀ ε : ℝ , 0 < ε → ∃ (N : ℕ), ∀ (n : ℕ) (x : ℂ), x ∈ K → N ≤ n →
+  complex.abs (∑' i : ℕ, complex.abs (F (i + N) x)) < ε  :=
+begin
+rw tendsto_uniformly_on_iff at hf,
+simp at hf,
+intros ε hε,
+have HF := hf ε hε,
+obtain ⟨N, hN⟩:= HF,
+refine ⟨N,_⟩,
+intros n x hx hn,
+have hnn : N ≤ N, by {linarith},
+have HN2 := hN N hnn x hx,
+simp_rw dist_eq_norm at *,
+convert HN2,
+rw tsum_coe,
+rw ← norm_eq_abs,
+rw complex.norm_real,
+congr,
+have hy := sum_add_tsum_nat_add N (hs x),
+simp at hy,
+rw ←hy,
+ring,
 end
 
 
@@ -587,27 +607,45 @@ intros n c,
 apply complex.abs.nonneg,
 end
 
+example (a b : ℝ) (hab : a ≤ b): a-1 ≤ b ↔ a ≤ 1 + b :=
+begin
+exact tsub_le_iff_left
+end
 
-lemma tsum_unifo  (F : ℕ → ℂ → ℂ)  (hf :  tendsto_uniformly
+lemma sum_subtype_le_tsum (f: ℕ → ℝ) (m n N : ℕ) (hmn : m ≤ n ∧ N ≤ m):
+∑(i : ℕ) in finset.Ico m n, f i ≤ ∑' (i : ℕ), f (i + N) :=
+begin
+sorry,
+
+
+end
+
+
+lemma tsum_unifo  (F : ℕ → ℂ → ℂ) (K : set ℂ)  (hf :  tendsto_uniformly_on
   (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
-  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top K)
   (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
-  ∀ ε : ℝ, 0 < ε → ∃ (N : ℕ), ∀ (n m: ℕ) (x : ℂ), N ≤ n ∧ N ≤ m ∧ m ≤ n →
-  (∏ i in finset.Ico (m) (n),  (1 + complex.abs (F i x))) ≤ ε  :=
+  ∀ ε : ℝ, 0 < ε → ∃ (N : ℕ), ∀ (n m: ℕ) (x : ℂ), x ∈ K →  N ≤ n ∧ N ≤ m ∧ m ≤ n →
+  (∏ i in finset.Ico (m) (n),  (1 + complex.abs (F i x))) - 1 ≤ ε  :=
 begin
 intros ε hε,
-have hl : 0 < real.log(ε), by {sorry},
-have H2:= tsum_unif  F hf hs (real.log(ε)) hl,
+have hl : 0 < real.log(1 + ε), by {apply real.log_pos, linarith,},
+have H2:= tsum_unif  F K hf hs (real.log( 1+ ε)) hl,
 obtain ⟨N, hN⟩:= H2,
 use N,
-intros n m x h,
-have HN2:= hN n x h.1,
-apply le_trans (prod_be_exp _ _),
+intros n m x hK h,
+have HN2:= hN n x hK h.1,
+apply le_trans (sub_le_sub_right (prod_be_exp _ _) 1),
 rw ←real.exp_lt_exp at HN2,
-rw (real.exp_log hε) at HN2,
+have hll : 0 < 1 + ε, by {linarith},
+rw (real.exp_log hll) at HN2,
+rw tsub_le_iff_left,
 apply le_trans _ (HN2.le),
 simp,
-have hss : summable (λ n : ℕ, ( (complex.abs (F (n + N) x))) ), by {sorry},
+have hss : summable (λ n : ℕ, ( (complex.abs (F (n + N) x))) ), by {have := hs x,
+  rw  ← (summable_nat_add_iff N) at this,
+  apply this,
+  exact topological_add_group.mk,},
 have := (abs_tsum _ (hss)),
 rw (abs_tsum_of_pos F x N),
 have := sum_add_tsum_nat_add N (hs x),
@@ -629,9 +667,9 @@ simp,
 exact he,
 end
 
-lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (g : ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly
+lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (g : ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly_on
   (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
-  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top )
+  ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top K)
   (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
   (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) ))
   (hp : ∀ x : ℂ, x ∈ K → tendsto (λ (n : ℕ), ( ∏ i in (finset.range n),  (1 + F i x) )) at_top (𝓝 (g x))):
@@ -641,7 +679,7 @@ begin
 apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
 rw uniform_cauchy_seq_on_iff,
 intros ε hε,
-have H := tsum_unifo F hf hs,
+have H := tsum_unifo F K hf hs,
 have H2 := unif_prod_bound F K hb hs,
 obtain ⟨C, hCp, hC⟩:= H2,
 
@@ -682,14 +720,94 @@ exact hp,
 --apply this,
 end
 
+lemma tendsto_unif_on_restrict (f: ℕ → ℂ → ℝ ) (g : ℂ → ℝ) (K : set ℂ) :
+ tendsto_uniformly_on f g at_top K ↔ tendsto_uniformly (λ n : ℕ,  λ k : K,  f n k)
+ (λ k : K, g k) at_top :=
+begin
+rw tendsto_uniformly_iff,
+rw tendsto_uniformly_on_iff,
+simp,
+end
+
+lemma tendst_unif_coe (K : set ℂ) (f: ℕ → K → ℝ ) (g : K → ℝ)  :
+tendsto_uniformly (λ n : ℕ,  λ k : K,  ((f n k) : ℂ)) (λ n : K, ((g n) : ℂ)) at_top
+  ↔ tendsto_uniformly (λ n : ℕ,  λ k : K,  f n k) (λ k : K, g k) at_top :=
+begin
+simp_rw tendsto_uniformly_iff,
+simp,
+sorry,
+end
+
+lemma assa (r : ℝ) (z :  ℂ) (x : ball z r) : complex.abs(x) ≤ complex.abs(z) +r :=
+begin
+have hx : (x : ℂ) = (x - z) + z, by {ring},
+rw hx,
+apply le_trans (complex.abs.add_le (x - z) z),
+rw add_comm,
+simp,
+have hxx := x.2,
+simp at hxx,
+rw dist_eq_norm at hxx,
+simpa using hxx.le,
+end
+
+lemma summable_rie_twist (x : ℂ):  summable (λ (n : ℕ), complex.abs (x ^ 2 / (↑n + 1) ^ 2)) :=
+begin
+simp,
+simp_rw div_eq_mul_inv,
+apply summable.mul_left,
+have hs : summable (λ (n : ℕ), ((n : ℝ) + 1) ^ 2)⁻¹, by {
+  norm_cast,
+  simp,
+  have h2 : (1 : ℤ)  < 2, by {linarith},
+  have := int_Riemann_zeta_is_summmable 2 h2,
+  rw rie at this,
+  rw  ←(summable_nat_add_iff 1) at this,
+  norm_cast at this,
+  simpa using this,
+  exact topological_add_group.mk,
+  },
+apply summable.congr hs,
+intros b,
+simp,
+rw ←complex.abs_pow,
+norm_cast,
+end
 
 lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℂ) (r : ℝ):
   tendsto_uniformly_on
   (λ n:ℕ, λ z : ℂ,  (∏ j in finset.range n, (1 + - z ^ 2 / (j + 1) ^ 2)))
   (λ t, (complex.sin (π * t))/ ↑π * t) at_top  (ball z r):=
 begin
+by_cases hr : 0 < r ,
 apply sum_prod_unif_conv _ (λ t, (complex.sin (π * t))/ ↑π * t) (ball z r),
+have := tendsto_unif_on_restrict _ _ (ball z r),
+rw this,
+simp only [map_div₀, absolute_value.map_neg, complex.abs_pow],
+set s : ℝ := complex.abs(z)+r,
+have HH:= M_test_uniform _ (λ (n : ℕ) (x :  (ball z r)), complex.abs(x^2/(n+1)^2)) (λ (n : ℕ), complex.abs(s^2/(n+1)^2)) _ _,
+rw ←tendst_unif_coe _ _ _,
+convert HH,
+simp only [coe_finset_sum, map_div₀, complex.abs_pow],
+funext,
+rw tsum_coe,
+congr,
+simp only [map_div₀, complex.abs_pow],
+simp only [hr, nonempty_coe_sort, nonempty_ball],
+intros n x,
+simp only [map_div₀, complex.abs_pow, of_real_div, of_real_pow, abs_of_real, complex.abs_abs, of_real_add],
+apply div_le_div_of_le,
+apply pow_two_nonneg,
+apply pow_le_pow_of_le_left (complex.abs.nonneg _),
+convert assa r z x,
+norm_cast,
+simp only [abs_eq_self],
+apply add_nonneg (complex.abs.nonneg _) (hr.le),
+apply (summable_rie_twist s),
 
+
+sorry,
+sorry,
 /-
 have := tendsto_euler_sin_prod z,
 rw metric.tendsto_at_top at this,
@@ -728,6 +846,8 @@ have C:= tendsto_uniformly.mul A B,
 -/
 sorry,
 sorry,
+
+
 end
 
 
