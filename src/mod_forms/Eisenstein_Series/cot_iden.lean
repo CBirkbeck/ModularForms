@@ -612,12 +612,53 @@ begin
 exact tsub_le_iff_left
 end
 
-lemma sum_subtype_le_tsum (f: ℕ → ℝ) (m n N : ℕ) (hmn : m ≤ n ∧ N ≤ m):
+lemma tsum_le {α : Type*} {β : Type*} (f: α → ℝ) (g : β → ℝ ) (hf : ∀ a : α , ∃ b : β, f a ≤ g b)
+(hg : ∀ b : β, 0 ≤ g b) (hfs : summable f) (hgs: summable g) : ∑' a : α, f a ≤ ∑' b: β, g b :=
+begin
+
+sorry,
+end
+
+lemma add_eq_sub_add (a b c d : ℝ) : b = c - a +d  ↔  a + b = c + d :=
+begin
+split,
+repeat {intro h,
+linarith [h]},
+end
+
+
+lemma sum_subtype_le_tsum (f: ℕ → ℝ) (m n N : ℕ) (hmn : m ≤ n ∧ N ≤ m)
+ (hg: ∀ b , 0 ≤ f b) (hf : summable f) :
 ∑(i : ℕ) in finset.Ico m n, f i ≤ ∑' (i : ℕ), f (i + N) :=
 begin
-sorry,
-
-
+have h1 : ∑(i : ℕ) in finset.Ico m n, f i  ≤ ∑(i : ℕ) in finset.Ico N n, f i, by {
+  have := finset.Ico_union_Ico_eq_Ico hmn.2 hmn.1,
+  rw ←this,
+  rw finset.sum_union,
+  simp,
+  apply finset.sum_nonneg,
+  intros i hi,
+  apply hg i,
+  exact finset.Ico_disjoint_Ico_consecutive N m n,
+},
+apply le_trans h1,
+have h2 :  ∑' (i : ℕ), f (i + N) = ∑(i : ℕ) in finset.Ico N n, f i + ∑' (i : ℕ), f (i + n),
+by {
+  have hh1 := sum_add_tsum_nat_add N hf,
+  have hh2 := sum_add_tsum_nat_add n hf,
+  rw ←hh2 at hh1,
+  rw ←add_eq_sub_add at hh1,
+  rw hh1,
+  simp,
+  have hNn : N ≤ n, by {exact le_trans hmn.2 hmn.1, },
+  have :=  finset.sum_range_add_sum_Ico f hNn,
+  rw ← this,
+  simp,},
+rw h2,
+simp,
+apply tsum_nonneg,
+intro b,
+apply hg (b+n),
 end
 
 
