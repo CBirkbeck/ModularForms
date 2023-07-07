@@ -612,12 +612,6 @@ begin
 exact tsub_le_iff_left
 end
 
-lemma tsum_le {α : Type*} {β : Type*} (f: α → ℝ) (g : β → ℝ ) (hf : ∀ a : α , ∃ b : β, f a ≤ g b)
-(hg : ∀ b : β, 0 ≤ g b) (hfs : summable f) (hgs: summable g) : ∑' a : α, f a ≤ ∑' b: β, g b :=
-begin
-
-sorry,
-end
 
 lemma add_eq_sub_add (a b c d : ℝ) : b = c - a +d  ↔  a + b = c + d :=
 begin
