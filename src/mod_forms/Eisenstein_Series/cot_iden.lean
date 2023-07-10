@@ -684,8 +684,13 @@ have hss : summable (λ n : ℕ, ( (complex.abs (F (n + N) x))) ), by {have := h
 have := (abs_tsum _ (hss)),
 rw (abs_tsum_of_pos F x N),
 have := sum_add_tsum_nat_add N (hs x),
-sorry,
-
+apply sum_subtype_le_tsum,
+split,
+apply h.2.2,
+apply h.2.1,
+intro b,
+apply complex.abs.nonneg,
+exact hs x,
 end
 
 lemma reggs (c e: ℝ) (ha : 0 ≤ c) (he : 0 < e): c * (e/c - 1) < e :=
@@ -719,7 +724,6 @@ have H2 := unif_prod_bound F K hb hs,
 obtain ⟨C, hCp, hC⟩:= H2,
 
 have hec : 0 < (ε/(C)), by {sorry},
-have hd : ∃ (δ : ℝ), 0 < δ  ∧ δ < ε ∧ δ < 1, by {sorry,},
 have HH := H (ε/(C)) hec,
 obtain ⟨N, HN⟩:= HH,
 refine  ⟨N,_⟩,
