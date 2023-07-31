@@ -502,27 +502,60 @@ lemma prod_le_prod_abs (f : ℕ → ℂ) (n : ℕ)  : complex.abs ((∏ i in fin
   (∏ i in finset.range (n), (complex.abs (f i) + 1)) - 1 :=
 begin
 induction n with h,
-
-simp,
-have H : h.succ+1 = (h + 1).succ , by {sorry},
---simp_rw H,
---simp_rw finset.prod_range_succ,
+simp only [finset.range_zero, finset.prod_empty, sub_self, absolute_value.map_zero],
 have HH : ((∏ i in finset.range (h + 1), ((f i) + 1)) - 1) =
-  ((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1)+ f (h + 1), by {sorry},
+  ((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h) + 1)+ f (h), by {
+    simp_rw finset.prod_range_succ,
+    ring},
 rw HH,
-have  H3: complex.abs (((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1)+ f (h + 1)) ≤
-complex.abs(((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1))+ complex.abs (f (h + 1)),
-by {sorry},
+have  H3: complex.abs (((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h ) + 1) + f (h )) ≤
+complex.abs(((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h) + 1))+ complex.abs (f (h)),
+by {
+  apply le_trans (complex.abs.add_le _ _),
+  simp only},
 apply le_trans H3,
-sorry,
+have H4: complex.abs(((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h) + 1))+
+  complex.abs (f (h)) ≤  ((∏ i in finset.range (h), (complex.abs (f i) + 1)) - 1) *
+  (complex.abs ((f (h))) + 1) +  complex.abs (f (h)), by {
+    simp only [absolute_value.map_mul, add_le_add_iff_right],
+    have h1: complex.abs(((∏ i in finset.range (h), ((f i) + 1)) - 1)) ≤
+    ((∏ i in finset.range (h), (complex.abs (f i) + 1)) - 1), by {
+      apply n_ih},
+    have h2 : complex.abs (f (h) + 1) ≤  (complex.abs ((f (h))) + 1), by {
+        apply le_trans (complex.abs.add_le _ _),
+        simp only [absolute_value.map_one],
+       },
+    apply mul_le_mul h1 h2,
+    apply complex.abs.nonneg,
+    apply le_trans _ n_ih,
+    apply complex.abs.nonneg,},
+apply le_trans H4,
+ring_nf,
+rw finset.prod_range_succ,
+rw mul_comm,
 end
 
-#exit
+--rw ←finset.prod_range_mul_prod_Ico
+
+lemma prod_le_prod_abs_Ico (f : ℕ → ℂ) (n m: ℕ) : complex.abs ((∏ i in finset.Ico m n, ((f i) + 1)) - 1) ≤
+  (∏ i in finset.Ico m n, (complex.abs (f i) + 1)) - 1 :=
+begin
+simp_rw finset.prod_Ico_eq_prod_range,
+apply prod_le_prod_abs,
+end
+
+lemma prod_le_prod_abs_Ico_ond_add (f : ℕ → ℂ) (n m: ℕ) : complex.abs ((∏ i in finset.Ico m n, (1+ (f i))) - 1) ≤
+  (∏ i in finset.Ico m n, (1 + complex.abs ((f i)))) - 1 :=
+begin
+convert prod_le_prod_abs_Ico f n m,
+repeat {apply add_comm},
+end
+
 
 lemma unif_prod_bound (F : ℕ → ℂ → ℂ) (K : set ℂ)
   (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
    (hs : ∀ x : ℂ, summable (λ n : ℕ, ( (complex.abs (F n x))) )):
-  ∃ (C : ℝ), 0 ≤ C  ∧  ∀ (s : finset ℕ) (x : ℂ), x ∈ K →
+  ∃ (C : ℝ), 0 < C  ∧  ∀ (s : finset ℕ) (x : ℂ), x ∈ K →
   (∏ i in s,  (1 + complex.abs (F i x))) ≤ C :=
 begin
 obtain ⟨T, ht⟩:= hb,
@@ -532,7 +565,7 @@ by {intros n a,
     intros b hb,
     apply complex.abs.nonneg,
     apply hs a},
-have hexp : 0 ≤ real.exp(T), by {have := (real.exp_pos T), apply this.le},
+have hexp : 0 < real.exp(T), by {have := (real.exp_pos T), apply this,},
 refine ⟨real.exp (T),  _, ⟩ ,
 simp [hexp],
 intros n x hx,
@@ -715,6 +748,13 @@ simp,
 exact he,
 end
 
+lemma auxreal (e : ℂ) : complex.abs (1- e) = complex.abs(e -1):=
+begin
+exact map_sub_rev abs 1 e,
+end
+
+
+
 lemma sum_prod_unif_conv (F : ℕ → ℂ → ℂ) (g : ℂ → ℂ) (K : set ℂ) (hf :  tendsto_uniformly_on
   (λ (n : ℕ), (λ (a : ℂ), ∑ i in (finset.range n), complex.abs (F i a)))
   ( (λ (a : ℂ), ∑' (n : ℕ), complex.abs (F n a))) filter.at_top K)
@@ -730,41 +770,70 @@ intros ε hε,
 have H := tsum_unifo F K hf hs,
 have H2 := unif_prod_bound F K hb hs,
 obtain ⟨C, hCp, hC⟩:= H2,
-
-have hec : 0 < (ε/(C)), by {sorry},
-have HH := H (ε/(C)) hec,
+have hdelta:= exists_pos_mul_lt hε C,
+obtain ⟨δ, hδ⟩ := hdelta,
+have HH := H (δ) hδ.1,
 obtain ⟨N, HN⟩:= HH,
 refine  ⟨N,_⟩,
 intros n hn m hm x hx,
 have hCm := hC (finset.range (m)) x,
+have hCn := hC (finset.range (n)) x,
 rw dist_eq_norm,
 simp only [norm_eq_abs],
 by_cases hmn:  m ≤ n,
 rw ←finset.prod_range_mul_prod_Ico _ hmn,
 rw ←mul_sub_one,
 simp only [absolute_value.map_mul, abs_prod],
-have A : ∏ (i : ℕ) in finset.range m, complex.abs(1 + F i x) ≤ C, by {sorry},
-have B: complex.abs((∏ (i : ℕ) in  (finset.Ico m n), (1 + (F i x))) -1) ≤ ε/C - 1, by {sorry},
-have AB := mul_le_mul A B _ hCp,
+have A : ∏ (i : ℕ) in finset.range m, complex.abs(1 + F i x) ≤ C, by {
+  apply le_trans _ (hCm hx),
+  apply finset.prod_le_prod,
+  intros i hi,
+  apply complex.abs.nonneg,
+  intros i hi,
+  apply le_trans (complex.abs.add_le _ _),
+  simp only [absolute_value.map_one],},
+have B: complex.abs((∏ (i : ℕ) in  (finset.Ico m n), (1 + (F i x))) -1) ≤ δ, by {
+  have HI := HN n m x hx,
+  simp only [ and_imp] at HI,
+  have HI2:= HI hn hm hmn,
+  have:= (prod_le_prod_abs_Ico_ond_add (λ (i : ℕ), F i x) n m),
+  simp at this,
+  apply le_trans this,
+  exact HI2,},
+have AB := mul_le_mul A B _ hCp.le,
 apply lt_of_le_of_lt AB,
-apply reggs _ _ hCp hε,
+apply hδ.2,
 
 apply complex.abs.nonneg,
 simp at hmn,
 rw ←finset.prod_range_mul_prod_Ico _ hmn.le,
 rw ←mul_one_sub,
 simp only [absolute_value.map_mul, abs_prod],
-have A : ∏ (i : ℕ) in finset.range n, complex.abs(1 + F i x) ≤ C, by {sorry},
-have B: complex.abs(1 - (∏ (i : ℕ) in  (finset.Ico n m), (1 + (F i x)))) ≤ ε/C - 1, by {sorry},
-have AB := mul_le_mul A B _ hCp,
+have A : ∏ (i : ℕ) in finset.range n, complex.abs(1 + F i x) ≤ C, by {
+  apply le_trans _ (hCn hx),
+  apply finset.prod_le_prod,
+  intros i hi,
+  apply complex.abs.nonneg,
+  intros i hi,
+  apply le_trans (complex.abs.add_le _ _),
+  simp only [absolute_value.map_one],},
+have B: complex.abs((∏ (i : ℕ) in  (finset.Ico n m), (1 + (F i x))) -1) ≤ δ, by {
+  have HI := HN m n x hx,
+  simp only [ and_imp] at HI,
+  have HI2:= HI hm hn hmn.le,
+  have:= (prod_le_prod_abs_Ico_ond_add (λ (i : ℕ), F i x) m n),
+  simp at this,
+  apply le_trans this,
+  exact HI2,},
+have AB := mul_le_mul A B _ hCp.le,
+rw auxreal _,
 apply lt_of_le_of_lt AB,
-apply reggs _ _ hCp hε,
+apply hδ.2,
 
 apply complex.abs.nonneg,
 
 
 exact hp,
---apply this,
 end
 
 lemma tendsto_unif_on_restrict (f: ℕ → ℂ → ℝ ) (g : ℂ → ℝ) (K : set ℂ) :
@@ -821,7 +890,72 @@ rw ←complex.abs_pow,
 norm_cast,
 end
 
-lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℂ) (r : ℝ):
+lemma rie_twist_bounded_on_ball (z : ℂ) (r: ℝ) (hr : 0 < r):
+ ∃ (T : ℝ), ∀ (x : ℂ), x ∈ ball z r → ∑' (n : ℕ), complex.abs (-x ^ 2 / (↑n + 1) ^ 2) ≤ T :=
+begin
+refine ⟨ (∑' (n : ℕ), (complex.abs(z) +r)^2 /complex.abs ((n+1)^2)), _  ⟩,
+intros x hx,
+simp only [map_div₀, absolute_value.map_neg, complex.abs_pow],
+have := summable_rie_twist x,
+apply tsum_le_tsum,
+intro b,
+simp only,
+apply div_le_div_of_le,
+apply pow_two_nonneg,
+apply pow_le_pow_of_le_left,
+apply complex.abs.nonneg,
+apply assa r z ⟨x, hx⟩,
+convert this,
+ext1,
+field_simp,
+simp_rw div_eq_mul_inv,
+apply summable.mul_left,
+convert (summable_rie_twist (1 : ℂ)),
+ext1,
+field_simp,
+end
+
+lemma euler_sin_prod' (x : ℂ) (h0 : x ≠ 0):
+tendsto (λ (n : ℕ), ∏ (i : ℕ) in finset.range n, (1 + -x ^ 2 / (↑i + 1) ^ 2)) at_top
+(𝓝 ((λ (t : ℂ), sin (↑π * t) / (↑π * t)) x)) :=
+begin
+have := tendsto_euler_sin_prod x,
+rw metric.tendsto_at_top at *,
+intros ε hε,
+have hh : ↑π * x ≠ 0, by {apply mul_ne_zero, norm_cast, apply real.pi_ne_zero, apply h0,},
+have hex: 0 < ε * complex.abs(π * x), by {apply mul_pos, apply hε, apply complex.abs.pos, apply hh},
+have h1:= this (ε * complex.abs(π * x)) hex,
+obtain ⟨N, hN⟩:= h1,
+refine ⟨N,_⟩,
+intros n hn,
+have h2:= hN n hn,
+simp,
+rw dist_eq_norm at *,
+have : ∏ (i : ℕ) in finset.range n, (1 + -x ^ 2 / (↑i + 1) ^ 2) - sin (↑π * x) / (↑π * x) =
+ (↑π * x * ∏ (i : ℕ) in finset.range n, (1 + -x ^ 2 / (↑i + 1) ^ 2) - sin (↑π * x)) / (↑π * x),
+ by {
+    have := sub_div' (sin (↑π * x) ) (∏ (i : ℕ) in finset.range n, (1 + -x ^ 2 / (↑i + 1) ^ 2))
+      ( ↑π * x) hh,
+    simp at *,
+    rw this,
+    ring,
+       },
+rw this,
+--have hpix : 0 ≠ complex.abs (↑π * x), by {sorry},
+field_simp,
+rw div_lt_iff,
+convert h2,
+ext1,
+rw sub_eq_add_neg,
+field_simp,
+simp only [absolute_value.map_mul, abs_of_real],
+apply mul_pos,
+simpa using real.pi_ne_zero,
+apply complex.abs.pos,
+exact h0,
+end
+
+lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℍ) (r : ℝ):
   tendsto_uniformly_on
   (λ n:ℕ, λ z : ℂ,  (∏ j in finset.range n, (1 + - z ^ 2 / (j + 1) ^ 2)))
   (λ t, (complex.sin (π * t))/ ↑π * t) at_top  (ball z r):=
@@ -851,8 +985,13 @@ norm_cast,
 simp only [abs_eq_self],
 apply add_nonneg (complex.abs.nonneg _) (hr.le),
 apply (summable_rie_twist s),
-
-
+apply rie_twist_bounded_on_ball z r hr,
+intro x,
+convert (summable_rie_twist x),
+ext1,
+field_simp,
+intros x hx,
+have := tendsto_euler_sin_prod x,
 sorry,
 sorry,
 /-
@@ -891,8 +1030,8 @@ have C:= tendsto_uniformly.mul A B,
 -/
 
 -/
-sorry,
-sorry,
+
+
 
 
 end
