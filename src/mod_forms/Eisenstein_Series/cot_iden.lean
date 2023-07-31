@@ -496,20 +496,28 @@ rw add_comm,
 apply real.add_one_le_exp_of_nonneg (complex.abs.nonneg _),
 end
 
-lemma prod_le_prod_abs (f : ℕ → ℂ) (n : ℕ)  : complex.abs ((∏ i in finset.range (n + 1), (f i) + 1) - 1) ≤
-  (∏ i in finset.range (n + 1), (complex.abs (f i) + 1)) - 1 :=
+
+
+lemma prod_le_prod_abs (f : ℕ → ℂ) (n : ℕ)  : complex.abs ((∏ i in finset.range (n), ((f i) + 1)) - 1) ≤
+  (∏ i in finset.range (n), (complex.abs (f i) + 1)) - 1 :=
 begin
 induction n with h,
 
 simp,
 have H : h.succ+1 = (h + 1).succ , by {sorry},
-simp_rw H,
-simp,
-simp_rw finset.prod_range_succ,
+--simp_rw H,
+--simp_rw finset.prod_range_succ,
+have HH : ((∏ i in finset.range (h + 1), ((f i) + 1)) - 1) =
+  ((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1)+ f (h + 1), by {sorry},
+rw HH,
+have  H3: complex.abs (((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1)+ f (h + 1)) ≤
+complex.abs(((∏ i in finset.range (h), ((f i) + 1)) - 1) * (f (h + 1) + 1))+ complex.abs (f (h + 1)),
+by {sorry},
+apply le_trans H3,
 sorry,
 end
 
-
+#exit
 
 lemma unif_prod_bound (F : ℕ → ℂ → ℂ) (K : set ℂ)
   (hb : ∃ (T : ℝ), ∀ (x : ℂ), x ∈ K →   ∑' (n : ℕ), complex.abs (F n x) ≤ T)
