@@ -955,7 +955,7 @@ apply complex.abs.pos,
 exact h0,
 end
 
-lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℍ) (r : ℝ):
+lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℂ) (r : ℝ) :
   tendsto_uniformly_on
   (λ n:ℕ, λ z : ℂ,  (∏ j in finset.range n, (1 + - z ^ 2 / (j + 1) ^ 2)))
   (λ t, (complex.sin (π * t))/ ↑π * t) at_top  (ball z r):=
