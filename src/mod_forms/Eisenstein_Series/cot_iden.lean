@@ -955,18 +955,24 @@ apply complex.abs.pos,
 exact h0,
 end
 
-lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℂ) (r : ℝ) :
+lemma zero_not_in_upper_half (x : ℍ'): (x : ℂ) ≠0 :=
+begin
+exact ne_zero x,
+
+end
+
+lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℍ') (r : ℝ) (hr : 0 < r) :
   tendsto_uniformly_on
   (λ n:ℕ, λ z : ℂ,  (∏ j in finset.range n, (1 + - z ^ 2 / (j + 1) ^ 2)))
-  (λ t, (complex.sin (π * t))/ ↑π * t) at_top  (ball z r):=
+  (λ t, (complex.sin (π * t))/ (↑π * t)) at_top  ((ball z r) ∩ ℍ'):=
 begin
-by_cases hr : 0 < r ,
-apply sum_prod_unif_conv _ (λ t, (complex.sin (π * t))/ ↑π * t) (ball z r),
-have := tendsto_unif_on_restrict _ _ (ball z r),
+apply sum_prod_unif_conv _ (λ t, (complex.sin (π * t))/ (↑π * t)) ((ball z r) ∩ ℍ'),
+have := tendsto_unif_on_restrict _ _ ((ball z r) ∩ ℍ'),
 rw this,
 simp only [map_div₀, absolute_value.map_neg, complex.abs_pow],
 set s : ℝ := complex.abs(z)+r,
-have HH:= M_test_uniform _ (λ (n : ℕ) (x :  (ball z r)), complex.abs(x^2/(n+1)^2)) (λ (n : ℕ), complex.abs(s^2/(n+1)^2)) _ _,
+have HH:= M_test_uniform _ (λ (n : ℕ) (x : (ball (z : ℂ)  r) ∩ ℍ'), complex.abs(x^2/(n+1)^2)) (λ (n : ℕ),
+  complex.abs(s^2/(n+1)^2)) _ _,
 rw ←tendst_unif_coe _ _ _,
 convert HH,
 simp only [coe_finset_sum, map_div₀, complex.abs_pow],
@@ -974,66 +980,40 @@ funext,
 rw tsum_coe,
 congr,
 simp only [map_div₀, complex.abs_pow],
-simp only [hr, nonempty_coe_sort, nonempty_ball],
+simp  [hr, nonempty_coe_sort, nonempty_ball],
+rw nonempty_def,
+refine ⟨z,_⟩,
+simp [hr, z.2],
+exact z.2,
 intros n x,
 simp only [map_div₀, complex.abs_pow, of_real_div, of_real_pow, abs_of_real, complex.abs_abs, of_real_add],
 apply div_le_div_of_le,
 apply pow_two_nonneg,
 apply pow_le_pow_of_le_left (complex.abs.nonneg _),
-convert assa r z x,
+have hxx : (x : ℂ ) ∈ ball (z : ℂ) r, by {have :=x.2, rw mem_inter_iff at this, apply this.1, },
+have A:= assa r z (⟨x, hxx⟩ : ball (z : ℂ) r),
+norm_cast at A,
+simp at *,
+apply le_trans A,
 norm_cast,
-simp only [abs_eq_self],
-apply add_nonneg (complex.abs.nonneg _) (hr.le),
+apply le_abs_self,
 apply (summable_rie_twist s),
-apply rie_twist_bounded_on_ball z r hr,
+have B:= rie_twist_bounded_on_ball z r hr,
+obtain ⟨T, hT⟩:= B,
+refine ⟨T,_⟩,
+intros x hx,
+apply hT x,
+rw mem_inter_iff at hx,
+apply hx.1,
 intro x,
 convert (summable_rie_twist x),
 ext1,
 field_simp,
 intros x hx,
-have := tendsto_euler_sin_prod x,
-sorry,
-sorry,
-/-
-have := tendsto_euler_sin_prod z,
-rw metric.tendsto_at_top at this,
-have hh := auss,
-apply uniform_cauchy_seq_on.tendsto_uniformly_on_of_tendsto,
-rw uniform_cauchy_seq_on_iff,
-intros ε hε,
-
-rw tendsto_uniformly_iff at *,
-
-
-set c : ℝ  := complex.abs (↑π * z * (∏ j in finset.range 3, (1 - z ^ 2 / (j + 1) ^ 2))),
-intros ε hε,
-have he : 0 < ε/c, by {sorry},
-have hh2 := hh (ε/c) he,
-simp at *,
-obtain ⟨aa, H⟩ := hh2,
-set a : ℕ := max 3 aa,
-refine ⟨a,_⟩,
-intros b hb x,
-rw (euler_sine.sin_pi_mul_eq x b),
-simp,
-simp_rw dist_eq_norm at *,
-
-/-
-have A: tendsto_uniformly (λ n : ℕ, λ z : ℂ,
-(∫ x in 0..π/2, complex.cos (2 * z * x) * real.cos x ^ (2 * n)) / ↑∫ x in 0..π/2, real.cos x ^ (2 * n))
-1 at_top,
-by {sorry},
-have B : tendsto_uniformly  (λ n:ℕ, λ z : ℂ, ↑π * z * (∏ j in finset.range b, (1 - z ^ 2 / (j + 1) ^ 2)))
- (λ z : ℂ, ↑π * z * (∏ j in finset.range b, (1 - z ^ 2 / (j + 1) ^ 2))) at_top, by {sorry},
-haveI : group ℂ, by {sorry},
-have C:= tendsto_uniformly.mul A B,
--/
-
--/
-
-
-
-
+have := (euler_sin_prod' x),
+apply this,
+rw mem_inter_iff at hx,
+apply upper_half_plane.ne_zero (⟨x, hx.2⟩ : ℍ),
 end
 
 
@@ -1048,6 +1028,23 @@ have := log_der_tendsto
   ( (λ n:ℕ,  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) ))
   (complex.sin ∘ (λ t, π * t)) (x) ,
 apply this,
+rw metric.tendsto_locally_uniformly_on_iff,
+intros ε hε  x hx,
+have H := tendsto_locally_uniformly_euler_sin_prod' ⟨x, hx⟩ ε hε,
+rw tendsto_uniformly_on_iff at H,
+have HH := H ε hε,
+refine ⟨(ball x ε ∩ ℍ'),_⟩,
+simp only [subtype.coe_mk, eventually_at_top, ge_iff_le, mem_inter_iff, mem_ball, comp_app, and_imp, exists_prop,
+  ne.def, forall_exists_index, gt_iff_lt] at *,
+
+split,
+rw mem_nhds_within_iff,
+refine ⟨ε, hε,_⟩,
+refl,
+obtain ⟨N, hN⟩ := HH,
+refine ⟨N,_⟩,
+intros b hb y hy hyy,
+--apply hN b hb y hy hyy,
 
 all_goals {sorry},
 
