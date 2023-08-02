@@ -262,6 +262,13 @@ have h1 :  log_deriv (λ z, (1 - z ^ 2 / (n + 1) ^ 2)) x = -2*x/((n+1)^2 - x^2),
       norm_cast,
       linarith,},
 rw h1,
+rw one_div_add_one_div,
+simp,
+rw ←neg_div_neg_eq,
+simp,
+
+
+
 sorry,
 
 end
