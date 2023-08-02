@@ -780,9 +780,21 @@ begin
 simp_rw tendsto_uniformly_iff,
 simp_rw dist_eq_norm at *,
 simp,
-
-sorry,
+split,
+repeat{ intro h,
+intros e he,
+have hh:= h e he,
+obtain ⟨a, ha⟩:= hh,
+refine ⟨a,_⟩,
+intros b hb x hx,
+have H:= ha b hb x hx,
+convert H,
+rw ←abs_of_real,
+congr,
+simp only [of_real_sub],},
 end
+
+#exit
 
 lemma assa (r : ℝ) (z :  ℂ) (x : ball z r) : complex.abs(x) < complex.abs(z) +r :=
 begin
