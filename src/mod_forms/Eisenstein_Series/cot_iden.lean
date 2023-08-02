@@ -1016,6 +1016,13 @@ rw mem_inter_iff at hx,
 apply upper_half_plane.ne_zero (⟨x, hx.2⟩ : ℍ),
 end
 
+lemma sub_add_prod_aux (n : ℕ) (z : ℂ):
+ (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)) =
+ (∏ j in finset.range n, (1 + -z ^ 2 / (j + 1) ^ 2)) :=
+begin
+sorry,
+end
+
 
 
 lemma tendsto_euler_log_derv_sin_prodd (x : ℍ):
@@ -1032,7 +1039,8 @@ rw metric.tendsto_locally_uniformly_on_iff,
 intros ε hε  x hx,
 have H := tendsto_locally_uniformly_euler_sin_prod' ⟨x, hx⟩ ε hε,
 rw tendsto_uniformly_on_iff at H,
-have HH := H ε hε,
+have hxe : 0 <  ε/(complex.abs (π * x)+ ε), by {sorry},
+have HH := H (ε/(complex.abs (π * x) +ε ) ) hxe,
 refine ⟨(ball x ε ∩ ℍ'),_⟩,
 simp only [subtype.coe_mk, eventually_at_top, ge_iff_le, mem_inter_iff, mem_ball, comp_app, and_imp, exists_prop,
   ne.def, forall_exists_index, gt_iff_lt] at *,
@@ -1044,8 +1052,13 @@ refl,
 obtain ⟨N, hN⟩ := HH,
 refine ⟨N,_⟩,
 intros b hb y hy hyy,
---apply hN b hb y hy hyy,
-
+have:= hN b hb y hy hyy,
+rw dist_eq_norm at *,
+rw div_sub' at this,
+simp only [norm_eq_abs, subtype.coe_mk, absolute_value.map_mul, abs_of_real, map_div₀] at *,
+rw div_lt_iff at this,
+rw sub_add_prod_aux b y,
+apply lt_trans this,
 all_goals {sorry},
 
 end
