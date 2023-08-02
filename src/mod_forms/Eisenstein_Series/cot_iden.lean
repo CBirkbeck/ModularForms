@@ -139,12 +139,6 @@ ring,
 end
 
 
-lemma sin_piz_ne_zero (z : ℍ) : complex.sin (π * z) ≠ 0 :=
-begin
-sorry,
-
-end
-
 
 def log_deriv (f : ℂ  → ℂ) := deriv f / f
 
@@ -154,17 +148,22 @@ rw cot,
 simp,
 end
 
+/-
 lemma log_derv_eq_derv_log (f : ℂ  → ℂ) (x : ℂ) (hf : f x ≠ 0): (log_deriv f) x =
 (deriv ((complex.log) ∘ f) x) :=
 begin
 sorry,
 end
-
+-/
 
 
 lemma log_deriv_one : log_deriv 1 = 0 :=
 begin
-sorry,
+rw log_deriv,
+simp,
+ext1,
+simp,
+apply (deriv_const x (1 : ℂ)),
 end
 
 lemma log_derv_mul (f g: ℂ → ℂ) (x : ℂ) (hfg : f x * g x ≠ 0) (hdf : differentiable_at ℂ f x)
@@ -187,11 +186,15 @@ begin
   induction s using finset.cons_induction_on with a s ha ih,
   { simp [log_deriv_one] },
   { rw [finset.forall_mem_cons] at hf,
-    simp [ih hf.2], rw finset.prod_insert, rw finset.sum_insert, sorry, sorry, sorry,
+    simp [ih hf.2], rw finset.prod_insert, rw finset.sum_insert,
+    --rw log_derv_mul,
+
+    sorry, sorry, sorry,
    -- apply log_derv_mul,
    }
 end
 
+/-
 lemma log_derv_diff (f : ℂ → ℂ) (s : set ℂ) (hs : is_open s) (hf : differentiable_on ℂ f s) (x : s)
  (hf2 : ∀ x ∈ s, f x ≠ 0) : differentiable_on ℂ (log_deriv f) s :=
 begin
@@ -201,6 +204,7 @@ all_goals{sorry},
 
 
 end
+-/
 
 lemma log_deriv_congr (f g : ℂ → ℂ)  (hfg : f = g) : log_deriv f = log_deriv g :=
 begin
@@ -240,6 +244,8 @@ apply mul_comm,
 simp,
 simp,
 end
+
+
 
 lemma log_deriv_eq_1 (x : ℍ) (n : ℕ) : log_deriv (λ z, (1 - z ^ 2 / (n + 1) ^ 2)) x =
   (1/(x-(n+1))+1/(x+(n+1))) :=
@@ -290,11 +296,66 @@ simp at this,
 exact this,
 end
 
+lemma factor_ne_zero (x : ℍ) (n : ℕ) : ((1 : ℂ) - x ^ 2 / (n + 1) ^ 2) ≠ 0 :=
+begin
+by_contra,
+rw sub_eq_zero at h,
+have hs :=h.symm,
+rw div_eq_one_iff_eq at hs,
+have hr := upper_half_ne_nat_pow_two x (n+1),
+simp only [nat.cast_add, algebra_map.coe_one, ne.def] at *,
+apply absurd hs hr,
+apply pow_ne_zero,
+norm_cast,
+linarith,
+end
+
+lemma differentiable_on.product (F : ℕ → ℂ → ℂ) (n : ℕ) (s : set ℂ)
+  (hd : ∀ (i : finset.range n), differentiable_on ℂ (λ z, F i z ) s):
+  differentiable_on ℂ (λ z, ∏ i in finset.range n, F i z ) s :=
+begin
+induction n,
+simp,
+apply (differentiable_const (1 : ℂ)).differentiable_on,
+simp_rw finset.prod_range_succ,
+apply differentiable_on.mul,
+apply n_ih,
+intro i,
+have hi := i.2,
+simp at *,
+apply hd,
+apply lt_trans hi,
+apply nat.lt_succ_self,
+simp at *,
+apply hd,
+apply nat.lt_succ_self,
+end
+
+lemma prod_diff_on' (n : ℕ ) : differentiable_on ℂ
+  (λ z : ℂ,  (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) ℍ' :=
+begin
+apply differentiable_on.product,
+intros i,
+apply differentiable_on.sub,
+apply (differentiable_const (1 : ℂ)).differentiable_on,
+apply differentiable_on.div_const,
+apply differentiable_on.pow,
+apply differentiable_id.differentiable_on,
+end
+
+lemma product_diff_on_H (n : ℕ) : differentiable_on ℂ
+  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) ℍ' :=
+begin
+apply differentiable_on.mul,
+apply differentiable_on.const_mul,
+apply differentiable_id.differentiable_on,
+apply  prod_diff_on',
+end
+
 lemma log_deriv_of_prod (x : ℍ) (n : ℕ) :
   log_deriv  (λ z, (↑π * z )  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) x =
   1/x + ∑ j in finset.range n, (1/(x-(j+1))+1/(x+(j+1))) :=
 begin
-
 rw log_derv_mul,
 rw log_deriv_pi_z,
 simp only [one_div, add_right_inj],
@@ -307,16 +368,21 @@ congr,
 ext1,
 field_simp,
 intros m hm,
-by_contra,
-rw sub_eq_zero at h,
-have hs :=h.symm,
-rw div_eq_one_iff_eq at hs,
-have hr := upper_half_ne_nat_pow_two x (m+1),
-simp only [nat.cast_add, algebra_map.coe_one, ne.def] at *,
-apply absurd hs hr,
-
-sorry,
-
+apply factor_ne_zero x m,
+apply mul_ne_zero,
+apply mul_ne_zero,
+norm_cast,
+apply (real.pi_ne_zero),
+apply (upper_half_plane.ne_zero x),
+rw finset.prod_ne_zero_iff,
+intros a ha,
+apply factor_ne_zero x a,
+apply differentiable_at.const_mul,
+apply differentiable_id.differentiable_at,
+apply  (prod_diff_on' n).differentiable_at,
+apply is_open_iff_mem_nhds.1,
+apply upper_half_plane_is_open,
+apply x.2,
 end
 
 
@@ -712,7 +778,9 @@ tendsto_uniformly (λ n : ℕ,  λ k : K,  ((f n k) : ℂ)) (λ n : K, ((g n) : 
   ↔ tendsto_uniformly (λ n : ℕ,  λ k : K,  f n k) (λ k : K, g k) at_top :=
 begin
 simp_rw tendsto_uniformly_iff,
+simp_rw dist_eq_norm at *,
 simp,
+
 sorry,
 end
 
@@ -817,11 +885,7 @@ apply complex.abs.pos,
 exact h0,
 end
 
-lemma zero_not_in_upper_half (x : ℍ'): (x : ℂ) ≠0 :=
-begin
-exact ne_zero x,
 
-end
 
 lemma tendsto_locally_uniformly_euler_sin_prod' (z : ℍ') (r : ℝ) (hr : 0 < r) :
   tendsto_uniformly_on
@@ -882,7 +946,9 @@ lemma sub_add_prod_aux (n : ℕ) (z : ℂ):
  (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)) =
  (∏ j in finset.range n, (1 + -z ^ 2 / (j + 1) ^ 2)) :=
 begin
-sorry,
+congr,
+ext1,
+ring,
 end
 
 example (a b  : ℝ) (ha : 0 ≤ a) (hb: 0 < b): 0  < a + b:=
@@ -913,42 +979,7 @@ have h1: ((|π| * complex.abs y)) / (|π| * complex.abs x + |π|* ε) < 1, by {
 apply mul_lt_of_lt_one_right hε h1,
 end
 
-lemma differentiable_on.product (F : ℕ → ℂ → ℂ) (n : ℕ) (s : set ℂ)
-  (hd : ∀ (i : finset.range n), differentiable_on ℂ (λ z, F i z ) s):
-  differentiable_on ℂ (λ z, ∏ i in finset.range n, F i z ) s :=
-begin
-induction n,
-simp,
-apply (differentiable_const (1 : ℂ)).differentiable_on,
-simp_rw finset.prod_range_succ,
-apply differentiable_on.mul,
-apply n_ih,
-intro i,
-have hi := i.2,
-simp at *,
-apply hd,
-apply lt_trans hi,
-apply nat.lt_succ_self,
-simp at *,
-apply hd,
-apply nat.lt_succ_self,
-end
 
-
-lemma product_diff_on_H (n : ℕ) : differentiable_on ℂ
-  (λ z, ↑π * (z : ℂ)  * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2))) ℍ' :=
-begin
-apply differentiable_on.mul,
-apply differentiable_on.const_mul,
-apply differentiable_id.differentiable_on,
-apply differentiable_on.product,
-intros i,
-apply differentiable_on.sub,
-apply (differentiable_const (1 : ℂ)).differentiable_on,
-apply differentiable_on.div_const,
-apply differentiable_on.pow,
-apply differentiable_id.differentiable_on,
-end
 
 lemma sin_pi_z_ne_zero (z : ℍ) : complex.sin (π * z) ≠ 0 :=
 begin
@@ -1021,8 +1052,54 @@ exact sin_pi_z_ne_zero x,
 end
 
 
---lemma logder (f : ℕ → ℂ → ℂ) (x a : ℂ) (hx : f x ≠ 0) (hf : tendsto f at_top (𝓝 a))
+lemma tendsto_euler_log_derv_sin_prodd' (x : ℍ):
+  tendsto  ( (λ n:ℕ,   1/(x : ℂ) + ∑ j in finset.range n, (1/(x-(j+1))+1/(x+(j+1)))))
+  at_top (𝓝 $  π * cot(π * x)) :=
+begin
+have := tendsto_euler_log_derv_sin_prodd x,
+have h1:= log_deriv_of_prod x,
+have h2 := log_deriv_sine x,
+rw ←h2,
+simp_rw ←h1,
+simp at *,
+exact this,
+end
 
+
+
+lemma cot_series_rep' (z : ℍ) : ↑π * cot (↑π* z) - 1/z =
+ ∑' (n : ℕ), (1/(z-(n+1))+1/(z+(n+1))) :=
+begin
+rw (has_sum.tsum_eq _),
+exact t2_5_space.t2_space,
+rw summable.has_sum_iff_tendsto_nat,
+have h:= tendsto_euler_log_derv_sin_prodd' z,
+have := tendsto.sub_const (1/(z : ℂ)) h,
+simp at *,
+apply this,
+have H:= lhs_summable z,
+have HH := nat_pos_tsum2' (λ n, (1/((z : ℂ)-(n))+1/(z+(n)))),
+simp at *,
+rw ← HH,
+exact H,
+end
+
+
+lemma cot_series_rep (z : ℍ) : ↑π * cot (↑π* z) - 1/z =
+ ∑' (n : ℕ+), (1/(z-n)+1/(z+n)) :=
+begin
+have := tsum_pnat' (λ n, (1/(z-n)+1/(z+n))),
+have h1 := cot_series_rep' z,
+simp only [one_div, coe_coe, nat.cast_add, algebra_map.coe_one] at *,
+rw this,
+apply h1,
+end
+
+end has_prod
+
+
+--lemma logder (f : ℕ → ℂ → ℂ) (x a : ℂ) (hx : f x ≠ 0) (hf : tendsto f at_top (𝓝 a))
+/-
 lemma tendsto_euler_log_sin_prod' (z : ℍ) :
   tendsto  (complex.log ∘  (λ n:ℕ, (↑π * z * (∏ j in finset.range n, (1 - z ^ 2 / (j + 1) ^ 2)))))
   at_top (filter.map complex.log ((𝓝 $ (complex.sin (π * z))))) :=
@@ -1034,7 +1111,7 @@ apply tendsto_map,
 end
 
 
-/-
+
 lemma clog_der11 (f : ℂ → ℂ) {f' x : ℂ} (h₁ : has_deriv_at f f' x)  (h₂ : f x ≠ 0)
  (h3 : (f x).re < 0 ∧ (f x).im = 0) :
  has_deriv_within_at (λ t, log (complex.abs (f t))) (f' / f x) {z : ℂ | 0 ≤ x.im} x :=
@@ -1165,13 +1242,3 @@ sorry,
 end
 
 -/
-
-lemma cot_series_rep (z : ℍ) : ↑π * cot (↑π* z) - 1/z =
- ∑' (n : ℕ+), (1/(z-n)+1/(z+n)) :=
-begin
-apply symm,
-refine (has_sum.tsum_eq _),
-sorry,
-end
-
-end has_prod

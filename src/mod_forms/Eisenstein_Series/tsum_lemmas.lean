@@ -72,6 +72,39 @@ exact hf,
 
 end
 
+lemma has_sum_pnat' (f : ℕ → ℂ) (hf2: summable f) : has_sum (λ n:ℕ, f(n + 1)) (∑' (n : ℕ+), f n) :=
+begin
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  simp at *,
+  rw ←this,
+  have hf3 : summable ((λ (n : ℕ), f (n + 1)) ∘ pnat.nat_pred), by {
+    have hs : summable (λ (n : ℕ+), f n), by  {apply (hf2).subtype},
+    apply summable.congr hs,
+    intro b, simp,},
+  rw (summable.has_sum_iff hf3),
+  congr,
+  funext,
+  simp,
+end
+
+lemma nat_pos_tsum2' {α : Type*}[topological_space α] [add_comm_monoid α] (f : ℕ → α) :
+summable (λ (x : ℕ+), f x) ↔ summable (λ x : ℕ, (f (x + 1))):=
+begin
+rw ←equiv.summable_iff (_root_.equiv.pnat_equiv_nat),
+split,
+intro hf,
+apply summable.congr hf,
+intro b,
+simp,
+intro hf,
+apply summable.congr hf,
+intro b,
+simp,
+end
+
+
+
 lemma tsum_pnat (f : ℕ → ℂ) (hf : f 0 = 0) : ∑' (n : ℕ+), f n = ∑' n, f n :=
 begin
 by_cases hf2: summable f,
@@ -99,6 +132,30 @@ rw ←(nat_pos_tsum2 f hf) at hf2,
 have h2:= tsum_eq_zero_of_not_summable hf2,
 simp [h1,h2],
 end
+
+lemma tsum_pnat' (f : ℕ → ℂ) : ∑' (n : ℕ+), f n = ∑' n, f (n + 1) :=
+begin
+by_cases hf2: summable (λ (n : ℕ+), f n),
+have hpos : has_sum (λ n:ℕ, f(n + 1)) (∑' (n : ℕ+), f n), by {
+  have:= (_root_.equiv.pnat_equiv_nat).has_sum_iff,
+  simp_rw equiv.pnat_equiv_nat at *,
+  simp at *,
+  rw ←this,
+  have hf3 : summable ((λ (n : ℕ), f (n + 1)) ∘ pnat.nat_pred), by {
+    apply summable.congr hf2,
+    intro b, simp,},
+  rw (summable.has_sum_iff hf3),
+  congr,
+  funext,
+  simp,},
+apply symm,
+apply hpos.tsum_eq,
+have h1 := tsum_eq_zero_of_not_summable hf2,
+rw nat_pos_tsum2' at hf2,
+have h2:= tsum_eq_zero_of_not_summable hf2,
+simp [h1,h2],
+end
+
 
 lemma prod_sum (f : ℤ × ℤ → ℂ) (hf : summable f) : summable (λ a, ∑' b, f ⟨a,b⟩ ) :=
 begin

@@ -272,6 +272,9 @@ apply pow_pos,
 simp only [coe_coe, nat.cast_pos, pnat.pos],
 end
 
+
+
+
 lemma aux_rie_sum (z : ℍ) (k : ℕ) (hk : 2 ≤ k) :
  summable (λ (n : ℕ+), complex.abs (rfunct(z)^k* n^k)⁻¹) :=
 begin
