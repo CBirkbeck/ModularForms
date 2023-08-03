@@ -844,8 +844,6 @@ congr,
 simp only [of_real_sub],},
 end
 
-#exit
-
 lemma assa (r : ℝ) (z :  ℂ) (x : ball z r) : complex.abs(x) < complex.abs(z) +r :=
 begin
 have hx : (x : ℂ) = (x - z) + z, by {ring},
