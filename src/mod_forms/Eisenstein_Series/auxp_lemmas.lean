@@ -28,6 +28,15 @@ simp at h1,
 exact h1,
 end
 
+lemma upper_ne_nat (x : ℍ') (d : ℕ) : (x : ℂ)  ≠ d :=
+begin
+by_contra,
+have h1: 0 < (x : ℂ).im, by {simp [x.2], exact im_pos x, },
+rw h at h1,
+simp at h1,
+exact h1,
+end
+
 lemma aut_iter_deriv (d : ℤ) (k : ℕ) :
   eq_on (iterated_deriv_within k (λ (z : ℂ), 1/(z + d)) ℍ')
     (λ (t : ℂ),  (-1)^k*(k)! * (1/(t + d)^(k+1))) ℍ' :=

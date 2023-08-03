@@ -179,6 +179,28 @@ field_simp,
 apply mul_comm,
 end
 
+lemma differentiable_at.product {α : Type* } {ι : finset α} (F : α → ℂ → ℂ) (s : ℂ)
+  (hd : ∀ (i : ι), differentiable_at ℂ (λ z, F i z ) s):
+  differentiable_at ℂ (λ z, ∏ i in ι, F i z ) s :=
+begin
+induction ι using finset.cons_induction_on with a s ha ih,
+simp only [finset.prod_empty, differentiable_at_const],
+simp only [finset.cons_eq_insert],
+rw ←finset.prod_fn,
+rw finset.prod_insert,
+apply differentiable_at.mul,
+simp only [finset.forall_coe, subtype.coe_mk, finset.mem_cons, forall_eq_or_imp] at *,
+apply hd.1,
+rw ←finset.prod_fn at ih,
+apply ih,
+intros r,
+simp at *,
+apply hd.2,
+exact r.2,
+exact ha,
+end
+
+
 lemma log_deriv_prod {α : Type*} (s : finset  α) (f : α → ℂ → ℂ) (t : ℂ) (hf : ∀ x ∈ s, f x t ≠ 0)
    (hd : ∀ x ∈ s, differentiable_at ℂ (f x) t) :
   log_deriv (∏ i in s, f i) t = ∑ i in s, log_deriv (f i) t :=
@@ -187,10 +209,25 @@ begin
   { simp [log_deriv_one] },
   { rw [finset.forall_mem_cons] at hf,
     simp [ih hf.2], rw finset.prod_insert, rw finset.sum_insert,
-    --rw log_derv_mul,
-
-    sorry, sorry, sorry,
-   -- apply log_derv_mul,
+    have := log_derv_mul (f a) (∏ i in s, f i) t _ _ _,
+    convert this,
+    apply symm,
+    apply (ih hf.2),
+    intros x hx,
+    apply hd,
+    simp only [hx, finset.cons_eq_insert, finset.mem_insert, or_true],
+    apply mul_ne_zero hf.1,
+    simp only [finset.prod_apply],
+    rw finset.prod_ne_zero_iff,
+    exact hf.2,
+    apply hd,
+    simp only [finset.cons_eq_insert, finset.mem_insert, eq_self_iff_true, true_or],
+    rw finset.prod_fn,
+    apply differentiable_at.product,
+    intro r,
+    apply hd,
+    simp [r.2],
+    repeat {exact ha},
    }
 end
 
@@ -252,26 +289,32 @@ lemma log_deriv_eq_1 (x : ℍ) (n : ℕ) : log_deriv (λ z, (1 - z ^ 2 / (n + 1)
 begin
 have h1 :  log_deriv (λ z, (1 - z ^ 2 / (n + 1) ^ 2)) x = -2*x/((n+1)^2 - x^2),
   by {rw log_deriv,
-      simp,
+      simp only [pi.div_apply, deriv_sub, differentiable_at_const, differentiable_at.div_const,
+      differentiable_at.pow,differentiable_at_id', deriv_const', deriv_div_const, deriv_pow'',
+      nat.cast_bit0, algebra_map.coe_one, pow_one, deriv_id'', mul_one, zero_sub, neg_mul],
       field_simp,
       congr,
       rw mul_one_sub,
-      simp,
+      simp only [sub_right_inj],
       apply mul_div_cancel',
       apply pow_ne_zero,
       norm_cast,
       linarith,},
 rw h1,
 rw one_div_add_one_div,
-simp,
+simp only [neg_mul, sub_add_add_cancel],
 rw ←neg_div_neg_eq,
-simp,
-
-
-
-sorry,
-
+simp only [neg_neg, neg_sub],
+congr,
+ring,
+ring,
+have :=upper_ne_nat x (n+1),
+rw sub_ne_zero,
+simpa using this,
+have :=upper_ne_int x (n+1),
+norm_cast at *,
 end
+
 
 lemma log_deriv_pi_z (x : ℂ) : log_deriv (λ z : ℂ, π * z) x = 1/x :=
 begin
