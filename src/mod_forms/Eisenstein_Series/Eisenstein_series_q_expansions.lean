@@ -54,7 +54,6 @@ have h00 : ((0^k : ℕ) : ℝ)⁻¹ = 0, by {convert inv_zero, norm_cast, apply 
 rw h0,
 simp only [zero_add, mul_eq_mul_left_iff, bit0_eq_zero, one_ne_zero, or_false],
 rw ←tsum_coe,
-norm_cast,
 rw ←tsum_pnat,
 congr,
 funext,
@@ -97,6 +96,7 @@ have h1 := Eisenstein_series_is_summable k z hk,
 apply prod_sum _ h1,
 apply Eisenstein_series_is_summable k z hk,
 end
+
 
 def sigma_fn (k n : ℕ) : ℕ := ∑ (d : ℕ)  in nat.divisors n, d^k
 
@@ -320,7 +320,7 @@ lemma a1 {k : ℕ} (e : ℕ+)  (z : ℍ) :
   summable (λ (c : ℕ+), (e : ℂ) ^ (k - 1) * exp (2 * ↑π * I * ↑z * e * c)) :=
 begin
   have h2ne : (e : ℂ)^(k-1) ≠ 0, by {apply pow_ne_zero, simp,},
-  rw ←(summable_mul_left_iff h2ne),
+  rw (summable_mul_left_iff h2ne),
   have hv1 : ∀ (b : ℕ+),  (complex.exp ( 2 *↑π * I * z * e * b)) =
     ( (complex.exp ( 2 *↑π * I * z * e)))^(b : ℕ), by {intro b,
       rw ←exp_nat_mul, ring_nf},
@@ -510,11 +510,7 @@ let ε := (2 * Riemann_zeta 4) +
   ((2 * (16 * π ^ 4 / ↑((2 + 1) * 2))))* ∑' (n : ℕ+), (↑(sigma_fn 3 (n)) * real.exp (↑(-2 : ℤ) * π * ↑n)),
 
 have H7: G[(4 : ℕ)] (⟨I, by {simp only [I_im, zero_lt_one]}⟩ : ℍ) = ↑ε,
-  by {rw H3, simp only [of_real_mul, of_real_bit0, nat.cast_mul, nat.cast_add, nat.cast_bit0,
-  algebra_map.coe_one, of_real_div, of_real_add,
-  int.cast_neg, int.cast_bit0, neg_mul, of_real_int_cast, of_real_exp, of_real_neg, of_real_nat_cast, add_right_inj,
-  mul_eq_mul_left_iff, mul_eq_zero, bit0_eq_zero, one_ne_zero, div_eq_zero_iff, pow_eq_zero_iff, nat.succ_pos',
-  of_real_eq_zero, false_or, or_false], left, norm_cast, apply tsum_coe,},
+  by {rw H3,},
 
  have H5: 0 < ε,
  by{ apply left.add_pos_of_pos_of_nonneg H5, apply mul_nonneg, simp, apply ineq, apply H4,

@@ -7,6 +7,7 @@ import mod_forms.holomorphic_functions
 import analysis.complex.upper_half_plane.basic
 import mod_forms.Eisenstein_Series.Eisenstein_series_index_lemmas
 import mod_forms.Eisenstein_Series.iterated_deriv_lemmas
+import analysis.special_functions.exp_deriv
 
 noncomputable theory
 
@@ -54,14 +55,14 @@ have hv1 : ∀ b : ℕ ,   (b : ℝ)^k * (complex.abs (complex.exp ( 2 *↑π * 
 simp_rw mul_pow,
 have h2ne : (2 : ℝ)^k ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
 simp_rw mul_assoc,
-rw ←(summable_mul_left_iff h2ne),
-rw ←(summable_mul_left_iff _),
+rw (summable_mul_left_iff h2ne),
+rw (summable_mul_left_iff _),
 simp_rw ←mul_assoc,
 apply summable.congr _ hv1,
 apply summable_pow_mul_geometric_of_norm_lt_1,
 simp,
 apply exp_upper_half_plane_lt_one,
-exact topological_ring.mk,
+exact topological_semiring.mk,
 apply pow_ne_zero,
 simpa using real.pi_ne_zero,
 end
@@ -72,7 +73,7 @@ begin
 simp,
 have h2ne : (2 : ℝ) ≠ 0, by {exact ne_zero.ne 2,},
 simp_rw mul_assoc,
-rw ←(summable_mul_left_iff h2ne),
+rw (summable_mul_left_iff h2ne),
 simp_rw ←coe_coe,
 have hv1 : ∀ (b : ℕ+), complex.abs (complex.exp ( 2 *↑π * I * z * b)) =
   (complex.abs (complex.exp ( 2 *↑π * I * z)))^(b : ℕ), by {intro b,
@@ -88,7 +89,6 @@ simp,
 apply exp_upper_half_plane_lt_one,
 end
 
-
 lemma exp_iter_deriv (n m : ℕ)  :
   iterated_deriv n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) =
   (λ t, (2 *↑π * I * m)^n * complex.exp ( 2 *↑π * I * m * t)) :=
@@ -101,7 +101,6 @@ rw IH,
 simp,
 ring_exp,
 end
-
 
 lemma iterated_deriv_within_of_is_open (n m : ℕ)  :
   eq_on (iterated_deriv_within n (λ (s : ℂ), complex.exp ( 2 *↑π * I * m * s)) ℍ')
@@ -219,12 +218,12 @@ have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
   simp_rw mul_pow,
   have h2ne : (2 : ℝ)^(k+1) ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
 simp_rw mul_assoc,
-rw ←(summable_mul_left_iff h2ne),
-rw ←(summable_mul_left_iff _),
+rw (summable_mul_left_iff h2ne),
+rw (summable_mul_left_iff _),
 apply summable_pow_mul_geometric_of_norm_lt_1,
 simp at *,
 apply hr,
-exact topological_ring.mk,
+exact topological_semiring.mk,
 apply pow_ne_zero,
 simpa using real.pi_ne_zero,},
 refine ⟨λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k+1) * r^n), hu,_⟩,
@@ -233,8 +232,7 @@ have go:= (der_iter_eq_der2' k n ⟨t.1, hK1 t.2⟩),
 simp at *,
 simp_rw go,
 have h1:= exp_iter_deriv_within (k+1) n (hK1 t.2),
-simp only [subtype.coe_mk, absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat,
-  abs_norm_eq_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg, subtype.val_eq_coe] at *,
+simp only [subtype.val_eq_coe, opens.coe_mk] at *,
 rw h1,
 simp,
 have ineqe : complex.abs (complex.exp (2 * π * I * n * t)) ≤ ‖ r ‖^n, by {
@@ -273,17 +271,16 @@ begin
 have hr2 : 0 ≤ r, by {simp only [norm_nonneg], },
   have hu : summable (λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k) * r^n)),
  by {simp only [absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I,
- mul_one, abs_cast_nat, abs_norm_eq_norm,
-  bounded_continuous_function.norm_mk_of_compact],
+  mul_one, abs_cast_nat, bounded_continuous_function.norm_mk_of_compact, abs_norm],
   simp_rw mul_pow,
   have h2ne : (2 : ℝ)^(k) ≠ 0, by {apply pow_ne_zero, exact ne_zero.ne 2,},
 simp_rw mul_assoc,
-rw ←(summable_mul_left_iff h2ne),
-rw ←(summable_mul_left_iff _),
+rw (summable_mul_left_iff h2ne),
+rw (summable_mul_left_iff _),
 apply summable_pow_mul_geometric_of_norm_lt_1,
-simp at *,
+simp only [norm_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg, ne.def] at *,
 apply hr,
-exact topological_ring.mk,
+exact topological_semiring.mk,
 apply pow_ne_zero,
 simpa using real.pi_ne_zero,},
 refine ⟨λ (n : ℕ),  complex.abs (( 2 *↑π * I * n)^(k) * r^n), hu,_⟩,
@@ -300,12 +297,11 @@ have ineqe : complex.abs (complex.exp (2 * π * I * n * t)) ≤ ‖ r ‖^n, by 
     (bounded_continuous_function.mk_of_compact (funn K hK1 hK2)) t,
     simp only [norm_norm, bounded_continuous_function.norm_mk_of_compact, norm_nonneg,
     absolute_value.map_mul, complex.abs_pow,
-  complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat, abs_norm_eq_norm,
-  bounded_continuous_function.mk_of_compact_apply, norm_eq_abs] at *,
+    complex.abs_two, abs_of_real, abs_I, mul_one, abs_cast_nat,
+    bounded_continuous_function.mk_of_compact_apply, norm_eq_abs, abs_norm] at *,
    exact this},
-simp only [absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real,
-abs_I, mul_one, abs_cast_nat, abs_norm_eq_norm,
-  bounded_continuous_function.norm_mk_of_compact],
+simp only [absolute_value.map_mul, complex.abs_pow, complex.abs_two, abs_of_real, abs_I, mul_one,
+abs_cast_nat,bounded_continuous_function.norm_mk_of_compact, abs_norm],
 apply mul_le_mul,
 simp only,
 simp only [norm_norm, bounded_continuous_function.norm_mk_of_compact] at ineqe,
@@ -321,18 +317,15 @@ lemma exp_series_ite_deriv_uexp2 (k : ℕ) (x : ℍ')  :
 begin
 induction k with k IH generalizing x,
 simp only [iterated_deriv_within_zero],
-simp only [subtype.coe_mk] at *,
 rw iterated_deriv_within_succ,
 have HH: deriv_within (iterated_deriv_within k (λ z, ∑' (n : ℕ), complex.exp ( 2 *↑π * I * n * z)) ℍ' ) ℍ' x =
   deriv_within (λ z,
   (∑' (n : ℕ), iterated_deriv_within k (λ (s : ℂ), complex.exp ( 2 *↑π * I * n * s)) ℍ' z)) ℍ' x,
  by {
   apply deriv_within_congr,
-  apply (is_open.unique_diff_within_at upper_half_plane_is_open x.2 ),
   intros y hy,
   apply IH ⟨y,hy⟩,
   apply IH x,},
-simp only [subtype.coe_mk] at *,
 simp_rw HH,
 rw deriv_tsum_fun',
 simp only,

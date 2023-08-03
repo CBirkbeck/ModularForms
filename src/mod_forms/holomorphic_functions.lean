@@ -1,9 +1,9 @@
 import analysis.complex.basic
-import analysis.calculus.deriv
+import analysis.calculus.deriv.add
+import analysis.calculus.deriv.mul
 import tactic.pi_instances
 import ring_theory.subring.basic
 import analysis.normed_space.basic
-import analysis.calculus.deriv
 import analysis.analytic.basic
 
 
@@ -153,8 +153,6 @@ begin
   simp only [subtype.val_eq_coe],
   convert h4,
   simp,
-  rw nhds_within,
-  simp only [inf_eq_left, le_principal_iff],
   exact h4,
   exact H2,
 end
@@ -251,7 +249,7 @@ begin
 end
 
 
-lemma diff_on_diff (f : D.1 → ℂ) (h : ∀ x : D.1, ∃ (ε: ℝ), 0 < ε ∧ (metric.ball x.1 ε ⊆ D.val ) ∧
+lemma diff_on_diff (f : D.1 → ℂ) (h : ∀ x : D.1, ∃ (ε: ℝ), 0 < ε ∧ (metric.ball x.1 ε ⊆ D.1 ) ∧
   differentiable_on ℂ (extend_by_zero f) (metric.ball x ε)) :
   differentiable_on ℂ (extend_by_zero f) D.1 :=
 begin
@@ -270,7 +268,7 @@ begin
   intros δ hδ,
   have hf2 := hf'  δ hδ,
   rw filter.eventually_iff_exists_mem at *,
-  simp only [exists_prop, metric.mem_ball, gt_iff_lt, topological_space.opens.mem_coe,
+  simp  only [exists_prop, metric.mem_ball, gt_iff_lt,
     dist_zero_right, continuous_linear_map.map_sub, set_coe.forall, subtype.coe_mk,
     subtype.val_eq_coe,norm_eq_abs, norm_mul, norm_inv] at *,
   obtain ⟨S, hS, HD⟩ := hf2,
@@ -279,7 +277,7 @@ begin
   use S,
   split,
   use min e ε,
-  simp only [gt_iff_lt, topological_space.opens.mem_coe, lt_min_iff, subtype.val_eq_coe] at *,
+  simp only [gt_iff_lt,  lt_min_iff, subtype.val_eq_coe] at *,
   simp only [he, hε, and_self],
   simp only [true_and],
   have : metric.ball x e ∩ metric.ball x ε = metric.ball x (min e ε), by {apply aux2,},
@@ -296,14 +294,14 @@ begin
   rw metric.tendsto_uniformly_iff at h,
   intros ε hε,
   have h2:= h ε hε,
-  simp only [gt_iff_lt, topological_space.opens.mem_coe, ge_iff_le, nonempty_of_inhabited,
+  simp [gt_iff_lt,  ge_iff_le, nonempty_of_inhabited,
   set_coe.forall, eventually_at_top, subtype.val_eq_coe] at *,
   obtain ⟨a, ha⟩:= h2,
   use a,
   intros b hb x hx,
   have hf:= ext_by_zero_apply D f ⟨x, hx⟩,
   have hFb:= ext_by_zero_apply D (F b) ⟨x, hx⟩,
-  simp only [topological_space.opens.mem_coe, subtype.coe_mk, subtype.val_eq_coe] at *,
+  simp only [subtype.coe_mk, subtype.val_eq_coe] at *,
   rw hf,
   rw hFb,
   apply ha b hb x hx,

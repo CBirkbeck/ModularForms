@@ -271,8 +271,7 @@ begin
   have := interval_integral.has_deriv_at_integral_of_dominated_loc_of_deriv_le hε hF_meas hF_int
     hF'_meas h_bound bound_integrable h_diff,
   simp only [F, has_deriv_at, has_deriv_at_filter, has_fderiv_within_at, mem_ball, zero_lt_mul_left,
-    inv_pos, zero_lt_bit0, zero_lt_one, norm_eq_abs,
-    interval_integral.interval_integrable_const] at *,
+    inv_pos, zero_lt_bit0, zero_lt_one, norm_eq_abs] at *,
   exact ⟨continuous_linear_map.smul_right (1 : ℂ →L[ℂ] ℂ)
     (interval_integral (F' x) 0 (2 * π) volume), (has_fderiv_at_filter.mono this.2 inf_le_left)⟩,
 end

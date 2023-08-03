@@ -13,7 +13,7 @@ import mod_forms.Weierstrass_M_test
 import analysis.complex.upper_half_plane.basic
 import analysis.complex.upper_half_plane.topology
 import topology.compact_open
-import analysis.calculus.deriv
+import analysis.calculus.deriv.basic
 import number_theory.modular
 
 

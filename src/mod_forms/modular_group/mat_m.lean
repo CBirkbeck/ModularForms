@@ -3,7 +3,6 @@ import tactic.tidy
 import linear_algebra.matrix.special_linear_group
 import linear_algebra.determinant
 import data.matrix.notation
-import linear_algebra.matrix
 import linear_algebra.matrix.general_linear_group
 import data.complex.basic
 
