@@ -6,6 +6,7 @@ import analysis.complex.upper_half_plane.topology
 import number_theory.modular
 import group_theory.index
 import mod_forms.Eisenstein_Series.Eisen_is_holo
+import analysis.calculus.inverse
 
 /-!
 # q-expansions of periodic functions

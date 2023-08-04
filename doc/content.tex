@@ -1,0 +1,591 @@
+\maketitle
+\tableofcontents
+\section{Introduction}
+
+
+This is a blueprint for the full proof of the modularity conjecture. We are following \cite{cornell2013modular}.
+
+ We begin by recalling the definition of an elliptic curve, which is a pair $(E,\mathcal{O})$ consisting of a smooth projective curve $E$ of genus one and $\mathcal{O}$ a point on $E$. Now, every elliptic curve can be embedded as a smooth cubic curve in $\mathbb{P}^2$ given by an equation of the form $E  : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ and this is the basis for the current definition of an elliptic curve in mathlib, where roughly it is described by the above equation, with the extra condition that the discriminant of this cubic is invertible over the base ring.
+
+\begin{definition}\label{defn:Ell_curve_ap}
+	Let $E : y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ be the Weierstrass equation of an elliptic curve and for $p$ a prime number, let $n_p(E)$ denote the number of solutions to $y^2+ a_1 xy+a_3y=x^3+a_2x^2+a_4x+a_6$ in $\mathbb{F}_p$. Then we define $a_p(E):= p- n_p(E).$
+\end{definition}
+
+
+%[Shimura--Taniyama--Weil conjecture: $a_p$ version]
+
+	\begin{theorem}
+	\label{thm:mod_conj_ap}
+	\lean{modularity_conjecture}
+	\leanok
+	\uses{defn:Ell_curve_ap}
+	
+	Let $E$ be an elliptic curve over $\QQ$. Then there exists $N \in \mathbb{N}$ and a normalised cuspidal eigenform $f \in S_{2}(\Gamma_0(N))$ such that for all primes $p$ with $p \nmid N$, we have $a_p(E)=a_p(f)$ where $f= \sum_n a_n(f)q^n$ is the $q$-expansion of $f$.
+\end{theorem}
+
+\begin{definition}\label{defn:ell_curve_reds}
+	Let $K$ be a number field. An elliptic curve $E/K$ has good, multiplicative or additive reductions depending on...
+\end{definition}
+
+\begin{definition}\label{defn:ell_curve_conductor}
+	\uses{defn:ell_curve_reds}
+	Let $K$ be a number field and $E/K$ an elliptic curve. Then the conductor of $E/K$ is $$N_{E/K} \prod_{\gothp} \gothp^{f_{\gothp}(E/K)}$$ where $f_{\gothp}(E/K)$ is $0,1,2$ depending on if $E$ has good, multiplicative or additive reduction at $\gothp$ (and in the last case $\gothp \nmid 6$). 
+
+\end{definition}
+
+\begin{definition}\label{defn:ell_curve_L_fn}
+	The $L$-function of an elliptic curve is defined as..
+\end{definition}
+
+\begin{definition}\label{defn:mod_form_L_fn}
+	The $L$-function of a modular form is...
+\end{definition}
+
+
+\begin{definition}\label{defn:L_fn_modularity}
+	\uses{defn:ell_curve_conductor, ,defn:mod_form_L_fn,defn:ell_curve_L_fn}
+	Let $E$ be an elliptic curve over $\QQ$ of conductor $N_E$ is \emph{modular} is there is a weight $2$ newform of level $\Gamma_0(N_E)$ and trivial character for which 
+	\[L(E,s)= L(f,s).\]
+	
+\end{definition}	
+
+\begin{theorem}\label{thm:eichler_shimura}
+	Let $2 \leq k$ and $\Gamma$ a congruence subgroup.
+	The is a Hecke equivaariant isomorphism $$H^1(\Gamma, V_{k-2}) \cong M_k(\Gamma) \oplus \overline{S_k}(\Gamma).$$
+\end{theorem}
+
+\begin{definition}\label{defn:mod_form_gal_rep}
+	\uses{thm:eichler_shimura}
+	Let $f$ be a weight two normalised newform of level $\Gamma_0(N)$ and character $\epsilon$. Then we can attach to $f$ a Galois representation by...
+\end{definition}
+
+\begin{definition}\label{defn:Tate_mod}
+	Let $E/\QQ$ be an elliptic curve  and $p$ a prime. The Tate module of $E$ is $$T_p(E) := \varprojlim E[p^n].$$
+\end{definition}
+
+\begin{lemma}
+	\label{lem:tate_mod_iso}
+	\uses{defn:Tate_mod}
+		Let $E/\QQ$ be an elliptic curve  and $p$ a prime. The $$T_p(E) \cong \ZZ_p^2.$$ 
+\end{lemma}
+
+\begin{definition}\label{defn:ell_curve_gal_rep}
+	\uses{lem:tate_mod_iso}
+	Let $E/\QQ$ be an elliptic curve. This define a $p$-adic Galois representation $\rho_{E,p} : G_\QQ \to \mathrm{GL}_2(\ZZ_p)$ as the one coming from the action of $G_{\QQ}$ on the Tate module $T_p(E)$.
+\end{definition}
+
+\begin{definition}\label{defn:unram_gal_rep}
+	A Galois representation is unramified if...
+\end{definition}
+
+\begin{definition}\label{defn:hecke_alg}
+	Let $0<N$ be an integer. Then the  Hecke algebra $\mathbb{T}'(N)$ is defined as...
+\end{definition}
+
+\begin{definition}\label{defn:ab_var}
+	An abelian variety is...
+\end{definition}
+
+\begin{definition}\label{defn:ab_var_mod_form}
+	\uses{defn:ab_var}
+	Let $f$ be a modular form of weight $2$. Then attached to $f$ is an abelian variety $A_f$ such that... 
+\end{definition}
+
+\begin{definition}\label{defn:mod_curve_0}
+	Let $0 < N$ be an integer. Let $X_0(N)$ denote the modular curve....
+\end{definition}
+
+Fix a prime $p$.
+
+\begin{definition}\label{defn:coef_ring}
+	A coefficient ring $A$ is a complete noetherian local ring with finite residue field of characteristic $p$.
+	
+\end{definition}
+
+\begin{definition}\label{defn:mod_gal_rep}
+	\uses{defn:unram_gal_rep,defn:hecke_alg, defn:ab_var_mod_form,defn:mod_curve_0,defn:mod_form_gal_rep,defn:coef_ring }
+	Let $\rho: G_{\QQ} \to \mathrm{GL}_2(A)$ be a Galois representation over a coefficient ring $A$. Then $\rho$ is modular if there exists some integer $0 < N$ and a homomorphism $\pi: \mathbb{T}'(N) \to A$ such that $\rho$ is unramified outside $Np$ and for every $\ell \nmid pN$, we have $$\mathrm{Trace}(\rho (\mathrm{Fr}_\ell) )= \pi(T_\ell) \qquad
+	\mathrm{det}(\rho (\mathrm{Fr}_\ell) )= \pi(\langle \ell \rangle) \ell$$ 
+\end{definition}
+
+\begin{definition}\label{defn:semi_stable_ell_curve}
+	An elliptic curve is semistable if....
+	
+\end{definition}	
+
+\begin{definition}\label{defn:gal_rep_irred}
+	A Galois representation is irreducible if...
+\end{definition}	
+
+
+
+
+\begin{lemma}\label{lem:lem7.8}
+		\uses{defn:semi_stable_ell_curve, defn:L_fn_modularity,defn:gal_rep_irred}
+Let $E/\QQ$ be a semistable elliptic curve and suppose $\ov{\rho}_{E,p}$ is both modular and irreducible for some prime $3 \leq p$. Then $E$ is modular.
+
+\end{lemma}	
+	
+	\begin{theorem}\label{thm:thm7.9}
+	
+	Let $E$ be an arbitrary elliptic curve and suppose $\ov{\rho}_{E,3}$ is irreducible. Then  $\ov{\rho}_{E,3}$ is modular.
+		
+	\end{theorem}
+	
+		\begin{theorem}\label{thm:thm7.10}
+		
+		Let $E$ be a semistable elliptic curve and suppose $\ov{\rho}_{E,5}$ is irreducible. Then there is another semistable elliptic curve $E'/\QQ$ for which:
+		\begin{enumerate}
+			\item $\ov{\rho}_{E',3}$ is irreducible and;
+			\item $\ov{\rho}_{E',5} \cong \ov{\rho}_{E,5}$.
+		\end{enumerate}
+		
+	\end{theorem}
+	
+	\begin{theorem}\label{thm:thm7.11}
+	Let $E/\QQ$ be a semistable elliptic curve. Then at least one of the representations  $\ov{\rho}_{E,3}$ or $\ov{\rho}_{E,5}$ is irreducible.
+	
+\end{theorem}	
+
+\begin{theorem}\label{thm:wiles_thm}
+	\uses{lem:lem7.8, thm:thm7.9, thm:thm7.10, thm:thm7.11}
+	Every semi-stable elliptic curve over $\QQ$ is modular.
+
+\end{theorem}
+
+\begin{proof}
+Let $E/\QQ$ be a semi-stable elliptic curve. If  $\ov{\rho}_{E,3}$ is irreducible	then by \ref{thm:thm7.9} it is modular and hence by \ref{lem:lem7.8} $E$ is modular.  If $\ov{\rho}_{E,3}$ is not irreducible, then by \ref{thm:thm7.11}, $\ov{\rho}_{E,5}$ is irreducible. Now using \ref{thm:thm7.10}, we find another semistable elliptic curve $E'$ such that $\ov{\rho}_{E',3}$ is irreducible and hence $E'$ is modular. Therefore $\ov{\rho}_{E',5}$ is modular, making $\ov{\rho}_{E,5}$ modular and hence $E$ is modular. 
+	
+\end{proof}
+
+
+\begin{definition}\label{defn:gal_rep_cts}
+	A Galois representation is continuous if...
+\end{definition}	
+
+\begin{theorem}\label{thm:BCDT_thm_B}
+	\uses{defn:gal_rep_irred,defn:gal_rep_cts}
+	If $\ov{\rho}: G_{\QQ} \to \mathrm{GL}_2(\FF_5)$ is an irreducible continuous representation with cyclotomic determinant, then $\ov{\rho}$ is modular.
+\end{theorem}
+
+\begin{theorem}\label{equivs_modular}
+	\uses{thm:mod_conj_ap,defn:ell_curve_gal_rep,defn:mod_gal_rep,defn:ab_var_mod_form,thm:wiles_thm,thm:wiles_thm, thm:BCDT_thm_B} 
+	Let $E/\QQ$ be an elliptic curve. Then $E$ is modular, equivalently:
+	\begin{enumerate}
+		\item Theorem \ref{thm:mod_conj_ap} holds for $E$.
+		\item For some prime $p$, $\rho_{E,p}$ is modular.
+		\item For every prime $p$, $\rho_{E,p}$ is modular.
+		\item There is a non-constant morphism $\pi : X_0(N_E) \to E$ of algebraic curves defined over $\QQ$.
+		\item $E$ is isogenous to the modular abelian variety $A_f$ associated to some weight $2$ newform $f$ of level $\Gamma_0(N_E)$.
+		
+	\end{enumerate}
+	
+	
+
+\end{theorem}	
+
+
+
+
+
+\begin{comment}
+
+
+We prove Fermat's Last Theorem for regular primes and give some of the necessary background. It uses \cite{Samuel,marcus,washington}.
+
+\section{Discriminants of number fields}
+We recall basic facts about the discriminant.
+
+\begin{lemma}\label{lemma:alt_definition_of_norm}
+	\lean{algebra.norm_eq_prod_embeddings}
+	\leanok
+	Let $K$ be a number field, $\a \in K$ and let $\sigma_i$ be the embeddings of $K$ into $\CC$. Then \[N_{K/\QQ}(\a)=\prod_i \sigma_i(\a)  \].
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{lemma}\label{lemma:alt_definition_of_trace}
+	\lean{trace_eq_sum_embeddings}
+	\leanok
+	Let $K$ be a number field, $\a \in K$ and let $\sigma_i$ be the embeddings of $K$ into $\CC$. Then \[\Tr_{K/\QQ}(\a) =\sum_i \sigma_i(\a). \]
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{definition}\label{defn_of_disc}
+	\lean{algebra.discr}
+	\leanok
+	Let $A,K$ be commutative rings with $K$ and $A$-algebra. let $B=\{b_1,\dots,b_n\}$ be a set of elements in $K$. The discriminant of $B$ is defined as \[\Delta(B)=  \det \left (\begin{matrix} \Tr_{K/A}(b_1b_1) &\cdots& \Tr_{K/A}(b_1b_n)\\ \vdots & & \vdots \\  \Tr_{K/A}(b_nb_1) &\cdots& \Tr_{K/A}(b_nb_n)
+	\end{matrix} \right ).\]
+\end{definition}
+
+\begin{lemma}\label{lem:lin_indep_iff_disc_ne_zero}
+	\uses{defn_of_disc, lemma:alt_definition_of_norm}
+	\leanok
+	\lean{algebra.discr_not_zero_of_basis}
+	Let $L/K$ be an extension of fields and let $B=\{b_1,\dots,b_n\}$ be a $K$-basis of $L$. Then $\Delta(B) \neq 0$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{lemma}\label{lem:disc_change_of_basis}
+	\uses{defn_of_disc}
+	\leanok
+	\lean{algebra.discr_of_matrix_mul_vec}
+	Let $K$ be a number field and $B,B'$ bases for $K/\QQ$. If $P$ denotes the change of basis matrix, then \[\Delta(B)=\det(P)^2 \Delta(B').\]
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{lemma}\label{lemma:disc_via_embs}
+	\uses{defn_of_disc, trace_eq_sum_embeddings, lemma:alt_definition_of_trace}
+	\leanok
+	\lean{algebra.discr_eq_det_embeddings_matrix_reindex_pow_two}
+	Let $K$ be a number field with basis $B=\{b_1,\dots,b_n\}$ and let $\sigma_1,\dots,\sigma_n$ be the embeddings of $K$ into $\CC$. Now let $M$ be the matrix  \[\left (\begin{matrix} \sigma_1(b_1) &\cdots& \sigma_1(b_n)\\ \vdots & & \vdots \\  \sigma_n(b_1) &\cdots& \sigma_n(b_n)
+	\end{matrix} \right ).\] Then \[\Delta(B)=\det(M)^2.\]
+\end{lemma}
+\begin{proof}
+	\leanok
+	By Lemma \ref{lemma:alt_definition_of_trace} we know that  $\Tr_{K/\QQ}(b_i b_j)= \sum_k \sigma_k(b_i)\sigma_k(b_j)$ which is the same as the $(i,j)$ entry of $M^t M$. Therefore \[\det(T_B)=\det(M^t M)=\det(M)^2.\]
+\end{proof}
+
+\begin{lemma}\label{lemma:disc_of_prim_elt_basis}
+	\lean{algebra.discr_power_basis_eq_prod}
+	\leanok
+	\uses{defn_of_disc,lemma:disc_via_embs}
+	Let $K$ be a number field and $B=\{1,\a,\a^2,\dots,\a^{n-1}\}$ for some $\a \in K$. Then \[\Delta(B)=\prod_{i < j} (\sigma_i(\a)-\sigma_j(\a))^2\] where $\sigma_i$ are the embeddings of $K $ into $\CC$. Here $\Delta(B)$ denotes the discriminant.
+\end{lemma}
+\begin{proof}
+	\leanok
+	First we recall a classical linear algebra result relating to the Vandermonde matrix, which states that  \[\det \left (\begin{matrix} 1 & x_1& x_1^2&\cdots&x_1^{n-1} \\ \vdots & & & \vdots \\   1 & x_n& x_n^2&\cdots&x_n^{n-1}
+	\end{matrix} \right ) =\prod_{i<j} (x_i-x_j).\] Combining this with Lemma \ref{lemma:disc_via_embs} gives the result.
+\end{proof}
+
+\begin{lemma}\label{lemma:diff_of_irr_pol}
+	\lean{polynomial.aeval_root_derivative_of_splits}
+	\leanok
+	Let $f$ be a monic irreducible polynomial over a number field $K$ and let $\a$ be one of its roots in $\CC$. Then \[f'(\a)=\prod_{\beta \neq \a} (\a-\beta),  \] where the product is over the roots of $f$ different from $\a$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	We first write $f(x)=(x-\a)g(x)$ which we can do (over $\CC$) as $\a$ is a root of $f$, where now $g(x)=\prod_{\beta \neq \a} (x-\beta)$. Differentiating we get \[f'(x)=g(x)+(x-\a)g'(x).\] If we now evaluate at $\a$ we get the result.
+\end{proof}
+
+\begin{lemma}\label{lemma:num_field_disc_in_terms_of_norm}
+	\lean{algebra.discr_power_basis_eq_norm}
+	\leanok
+	\uses{lemma:disc_of_prim_elt_basis,lemma:alt_definition_of_norm, lemma:diff_of_irr_pol}
+	Let $K=\QQ(\a)$ be a number field with $n=[K:\QQ]$ and let $B=\{1,\a,\a^2,\dots,\a^{n-1}\}$. Then \[\Delta(B)=(-1)^{\frac{n(n-1)}{2}}N_{K/\QQ}(m_\a'(\a))\] where $m_\a'$ is the derivative of $m_\a(x)$ (which we recall denotes the minimal polynomial of $\a$).
+\end{lemma}
+\begin{proof}
+	\leanok
+	By Lemma \ref{lemma:disc_of_prim_elt_basis} we have $\Delta(B)=\prod_{i < j}(\a_i-\a_j)^2$ where $\a_k:=\sigma_k(\a)$. Next, we note that the number of terms in this product is $1+2+\cdots+(n-1)=\frac{n(n-1)}{2}$. So if we write each term as $(\a_i-\a_j)^2=-(\a_i-\a_j)(\a_j-\a_i)$ we get \[\Delta(B)=(-1)^{\frac{n(n-1)}{2}}\prod_{i=1}^n \prod_{i \neq j} (\a_i-\a_j). \]
+
+	Now, by lemmas \ref{lemma:diff_of_irr_pol} and \ref{lemma:alt_definition_of_norm} we see that \[N_{K/\QQ}(m_\a'(\a))=\prod_{i=1}^n m_\a'(\a_i)=\prod_{i=1}^n \prod_{i \neq j} (\a_i-\a_j),\] which gives the result.
+\end{proof}
+
+\begin{lemma}\label{lemma:norm_of_alg_int_is_int}
+	\lean{algebra.is_integral_norm}
+	\leanok
+	If $K$ is a number field and $\a \in \OO_K$ then $N_{K/\QQ}(\a)$ is in $\ZZ$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{lemma}\label{lemma:trace_of_alg_int_is_int}
+	\lean{algebra.is_integral_trace}
+	\leanok
+	If $K$ is a number field and $\a \in \OO_K$ then $\Tr_{K/\QQ}(\a)$ is in $\ZZ$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is standard.
+\end{proof}
+
+\begin{lemma}\label{lemma:int_basis_int_disc}
+	\lean{algebra.discr_is_integral}
+	\leanok
+	\uses{defn_of_disc,lemma:trace_of_alg_int_is_int}
+	Let $K$ be a number field and $B=\{b_1,\dots,b_n\}$ be elements in $\OO_K$, then $\Delta(B) \in \ZZ$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	Immediate by \ref{lemma:trace_of_alg_int_is_int}.
+\end{proof}
+
+
+\begin{lemma}\label{lemma:disc_int_basis}
+	\lean{algebra.discr_mul_is_integral_mem_adjoin}
+	\leanok
+	\uses{lem:disc_change_of_basis,lemma:int_basis_int_disc}
+	Let $K = \QQ(\alpha)$ be a number field, where $\alpha$ is an algebraic integer. Let $B = \{1, \alpha, \ldots, \alpha^{[K : \QQ] - 1} \}$ be the basis given by $\alpha$ and let $x \in \mathcal{O}_K$. Then $\Delta(B)x \in \ZZ[\alpha]$.
+\end{lemma}
+
+\begin{proof}
+	\leanok
+	See the Lean proof.
+\end{proof}
+
+\begin{lemma}\label{lemma:eis_crit_and_alg_ints}
+	\lean{mem_adjoin_of_smul_prime_pow_smul_of_minpoly_is_eiseinstein_at}
+	\leanok
+	\uses{lemma:norm_of_alg_int_is_int,lemma:trace_of_alg_int_is_int}
+	Let $K = \QQ(\alpha)$ be a number field, where $\alpha$ is an algebraic integer with minimal polynomial that is Eisenstein at $p$. Let $x \in \mathcal{O}_K$ such that $p^n x \in \ZZ[\alpha]$ for some $n$. Then $x \in \ZZ[\alpha]$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	See the Lean proof.
+\end{proof}
+
+\section{Cyclotomic fields}
+
+\begin{lemma}\label{lemma:cyclo_poly_deg}
+	\lean{polynomial.degree_cyclotomic}
+	\leanok
+	For $n$ any integer, $\Phi_n$ (the $n$-th cyclotomic polynomial) is a polynomial of degree $\varphi(n)$ (where $\varphi$ is Euler's Totient function).
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is classical.
+\end{proof}
+
+
+\begin{lemma}\label{lemma:cyclo_poly_irr}
+	\lean{polynomial.cyclotomic.irreducible}
+	\leanok
+	For $n$ any integer, $\Phi_n$ (the $n$-th cyclotomic polynomial) is an irreducible polynomial .
+\end{lemma}
+\begin{proof}
+	\leanok
+	The proof is classical.
+\end{proof}
+
+\begin{lemma}\label{lem:discr_of_cyclo}
+	\uses{lemma:num_field_disc_in_terms_of_norm,lemma:cyclo_poly_irr,lemma:cyclo_poly_deg}
+	\leanok
+	\lean{is_cyclotomic_extension.rat.discr_prime_pow'}
+	Let $\zeta_p$ be a $p$-th root of unity for $p$ an odd prime, let $\lam_p=1-\zeta_p$ and $K=\QQ(\zeta_p)$. Then \[\Delta(\{1,\zeta_p,\dots,\zeta_p^{p-2}\})=\Delta(\{1,\lam_p,\dots,\lam_p^{p-2}\})=(-1)^{\frac{(p-1)}{2}}p^{p-2}.\]
+\end{lemma}
+\begin{proof}
+	\leanok
+	First note $[K:\QQ]=p-1$.
+
+	Since $\zeta_p=1-\lam_p$ we at once get $\ZZ[\zeta_p]=\ZZ[\lam_p]$ (just do double inclusion). Next, let $\a_i=\sigma_i(\zeta_p)$ denote the conjugates of $\zeta_p$, which is the same as the image of $\zeta_p$ under one of the embeddings $\sigma_i: \QQ(\zeta_p) \to \CC$. Now  by Proposition \ref{lemma:disc_of_prim_elt_basis} we have \begin{align*}\Delta(\{1,\zeta_p,\dots,\zeta_p^{p-2}\})=\prod_{i < j}  (\a_i-\a_j)^2 &=\prod_{i < j}  ((1-\a_i)-(1-\a_j))^2\\&=\Delta(\{1,\lam_p,\dots,\lam_p^{p-2}\})\end{align*}
+
+	Now, by Proposition \ref{lemma:num_field_disc_in_terms_of_norm}, we have \[\Delta(\{1,\zeta_p,\cdots,\zeta_p^{p-2}\})=(-1)^{\frac{(p-1)(p-2)}{2}}N_{K/\QQ}(\Phi_p'(\zeta_p)  )\]
+	Since $p$ is odd $(-1)^{\frac{(p-1)(p-2)}{2}}=(-1)^{\frac{(p-1)}{2}}$. Next, we see that \[\Phi_p'(x)=\frac{px^{p-1}(x-1)-(x^p-1)}{(x-1)^2}\] therefore \[\Phi_p'(\zeta_p)=-\frac{p\zeta_p^{p-1}}{\lam_p}.\]
+
+	Lastly, note that $N_{K/\QQ}(\zeta_p)=1$, since this is the constant term in its minimal polynomial. Similarly, we see $N_{K/\QQ}(\lam_p)=p$. Putting this all together, we get \[N_{K/\QQ}(\Phi_p'(\zeta_p)  )=\frac{N_{K/\QQ}(p)N_{K\QQ}(\zeta_p)^{p-1}}{N_{K/\QQ}(-\lam_p)}=(-1)^{p-1}p^{p-2}=p^{p-2}\]
+\end{proof}
+
+\begin{theorem}\label{theorem:ring_of_ints_of_cyclo}
+	\uses{lem:discr_of_cyclo,lemma:eis_crit_and_alg_ints,lemma:disc_int_basis}
+	\leanok
+	\lean{is_cyclotomic_extension.rat.is_integral_closure_adjoing_singleton_of_prime}
+	Let $\zeta_p$ be a $p$-th root of unity for $p$ an odd prime, let $\lam_p=1-\zeta_p$ and $K=\QQ(\zeta_p)$. Then $\OO_K=\ZZ[\zeta_p]=\ZZ[\lam_p]$.
+\end{theorem}
+\begin{proof}
+	\leanok
+	We need to prove is that $\OO_K=\ZZ[\zeta_p]$. The inclusion $\ZZ[\zeta_p] \subseteq \OO_K$ is obvious. Let now $x \in \OO_K$. By Lemma \ref{lemma:disc_int_basis} and Proposition \ref{lem:discr_of_cyclo}, there is $k \in \NN$ such that $p^k x \in \ZZ[\zeta_p]$. We conclude by Lemma \ref{lemma:eis_crit_and_alg_ints}.
+\end{proof}
+
+\begin{lemma}\label{lemma:alg_int_abs_val_one}
+	\lean{mem_roots_of_unity_of_abs_eq_one}
+	\leanok
+	Let $\a$ be an algebraic integer all of whose conjugates have absolute value one. Then $\a$ is a root of unity.
+\end{lemma}
+\begin{proof}
+	\leanok
+	Lemma 1.6 of \cite{washington}.
+\end{proof}
+
+
+\begin{lemma}\label{lem:roots_of_unity_in_cyclo}
+	\lean{roots_of_unity_in_cyclo}
+	\leanok
+	Let $p$ be a prime, $K=\QQ(\zeta_p)$ $\a \in K$ such that there exists $n \in \NN$ such that $\a^n=1$, then $\a =\pm \zeta_p^k$ for some $k$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	If $n$ is different to $p$ then $K$ contains a $2pn$-th root of unity. Therefore $\QQ(\zeta_{2pn}) \subset K$, but this cannot happen as $[K : \QQ]=p-1$ and $[\QQ(\zeta_{2pn}): \QQ ] = \varphi(2np)$.
+\end{proof}
+
+\begin{lemma}\label{lemma:unit_lemma}
+	\lean{unit_lemma_gal_conj}
+	\leanok
+	\uses{lemma:alg_int_abs_val_one,lem:roots_of_unity_in_cyclo}
+	Any unit $u$ in $\ZZ[\zeta_p]$ can be written in the form $\beta \zeta_p^k  $ with $k$ an integer and $\beta \in \RR$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	See the Lean proof.
+\end{proof}
+
+\begin{lemma}\label{lemma:zeta_pow_sub_eq_unit_zeta_sub_one}
+	\lean{is_primitive_root.zeta_pow_sub_eq_unit_zeta_sub_one}
+	\leanok
+	Let $p$ be an odd prime, $\zeta_p$ a primitive $p$-th root of unity and let $K=\QQ(\zeta_p)$. Then for any $i,j \in {0,\dots,p-1}$ with $i \ne j$, there exists a unit $u \in \mathcal{O}_K^\times$ such that $\zeta_p^i-\zeta_p^j = u * (\zeta_p-1)$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	This is Ex $34$ in chapter 2 of \cite{marcus}.
+\end{proof}
+
+
+\begin{lemma}\label{lemma:ideals_mult_to_power}
+	\lean{ideal.exists_eq_pow_of_mul_eq_pow}
+	\leanok
+	Let $R$ be a Dedekind domain, $p$ a prime and $\gotha,\gothb,\gothc$ ideals such that \[\gotha\gothb=\gothc^p\] and suppose $\gotha,\gothb$ are coprime. Then there exist ideals $\mathfrak{e},\mathfrak{d}$ such that \[\gotha=\mathfrak{e}^p \qquad \gothb=\mathfrak{d}^p \qquad \mathfrak{e}\mathfrak{d}=\gothc\]
+\end{lemma}
+\begin{proof}
+	\leanok
+	It follows from the unique decomposition of ideals in a Dedekind domain.
+\end{proof}
+
+
+\section{Fermat's Last Theorem for regular primes}
+
+\begin{lemma}\label{lem:flt_ideals_coprime}
+	\lean{flt_ideals_coprime}
+	\uses{lemma:zeta_pow_sub_eq_unit_zeta_sub_one}
+	\leanok
+	Let $p \geq 5$ be an prime number, $\zeta_p$ a $p$-th root of unity and $x, y \in \ZZ$ coprime.
+
+	For $i \neq j$ with $i,j \in {0,\dots,p-1}$ we can write \[(\zeta_p^i-\zeta_p^j)=u(1-\zeta_p)\] with $u$ a unit in $\ZZ[\zeta_p]$. From this it follows that the ideals \[(x+y),(x+\zeta_py),(x+\zeta_p^2y),\dots,(x+\zeta_p^{p-1}y)\] are pairwise coprime.
+\end{lemma}
+\begin{proof}
+	\leanok
+	 Lemma \ref{lemma:zeta_pow_sub_eq_unit_zeta_sub_one} gives that $u$ is a unit. So all that needs to be proved is that the ideals are coprime. Assume not, then for some $i \neq j$ we have some prime ideal $\gothp$ dividing by $(x+y\zeta_p^i)$ and $(x+y\zeta_p^j)$. It must then also divide their sum and their difference, so we must have $\gothp | (1-\zeta_p)$ or $\gothp | y$. Similarly, $\gothp$ divides $\zeta_p^j(x+y\zeta_p^i)-\zeta_p^i(x+y\zeta_p^j)$ so $\gothp$ divides $x$ or $(1-\zeta_p)$. We can't have $\gothp$ dividing $x,y$ since they are coprime, therefore $\gothp |(1-\zeta_p)$. We know that since $(1-\zeta_p)$ has norm $p$ it must be a prime ideal, so $\gothp=(1-\zeta_p)$. Now, note that $x+y \equiv x+y\zeta_p^i \equiv 0 \mod \gothp$. But since $x,y \in \ZZ$ this means we would have $x+y \equiv 0 \pmod p$, which implies $z^p \equiv 0 \pmod p$ which contradicts our assumptions.
+\end{proof}
+
+\begin{lemma}\label{lem:exists_int_sub_pow_prime_dvd}
+	\lean{exists_int_sub_pow_prime_dvd}
+	\leanok
+	Let $p$ be an prime number, $\zeta_p$ a $p$-th root of unity and $\a \in \ZZ[\zeta_p]$. Then $\a^p$ is congruent to an integer modulo $p$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	Just use $(x+y)^p \equiv x^p + y^p \pmod p$ and that $\zeta_p$ is a $p$-th root of unity.
+\end{proof}
+
+\begin{lemma}\label{lem:dvd_coeff_cycl_integer}
+	\lean{dvd_coeff_cycl_integer}
+	\leanok
+	Let $p$ be an prime number, $\zeta_p$ a $p$-th root of unity and $ \a \in \ZZ[\zeta_p]$ with $\a=\sum_i a_i \zeta_p^i$. Let us suppose that there is $i$ such that $a_i = 0$. If $n$ is an integer that divides $\a$ in $\ZZ[\zeta_p]$, then $n$ divides each $a_i$.
+\end{lemma}
+\begin{proof}
+	\leanok
+	Looking at $\a=a_0+a_1\zeta_p+\cdots+a_{p-1}\zeta_p^{p-1}$, if one of the $a_i$'s is zero and $\a/n \in \ZZ[\zeta_p]$, then $\a/n=\sum_i a_i/n \zeta_p^i$. Now, as $\a/n \in \ZZ[\zeta_p]$, pick the basis of $\ZZ[\zeta_p]$ which does not contain $\zeta_p$ (which is possible as any subset of $\{1,\zeta_p,\dots,\zeta_p^{p-1}\}$ with $p-1$ elements forms a basis of $\ZZ[\zeta_p]$.). Then $\a=\sum_i b_i \zeta_p^i$ where $b_i \in \ZZ$. Therefore comparing coefficients, we get the result.
+\end{proof}
+
+\begin{lemma}\label{lem:exists_int_sum_eq_zero}
+	\lean{exists_int_sum_eq_zero}
+	\leanok
+	Let $p \geq 3$ be an prime number, $\zeta_p$ a $p$-th root of unity and $ \a \in \ZZ[\zeta_p]$. Let $x$ and $y$ be integers such that $x+y\zeta_p^i=u \a^p$ with $u \in \ZZ[\zeta_p]^\times$ and $\a \in \ZZ[\zeta_p]$. Then there is an integer $k$ such that \[x+y\zeta_p^i-\zeta_p^{2k}x-\zeta_p^{2k-i}y \equiv 0 \pmod p.\]
+\end{lemma}
+\begin{proof}
+	\leanok
+	\uses{lemma:unit_lemma,lem:exists_int_sub_pow_prime_dvd}
+	Using lemma \ref{lemma:unit_lemma} we have $(x+y\zeta_p^i) =\beta \zeta_p^k \a^p$ which is congruent modulo $p$ to $\beta \zeta_p^k a \pmod p$ for some integer $a$ by \ref{lem:exists_int_sub_pow_prime_dvd}. Now, if we consider the complex conjugate we have $\ov{(x+y\zeta_p^i)  }\equiv \beta \zeta_p^{-k}a \pmod p$. Looking at $(x+y\zeta_p^i)-\zeta_p^{2k}\ov{(x+y\zeta_p^i)  }$ then gives the result.
+\end{proof}
+
+\begin{lemma}\label{lemma:may_assume_coprime}
+	\lean{flt_regular.caseI.may_assume}
+	\leanok
+	\uses{lemma:unit_lemma,lemma:zeta_pow_sub_eq_unit_zeta_sub_one,lemma:ideals_mult_to_power,theorem:ring_of_ints_of_cyclo}
+
+	Let $p \geq 3$ be an prime number, $\zeta_p$ a $p$-th root of unity and $K=\QQ(\zeta_p)$.  Assume that we have $x,y,z \in \ZZ$ with $\gcd(xyz,p)=1$ and such that \[x^p+y^p=z^p.\]
+
+	This is the so called "case I". To prove Fermat's last theorem, we may assume that:
+	\begin{itemize}
+		\item $p \geq 5$;
+		\item $x,y,z$ are pairwise coprime;
+		\item $x \not \equiv y \mod p$.
+	\end{itemize}
+\end{lemma}
+\begin{proof}
+	\leanok
+	The first part is easy.
+
+	Reducing modulo $p$, using Fermat's little theorem, you get that if $x \equiv y \equiv -z \pmod p$ then $3z \equiv 0 \pmod p$. But since $p >3$ this means $p |z$ but this contradicts $\gcd(xyz,p)=1$. Now, if $x \equiv y \pmod p$ then  $x \not \equiv -z \pmod p$ we can relabel $y,z$ so that wlog $x \not \equiv y$ (this uses that $p$ is odd).
+\end{proof}
+
+\begin{definition}\label{defn:is_regular_number}
+	\lean{is_regular_number}
+	\leanok
+	A prime number $p$ is called regular if it does not divide the class number of $\QQ(\zeta_p)$.
+\end{definition}
+
+\begin{theorem}\label{theorem:FLT_case_one}
+	\lean{flt_regular.caseI}
+	\leanok
+	\uses{defn:is_regular_number,lem:exists_int_sum_eq_zero,lem:dvd_coeff_cycl_integer,lemma:may_assume_coprime,lem:flt_ideals_coprime}
+	Let $p$ be an odd regular prime. Then \[x^p+y^p=z^p\] has no solutions with $x,y,z \in \ZZ$ and $\gcd(xyz,p)=1$.
+\end{theorem}
+\begin{proof}
+	\leanok
+	For $p=3$ use the standard elementary arguments, so assume $p \geq 5$.
+
+	First thing is to note that if $x^p+y^p=z^p$ then \[z^p=(x+y)(x+\zeta_py)\cdots(x+y\zeta_p^{p-1})\] as ideals. Then since by \ref{lem:flt_ideals_coprime} we know the ideals are coprime, then by lemma \ref{lemma:ideals_mult_to_power} we have that each $(x+y\zeta_p^i)=\gotha^p$, for $\gotha$ some ideal. Note that, $[\gotha^p]=1$ in the class group. Now, since $p$ does not divide the size of the class group we have that $[\gotha]=1$ in the class group, so its principal. So we have $x+y\zeta_p^i=u_i\a_i^p$ with $u_i$ a unit. So by \ref{lem:exists_int_sum_eq_zero} we have some $k$ such that $x+y\zeta_p-\zeta_p^{2k}x-\zeta_p^{2k-1}y \equiv 0 \pmod p$. If $1,\zeta_p,\zeta_p^{2k},\zeta_p^{2k-1}$ are distinct, then \ref{lem:dvd_coeff_cycl_integer} says that (since $p \geq 5$) $p$  divides $x,y$, contrary to our assumption. So they cannot be distinct, but checking each case leads to a contradiction, therefore there cannot be any such solutions.
+\end{proof}
+
+\begin{theorem}\label{thm:Kummers_lemma}
+	\leanok
+	\lean{eq_pow_prime_of_unit_of_congruent}
+	Let $p$ be a regular prime and let $u \in \ZZ[\zeta_p]^\times$. If $u \equiv a \mod p$ for some $a \in \ZZ$, then there exists $v \in \ZZ[\zeta_p]^\times$ such that $u=v^p$.
+\end{theorem}
+
+In these next few lemmas we are following \cite{Borevich_Shafarevich}.
+
+\begin{lemma}\label{lem:gen_dvd_by_frak_p}
+		Let $p$ be a regular odd prime, $x,y,z,\epsilon \in \ZZ[\zeta_p]$, $\epsilon$ a unit, and $n \in \ZZ_{\geq 1}$. Assume $x,y,z$ are coprime to $(1-\zeta_p)$ and that $x^p+y^p+\epsilon(1-\zeta_p)^{pn}z^p=0$. Then each of $(x+\zeta_p^i y)$ is divisible by $(1-\zeta_p)$ and there is a unique $i_0$ such that $(x+\zeta_p^{i_0})$ is divisible by $(1-\zeta_p)^2$.
+\end{lemma}
+\begin{proof}
+	By our assumptions we have the following equality of ideals in  $\ZZ[\zeta_p]$: \[ \prod_{k=0}^{p-1} (x+\zeta_p^ky) = \mathfrak{p}^{pm}\mathfrak{a}^p,  \] where $\mathfrak{a}=(z)$, $\mathfrak{p}=(1-\zeta_p)$ (which is prime) and $m=n(p-1)$. Now as $mp \geq p$ we must have that at least one of the terms on the lhs is divisible by $\mathfrak{p}$.
+
+	Note that since \[x+\zeta_p^iy= x+\zeta_p^ky - \zeta_p^k(1-\zeta_p^{i-k})y\] it follows every  $x+\zeta_p^k$ is divisible by $\mathfrak{p}$ for $0 \le k \le p-1$. This proves the first claim.
+
+	For the second claim, we begin by observing that if $x+\zeta_p^ky \equiv x + \zeta_p^i y \mod \mathfrak{p}^2$ (for $0 \leq k < i \leq p-1$) then $\zeta_p^ky(1-\zeta_p^{i-k}) \equiv 0 \mod \mathfrak{p}^2$ which cannot happen as $y$ is coprime to $\mathfrak{p}$. Therefore since, for $0 \leq k \leq p-1$, $x+\zeta_p^ky$ are all distinct modulo $\mathfrak{p}^2$ we must have that $\frac{x+\zeta_p^k}{1-\zeta_p}$ are non-congruent modulo $\mathfrak{p}$. The second claim now follows by noting that (since $N(\mathfrak{p})=p$), the numbers $\frac{x+\zeta_p^k}{1-\zeta_p}$ form a complete set of residues modulo $\mathfrak{p}$, so one must be divisible by $\mathfrak{p}$.
+\end{proof}
+
+\begin{lemma}\label{lem:gen_ideal_coprimality}
+		Let $p$ be a regular odd prime, $x,y,z,\epsilon \in \ZZ[\zeta_p]$, $\epsilon$ a unit, and $n \in \ZZ_{\geq 1}$. Assume $x,y,z$ are coprime to $(1-\zeta_p)$,  $x^p+y^p+\epsilon(1-\zeta_p)^{pn}z^p=0$ and $x+y$ is divisible by $\mathfrak{p}^2$ and $x+ \zeta_p^ky$ is only divisible by $\mathfrak{p}=(1-\zeta_p)$ (for $0 < k \leq p-1$).
+		Let $\mathfrak{m}= \mathrm{gcd}((x),(y))$. Then:
+		\begin{enumerate}
+			\item We can write 	\[(x+y)=\mathfrak{p}^{p(m-1)+1}\mathfrak{m}\mathfrak{c}_0\] and \[ (x+\zeta_p^k y)=\mathfrak{p}\mathfrak{m}\mathfrak{c}_k \] (for $0 < k \leq p-1$) where $m=n(p-1)$ and with $\mathfrak{c}_i$ pairwise coprime.
+			\item Each $\mathfrak{c}_k=\mathfrak{a}_k^p$ and $\mathfrak{a}_k\mathfrak{a}_0^{-1}$ is principal (as a fractional ideal).
+		\end{enumerate}
+
+\end{lemma}
+
+
+\begin{theorem}\label{thm:gen_flt_eqn}
+	\uses{lem:gen_dvd_by_frak_p,lem:gen_ideal_coprimality}
+	Let $p$ be a regular odd prime, $\epsilon \in \ZZ[\zeta_p]^\times$ and $n \in \ZZ_{\geq 1}$. Then the equation $x^p+y^p+\epsilon(1-\zeta_p)^{pn}z^p=0$ has no solutions with $x,y,z \in \ZZ[\zeta_p]$, all non-zero and $xyz$ coprime to $(1-\zeta_p)$.
+\end{theorem}
+
+\begin{theorem}\label{theorem:FLT_case_two}
+	\lean{flt_regular.caseII}
+	\leanok
+	\uses{lemma:defn:is_regular_number,thm:Kummers_lemma, thm:gen_flt_eqn}
+	Let $p$ be an odd regular prime. Then \[x^p+y^p=z^p\] has no solutions with $x,y,z \in \ZZ$ and $p | xyz$.
+\end{theorem}
+
+
+\begin{theorem}\label{FLT_regular}
+	\lean{flt_regular}
+	\leanok
+	\uses{theorem:FLT_case_one,theorem:FLT_case_two}
+	Let $p$ be an odd regular prime.  Then \[x^p+y^p=z^p\] has no solutions with $x,y,z \in \ZZ$ and $xyz \ne 0$.
+\end{theorem}
+\end{comment}

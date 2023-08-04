@@ -4,6 +4,7 @@ import analysis.complex.upper_half_plane.metric
 import analysis.complex.upper_half_plane.topology
 import number_theory.modular_forms.basic
 import geometry.manifold.mfderiv
+import analysis.calculus.deriv.zpow
 import tactic
 
 universes u v w
@@ -460,7 +461,7 @@ begin
     exact this, },
   have riesum:=int_Riemann_zeta_is_summmable (k-1) hk,
   have riesum': summable (λ (n : ℕ), (8 / (rfunct z)^k) * rie (↑k - 1) n),
-  by {rw (summable_mul_left_iff nze).symm,
+  by {rw ←(summable_mul_left_iff nze).symm,
   simp only [int.cast_coe_nat, int.cast_one, int.cast_sub] at riesum,
   apply riesum,},
   have:=summable_of_nonneg_of_le epos smallerclaim,
@@ -496,7 +497,7 @@ begin
   exact this, },
   have riesum:=int_Riemann_zeta_is_summmable (k-1) hk,
   have riesum': summable (λ (n : ℕ), (8 / (rfunct z)^k) * rie (↑k - 1) n),
-  by {rw (summable_mul_left_iff nze).symm,
+  by {rw ←(summable_mul_left_iff nze).symm,
   simp at riesum,
   apply riesum,},
   apply tsum_le_tsum,
@@ -932,7 +933,7 @@ begin
   simp at this,
   exact this, },
   have riesum:=int_Riemann_zeta_is_summmable (k-1) hk,
-  rw (summable_mul_left_iff nze).symm,
+  rw  ←(summable_mul_left_iff nze).symm,
   simp at riesum,
   apply riesum,
   apply Eisenstein_series.nonemp A B ha hb,
@@ -953,7 +954,7 @@ refl,
 end
 
 lemma d1 (k: ℤ) (x : ℂ): deriv (λ x, x^k) x = k*x^(k-1) :=
-by {simp only [deriv_zpow'], }
+by {simp  }
 
 lemma d2 (a b k: ℤ) (x : ℂ) (h : (a: ℂ)*x+b ≠ 0) : deriv (ein a b k) x = k*a*(a*x+b)^(k-1):=
 begin
@@ -1076,7 +1077,7 @@ lemma Eise'_has_diff_within_at (k : ℤ) (y: ℤ × ℤ) (hkn: k ≠ 0) :
   differentiable_on ℂ (extend_by_zero (λ (z : ℍ'), Eise k z y)) ℍ':=
 begin
   have:= is_holomorphic_on_iff_differentiable_on ℍ' (λ (z : ℍ'), Eise k z y),
-  simp only [subtype.coe_mk],
+  simp,
   rw this,
   apply Eise'_has_deriv_within_at,
   apply hkn,

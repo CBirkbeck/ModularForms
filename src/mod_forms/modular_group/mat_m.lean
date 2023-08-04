@@ -3,7 +3,6 @@ import tactic.tidy
 import linear_algebra.matrix.special_linear_group
 import linear_algebra.determinant
 import data.matrix.notation
-import linear_algebra.matrix
 import linear_algebra.matrix.general_linear_group
 import data.complex.basic
 
@@ -38,7 +37,7 @@ instance coe_fun : has_coe_to_fun (integral_matrices_with_determinant n m) (λ _
 
 def to_lin' (A : integral_matrices_with_determinant n m) := matrix.to_lin' A
 
-namespace integral_matrices_with_determinant
+namespace integral_matrices_with_determinante
 
 lemma ext_iff (A B :  integral_matrices_with_determinant n m) : A = B ↔ (∀ i j, A i j = B i j) :=
 iff.trans subtype.ext_iff_val ⟨(λ h i j, congr_fun (congr_fun h i) j), matrix.ext⟩
@@ -126,7 +125,7 @@ end has_neg
 
 
 
-end integral_matrices_with_determinant
+end integral_matrices_with_determinante
 
 
 end

@@ -13,15 +13,15 @@ import mod_forms.Weierstrass_M_test
 import analysis.complex.upper_half_plane.basic
 import analysis.complex.upper_half_plane.topology
 import topology.compact_open
-import analysis.calculus.deriv
+import analysis.calculus.deriv.basic
 import number_theory.modular
-import mod_forms.modular_group.mat_m
+
 
 universes u v w
 
 open complex
 open modular_group
-open integral_matrices_with_determinant
+open integral_matrices_with_determinante
 open_locale big_operators nnreal classical filter matrix upper_half_plane
 
 local attribute [-instance] matrix.special_linear_group.has_coe_to_fun

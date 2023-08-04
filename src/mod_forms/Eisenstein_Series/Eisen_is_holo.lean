@@ -116,7 +116,7 @@ begin
   have hf:= ext_by_zero_apply ℍ' (Eisenstein_series_of_weight_ k) ⟨x, hxx⟩,
   let F: ℕ → ℍ' → ℂ := λ n,  eisen_square' k n,
   have hFb:= ext_by_zero_apply ℍ' (F b) ⟨x, hxx⟩,
-  simp only [topological_space.opens.mem_coe, subtype.coe_mk, subtype.val_eq_coe] at *,
+  simp only [ subtype.coe_mk, subtype.val_eq_coe] at *,
   rw hf,
   rw hFb,
   apply ha b hb ⟨x, hxx⟩ hx,

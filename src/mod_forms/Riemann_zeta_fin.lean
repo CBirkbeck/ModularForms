@@ -6,7 +6,7 @@ import ring_theory.int.basic
 import data.complex.basic
 import analysis.p_series
 import data.real.nnreal
-import analysis.special_functions.pow
+import analysis.special_functions.pow.real
 
 universes u v
 
